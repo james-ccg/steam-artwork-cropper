@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Step-by-step guide to uploading Artwork, Screenshot, Workshop, and Guide Showcase images to Steam, with copy-paste console commands." />
+	<meta name="theme-color" content="#171a21" />
+	<title>Upload Guide - James (xdjames)</title>
+	<link rel="shortcut icon" href="../steam/imgs/crop-logo.png" type="image/png" />
+	<style>
+		:root {
+			--bg: #0f1115;
+			--bg-alt: #161923;
+			--surface: #1b1f2a;
+			--surface-alt: #232838;
+			--border: #2a2f3d;
+			--text: #e7e9ee;
+			--text-dim: #9aa1b0;
+			--accent: #6dcff6;
+			--accent-strong: #4fb8e6;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+			line-height: 1.55;
+		}
+		a { color: inherit; text-decoration: none; }
+		.wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+		header {
+			position: sticky;
+			top: 0;
+			z-index: 10;
+			background: rgba(15, 17, 21, 0.85);
+			backdrop-filter: blur(8px);
+			border-bottom: 1px solid var(--border);
+		}
+		.nav {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			height: 64px;
+		}
+		.brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.02em; }
+		.brand span { color: var(--accent); }
+		.nav-links { display: flex; gap: 28px; font-size: 0.95rem; color: var(--text-dim); }
+		.nav-links a:hover { color: var(--text); }
+		.nav-toggle {
+			display: none;
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			color: var(--text);
+			width: 36px;
+			height: 36px;
+			font-size: 1.1rem;
+			cursor: pointer;
+		}
+		@media (max-width: 640px) {
+			.nav-links {
+				position: absolute;
+				top: 64px;
+				left: 0;
+				right: 0;
+				background: var(--bg-alt);
+				border-bottom: 1px solid var(--border);
+				flex-direction: column;
+				gap: 0;
+				display: none;
+			}
+			.nav-links.open { display: flex; }
+			.nav-links a { padding: 14px 24px; border-top: 1px solid var(--border); }
+			.nav-toggle { display: block; }
+			footer.wrap { flex-direction: column; text-align: center; }
+		}
+		.hero { padding: 52px 0 30px; text-align: center; }
+		.eyebrow {
+			color: var(--accent);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
+			display: block;
+			margin-bottom: 14px;
+		}
+		h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0 0 14px; }
+		.hero p { color: var(--text-dim); max-width: 620px; margin: 0 auto; font-size: 1rem; }
+		.hero a { color: var(--accent); text-decoration: underline; }
+
+		.why {
+			margin: 0 0 40px;
+			padding: 16px 18px;
+			border: 1px dashed var(--border);
+			border-radius: 8px;
+			color: var(--text-dim);
+			font-size: 0.9rem;
+			line-height: 1.65;
+		}
+		.why strong { color: var(--text); }
+
+		.toc {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin: 0 0 44px;
+		}
+		.toc a {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			color: var(--text-dim);
+			padding: 8px 14px;
+			border-radius: 999px;
+			font-size: 0.85rem;
+			text-decoration: none;
+		}
+		.toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+		.showcase {
+			margin-bottom: 52px;
+			scroll-margin-top: 76px;
+		}
+		.showcase h2 {
+			font-size: 1.35rem;
+			margin: 0 0 4px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.showcase .subtitle { color: var(--text-dim); font-size: 0.88rem; margin: 0 0 20px; }
+
+		.step {
+			display: flex;
+			gap: 16px;
+			padding: 14px 0;
+			border-top: 1px solid var(--border);
+		}
+		.step:first-of-type { border-top: none; }
+		.step-num {
+			flex-shrink: 0;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background: var(--accent);
+			color: #0d1015;
+			font-weight: 700;
+			font-size: 0.82rem;
+			margin-top: 2px;
+		}
+		.step-body { flex: 1; min-width: 0; }
+		.step-body p { margin: 0; font-size: 0.92rem; }
+		.step-body a { color: var(--accent); }
+
+		.code-block {
+			position: relative;
+			margin-top: 10px;
+			background: #0a0c10;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			overflow: hidden;
+		}
+		.code-block pre {
+			margin: 0;
+			padding: 14px 90px 14px 14px;
+			overflow-x: auto;
+			font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+			font-size: 0.82rem;
+			color: #b6e6ff;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+		.copy-btn {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			color: var(--text-dim);
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-size: 0.74rem;
+			cursor: pointer;
+			font-family: inherit;
+		}
+		.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+		.subguide {
+			margin-top: 26px;
+			padding-top: 20px;
+			border-top: 1px dashed var(--border);
+		}
+		.subguide h3 { font-size: 1.05rem; margin: 0 0 4px; }
+		.subguide .subtitle { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 14px; }
+
+		.icon-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+		.icon-links a {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: var(--surface-alt);
+			border: 1px solid var(--border);
+			padding: 6px 12px;
+			border-radius: 6px;
+			font-size: 0.85rem;
+			text-decoration: none;
+			color: var(--accent);
+		}
+		.icon-links a:hover { border-color: var(--accent); }
+
+		.cta-band {
+			margin-top: 8px;
+			padding: 26px;
+			border-radius: 8px;
+			text-align: center;
+			background: linear-gradient(160deg, var(--surface) 0%, var(--surface-alt) 100%);
+			border: 1px solid var(--accent);
+		}
+		.cta-band h2 { margin-bottom: 6px; }
+		.cta-band p { color: var(--text-dim); margin: 0 0 18px; }
+		.btn {
+			display: inline-block;
+			padding: 10px 20px;
+			border-radius: 6px;
+			font-weight: 700;
+			font-size: 0.9rem;
+			text-decoration: none;
+			background: var(--accent);
+			color: #0d1015;
+		}
+
+		.toast {
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%) translateY(20px);
+			background: var(--accent);
+			color: #0d1015;
+			padding: 10px 18px;
+			border-radius: 6px;
+			font-size: 0.85rem;
+			font-weight: 600;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.2s ease, transform 0.2s ease;
+		}
+		.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+		footer.wrap {
+			border-top: 1px solid var(--border);
+			padding: 28px 0;
+			color: var(--text-dim);
+			font-size: 0.85rem;
+			display: flex;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		footer.wrap a:hover { color: var(--accent); }
+	</style>
+</head>
+<body>
+	<header>
+		<nav class="nav wrap">
+			<a class="brand" href="https://james-ccg.github.io/#top">james<span>-ccg</span></a>
+			<button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+			<div class="nav-links" id="navLinks">
+				<a href="https://james-ccg.github.io/#about">About</a>
+				<a href="https://james-ccg.github.io/#projects">My Projects</a>
+				<a href="../">Cropper</a>
+				<a href="../backgrounds/">Backgrounds</a>
+				<a href="./">Upload Guide</a>
+				<a href="https://james-ccg.github.io/#contact">Contact</a>
+			</div>
+		</nav>
+	</header>
+
+	<main>
+		<section class="hero wrap">
+			<span class="eyebrow">All-in-one upload guide</span>
+			<h1>Getting your export onto Steam</h1>
+			<p>
+				Cropping is only half the job - Steam doesn't have a normal upload button for these
+				showcase types, so here's exactly how to get each one live, with copy-paste steps for
+				every case.
+			</p>
+		</section>
+
+		<div class="wrap">
+			<div class="why">
+				<strong>Why the console command?</strong> Artwork, Screenshot, and Workshop Showcase images
+				all go through Steam's <em>Guide</em> image editor, which normally expects a guide's cover
+				image - not a showcase piece. The one-line command below just tells that editor which
+				showcase type and dimensions you actually mean before you save, which is the same trick the
+				wider Steam customization community has used for years.
+			</div>
+
+			<nav class="toc" aria-label="Jump to a showcase type">
+				<a href="#artwork">Artwork Showcase</a>
+				<a href="#screenshot">Screenshot Showcase</a>
+				<a href="#workshop">Workshop Showcase</a>
+				<a href="#guide">Guide Showcase</a>
+			</nav>
+
+			<section class="showcase" id="artwork">
+				<h2>Artwork Showcase</h2>
+				<p class="subtitle">The wide/thin image pair this Cropper's Artwork tab produces.</p>
+
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body"><p>Select your artwork image.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">4</span>
+					<div class="step-body">
+						<p>Paste this and press Enter:</p>
+						<div class="code-block">
+							<pre data-code="$J('#image_width').val(1000),$J('#image_height').val(1);">$J('#image_width').val(1000),$J('#image_height').val(1);</pre>
+							<button type="button" class="copy-btn">Copy</button>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">5</span>
+					<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+				</div>
+			</section>
+
+			<section class="showcase" id="screenshot">
+				<h2>Screenshot Showcase</h2>
+				<p class="subtitle">Same flow as Artwork Showcase, with one extra field set.</p>
+
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body"><p>Select your artwork image.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">4</span>
+					<div class="step-body">
+						<p>Paste this and press Enter:</p>
+						<div class="code-block">
+							<pre data-code="$J('#image_width').val(1000),$J('#image_height').val(1),$J('[name=file_type]').val(5);">$J('#image_width').val(1000),$J('#image_height').val(1),$J('[name=file_type]').val(5);</pre>
+							<button type="button" class="copy-btn">Copy</button>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">5</span>
+					<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+				</div>
+			</section>
+
+			<section class="showcase" id="workshop">
+				<h2>Workshop Showcase</h2>
+				<p class="subtitle">The 5-slice strip this Cropper's Workshop tab produces.</p>
+
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body"><p>Select your artwork image.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">4</span>
+					<div class="step-body">
+						<p>Paste this and press Enter:</p>
+						<div class="code-block">
+							<pre data-code="$J('[name=consumer_app_id]').val(480),$J('[name=file_type]').val(0),$J('[name=visibility]').val(0);">$J('[name=consumer_app_id]').val(480),$J('[name=file_type]').val(0),$J('[name=visibility]').val(0);</pre>
+							<button type="button" class="copy-btn">Copy</button>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">5</span>
+					<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+				</div>
+			</section>
+
+			<section class="showcase" id="guide">
+				<h2>Guide Showcase</h2>
+				<p class="subtitle">Not something this Cropper exports, but the same trick applies - included for the full picture.</p>
+
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<p>Open the editor for the icon style you want:</p>
+						<div class="icon-links">
+							<a href="https://steamcommunity.com/sharedfiles/editguide/?appid=753" target="_blank" rel="noopener">Steam Icon &rarr;</a>
+							<a href="https://steamcommunity.com/sharedfiles/editguide/?appid=760" target="_blank" rel="noopener">Transparent Icon &rarr;</a>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body"><p>Select your artwork image.</p></div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body"><p>Click <strong>Save and Continue</strong> - no console step needed for either icon style.</p></div>
+				</div>
+
+				<div class="subguide">
+					<h3>Long Guide</h3>
+					<p class="subtitle">For a tall Guide Showcase image instead of a small icon.</p>
+
+					<div class="step">
+						<span class="step-num">1</span>
+						<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<div class="step-body"><p>Select your artwork image.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">4</span>
+						<div class="step-body">
+							<p>Paste this and press Enter:</p>
+							<div class="code-block">
+								<pre data-code="$J('[name=consumer_app_id]').val(753);$J('#image_width').val('1000');$J('#image_height').val('1');$J('[name=file_type]').val('9');">$J('[name=consumer_app_id]').val(753);$J('#image_width').val('1000');$J('#image_height').val('1');$J('[name=file_type]').val('9');</pre>
+								<button type="button" class="copy-btn">Copy</button>
+							</div>
+						</div>
+					</div>
+					<div class="step">
+						<span class="step-num">5</span>
+						<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div class="cta-band">
+					<h2>Haven't cropped your artwork yet?</h2>
+					<p>Get Steam-sized, auto-hexified pieces in one drop.</p>
+					<a class="btn" href="../">Open the Cropper</a>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<footer class="wrap">
+		<span>&copy; <span id="year"></span> James (xdjames)</span>
+		<a href="https://github.com/james-ccg" target="_blank" rel="noopener">github.com/james-ccg</a>
+	</footer>
+
+	<div class="toast" id="toast">Copied!</div>
+
+	<script>
+		document.getElementById('year').textContent = new Date().getFullYear();
+
+		var navToggle = document.getElementById('navToggle');
+		var navLinks = document.getElementById('navLinks');
+		navToggle.addEventListener('click', function () {
+			var isOpen = navLinks.classList.toggle('open');
+			navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+		});
+
+		var toast = document.getElementById('toast');
+		var toastTimer = null;
+		function showToast(msg) {
+			toast.textContent = msg;
+			toast.classList.add('visible');
+			clearTimeout(toastTimer);
+			toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 1600);
+		}
+
+		document.querySelectorAll('.copy-btn').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var code = btn.previousElementSibling.getAttribute('data-code');
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(code).then(function () { showToast('Copied!'); }, function () { window.prompt('Copy this code:', code); });
+				} else {
+					window.prompt('Copy this code:', code);
+				}
+			});
+		});
+	</script>
+</body>
+</html>

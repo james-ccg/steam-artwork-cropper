@@ -1,11 +1,12 @@
 // Used for tracking which tab is selected and which showcase is loaded
 const tabInfo = {
     currentTab: '#artwork',
-    artworkLoaded: false,
-    workshopLoaded: false,
+    loaded: { featured: false, artwork: false, workshop: false, avatar: false },
     reset: function() {
-        this.artworkLoaded = false;
-        this.workshopLoaded = false;
+        this.loaded.featured = false;
+        this.loaded.artwork = false;
+        this.loaded.workshop = false;
+        this.loaded.avatar = false;
     }
 }
 

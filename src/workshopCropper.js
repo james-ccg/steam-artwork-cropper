@@ -17,6 +17,7 @@ const {
 const { encodeGifUnderLimit } = require('./gifExport');
 const { hexifyBytes, hexifyToBase64 } = require('./hexify');
 const textOverlay = require('./textOverlay');
+const demoDefaults = require('./demoDefaults');
 
 // Filenames that are still over Steam's 5MB limit after best-effort
 // compression, collected across a single downloadImages() run so the final
@@ -60,14 +61,13 @@ const workshopShowcase = {
 	},
 	resetImagePreview: function() {
 		// Reset the image preview's width and height back to original size.
-		// A normal-sized image defaults to slider mode (visible, unchecked) -
-		// the on-page reminder tells people to check "Disable slider" to get
-		// the whole image instead, so that has to be the starting state.
+		// "Disable slider" (crop the whole image) is the default; the slider
+		// is there for people who want to hand-pick a slice instead.
 		workshopShowcase.previewBox.css('width', '632px');
 		workshopShowcase.imgPreview.css('width', '626px');
-		$('#toggleSlider').prop('disabled', false).prop('checked', false);
-		$('#togglePreview').prop('disabled', false);
-		workshopShowcase.dragElem.show();
+		$('#toggleSlider').prop('disabled', false).prop('checked', true);
+		$('#togglePreview').prop('disabled', true);
+		workshopShowcase.dragElem.hide();
 		workshopShowcase.fixHeight();
 	},
 	showOriginalImagePreview: function() {
@@ -201,7 +201,7 @@ const workshopShowcase = {
 		let zip = new JSZip();
 		zip.file(
 			'readme.txt',
-			'Make sure to follow the guide on how to upload longer images :)'
+			require('./uploadGuideText')
 		);
 
 		document.getElementById('test').innerHTML = '';
@@ -540,7 +540,7 @@ workshopShowcase.dragElem.draggable({
 
 document.getElementById('workshopTab').addEventListener('click', () => {
 	workshopShowcase.fixHeight();
-	changeTab(1, workshopShowcase.loadImage);
+	changeTab('workshop', () => demoDefaults.loadDefaultWorkshop(workshopShowcase.loadImage));
 });
 document
 	.getElementById('toggleSlider')

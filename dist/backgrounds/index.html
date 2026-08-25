@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Find a Steam profile background on Steam's own Points Shop and Market, then crop it to spec with the Steam Artwork & Workshop Cropper." />
+	<meta name="theme-color" content="#171a21" />
+	<title>Steam Backgrounds - James (xdjames)</title>
+	<link rel="shortcut icon" href="../steam/imgs/crop-logo.png" type="image/png" />
+	<style>
+		:root {
+			--bg: #0f1115;
+			--bg-alt: #161923;
+			--surface: #1b1f2a;
+			--surface-hover: #232838;
+			--border: #2a2f3d;
+			--text: #e7e9ee;
+			--text-dim: #9aa1b0;
+			--accent: #6dcff6;
+			--accent-strong: #4fb8e6;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+			line-height: 1.55;
+		}
+		a { color: inherit; text-decoration: none; }
+		.wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+		header {
+			position: sticky;
+			top: 0;
+			z-index: 10;
+			background: rgba(15, 17, 21, 0.85);
+			backdrop-filter: blur(8px);
+			border-bottom: 1px solid var(--border);
+		}
+		.nav {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			height: 64px;
+		}
+		.brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.02em; }
+		.brand span { color: var(--accent); }
+		.nav-links { display: flex; gap: 28px; font-size: 0.95rem; color: var(--text-dim); }
+		.nav-links a:hover { color: var(--text); }
+		.nav-toggle {
+			display: none;
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			color: var(--text);
+			width: 36px;
+			height: 36px;
+			font-size: 1.1rem;
+			cursor: pointer;
+		}
+		@media (max-width: 640px) {
+			.nav-links {
+				position: absolute;
+				top: 64px;
+				left: 0;
+				right: 0;
+				background: var(--bg-alt);
+				border-bottom: 1px solid var(--border);
+				flex-direction: column;
+				gap: 0;
+				display: none;
+			}
+			.nav-links.open { display: flex; }
+			.nav-links a { padding: 14px 24px; border-top: 1px solid var(--border); }
+			.nav-toggle { display: block; }
+			footer.wrap { flex-direction: column; text-align: center; }
+		}
+		.hero { padding: 56px 0 36px; text-align: center; }
+		.eyebrow {
+			color: var(--accent);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
+			display: block;
+			margin-bottom: 14px;
+		}
+		h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); margin: 0 0 14px; }
+		.hero p { color: var(--text-dim); max-width: 640px; margin: 0 auto; font-size: 1rem; }
+		.hero a { color: var(--accent); text-decoration: underline; }
+		section { padding: 44px 0; border-top: 1px solid var(--border); }
+		h2 { font-size: 1.4rem; margin: 0 0 6px; }
+		.lede { color: var(--text-dim); margin: 0 0 28px; }
+		.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+		.step { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+		.step-num {
+			display: inline-flex; align-items: center; justify-content: center;
+			width: 26px; height: 26px; border-radius: 50%;
+			background: var(--accent); color: #0d1015; font-weight: 700; font-size: 0.82rem;
+			margin-bottom: 10px;
+		}
+		.step h3 { margin: 0 0 6px; font-size: 0.98rem; }
+		.step p { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
+		.note {
+			margin-top: 24px; padding: 14px 16px;
+			border: 1px dashed var(--border); border-radius: 8px;
+			color: var(--text-dim); font-size: 0.86rem; line-height: 1.6;
+		}
+		.note strong { color: var(--text); }
+		.link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+		.link-card {
+			background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+			padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 6px;
+			transition: border-color 0.15s ease, transform 0.15s ease;
+		}
+		.link-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+		.link-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+		.link-card h3 { margin: 0; font-size: 0.98rem; }
+		.link-card p { margin: 0; color: var(--text-dim); font-size: 0.85rem; flex-grow: 1; }
+		.link-card span.go { color: var(--accent); font-size: 0.85rem; font-weight: 600; }
+
+		.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+		.filters input[type="search"] {
+			flex: 1; min-width: 180px; background: #0d1015; border: 1px solid var(--border);
+			color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; font-family: inherit;
+		}
+		.chip {
+			background: #0d1015; border: 1px solid var(--border); color: var(--text-dim);
+			padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; cursor: pointer;
+		}
+		.chip.active { background: var(--accent); color: #0d1015; border-color: var(--accent); font-weight: 600; }
+		.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+		.bg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+		.bg-card .thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #0d1015; overflow: hidden; }
+		.bg-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+		.bg-card .anim-badge {
+			position: absolute; top: 6px; right: 6px; background: rgba(13,16,21,0.8);
+			border: 1px solid var(--accent); color: var(--accent); font-size: 0.65rem; font-weight: 700;
+			padding: 2px 6px; border-radius: 999px; letter-spacing: 0.03em;
+		}
+		.bg-card .info { padding: 10px 12px; }
+		.bg-card .title { font-size: 0.88rem; font-weight: 600; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.bg-card .game { font-size: 0.76rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 8px; }
+		.bg-card .actions { display: flex; gap: 8px; }
+		.bg-card button {
+			flex: 1; background: #0d1015; border: 1px solid var(--border); color: var(--text);
+			padding: 6px 8px; border-radius: 6px; font-size: 0.76rem; cursor: pointer; font-family: inherit;
+		}
+		.bg-card button:hover { border-color: var(--accent); color: var(--accent); }
+		.bg-card button.primary { background: var(--accent); border-color: var(--accent); color: #0d1015; font-weight: 600; }
+		.bg-card button.primary:hover { color: #0d1015; opacity: 0.9; }
+		.sample-note { color: var(--text-dim); font-size: 0.85rem; margin-top: 20px; }
+
+		.cta-band {
+			margin-top: 8px; padding: 26px; border-radius: 8px; text-align: center;
+			background: linear-gradient(160deg, var(--surface) 0%, var(--surface-hover) 100%);
+			border: 1px solid var(--accent);
+		}
+		.cta-band h2 { margin-bottom: 6px; }
+		.cta-band p { color: var(--text-dim); margin: 0 0 18px; }
+		.btn {
+			display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 700;
+			font-size: 0.9rem; text-decoration: none; background: var(--accent); color: #0d1015;
+		}
+		.toast {
+			position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+			background: var(--accent); color: #0d1015; padding: 10px 18px; border-radius: 6px;
+			font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+		}
+		.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+		footer.wrap {
+			border-top: 1px solid var(--border);
+			padding: 28px 0;
+			color: var(--text-dim);
+			font-size: 0.85rem;
+			display: flex;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		footer.wrap a:hover { color: var(--accent); }
+	</style>
+</head>
+<body>
+	<header>
+		<nav class="nav wrap">
+			<a class="brand" href="https://james-ccg.github.io/#top">james<span>-ccg</span></a>
+			<button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+			<div class="nav-links" id="navLinks">
+				<a href="https://james-ccg.github.io/#about">About</a>
+				<a href="https://james-ccg.github.io/#projects">My Projects</a>
+				<a href="../">Cropper</a>
+				<a href="./">Backgrounds</a>
+				<a href="../guide/">Upload Guide</a>
+				<a href="https://james-ccg.github.io/#contact">Contact</a>
+			</div>
+		</nav>
+	</header>
+
+	<main>
+		<section class="hero">
+			<div class="wrap">
+				<span class="eyebrow">Steam profile backgrounds</span>
+				<h1>Find a background on Steam,<br />crop it here.</h1>
+				<p>
+					There's no scraped database behind this page - Steam already runs the real, up-to-date
+					one. This links straight to it, shows a small real sample below, and hands off to the
+					<a href="../">Cropper</a> to slice whatever you land on into Featured, Artwork, and
+					Workshop Showcase pieces - auto-hexified so long Workshop artwork actually renders.
+				</p>
+			</div>
+		</section>
+
+		<section id="how">
+			<div class="wrap">
+				<h2>How it works</h2>
+				<p class="lede">Three steps from "I like this background" to a ready-to-upload showcase set.</p>
+				<div class="steps">
+					<div class="step">
+						<span class="step-num">1</span>
+						<h3>Find a background</h3>
+						<p>Browse the Points Shop, Market, or your own inventory below - or search the sample gallery further down.</p>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<h3>Get the image</h3>
+						<p>Copy the image link (right-click &rarr; Copy image address), or save it. Steam's background CDN blocks other sites from loading its images directly, so save-and-upload is the reliable path.</p>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<h3>Crop and export</h3>
+						<p>Open the <a href="../" style="color: var(--accent);">Cropper</a>, upload or paste the image, hit Export, and get a named, hexified, Steam-ready .zip.</p>
+					</div>
+				</div>
+				<div class="note">
+					<strong>Direct image link from elsewhere (Imgur, Discord, etc.)?</strong> The Cropper's
+					"paste a URL" box can skip the save-and-upload step entirely for those hosts - just not
+					Steam's own background CDN, for the CORS reason above.
+				</div>
+			</div>
+		</section>
+
+		<section id="browse">
+			<div class="wrap">
+				<h2>Browse on Steam</h2>
+				<p class="lede">The real, always-current catalog - this just points you at it.</p>
+				<div class="link-grid">
+					<a class="link-card" href="https://store.steampowered.com/points/shop/c/backgrounds" target="_blank" rel="noopener">
+						<span class="link-tag">Free with points</span>
+						<h3>Points Shop - Backgrounds</h3>
+						<p>Steam's curated, rotating collection, redeemable with Steam Points.</p>
+						<span class="go">Browse &rarr;</span>
+					</a>
+					<a class="link-card" href="https://steamcommunity.com/market/search?category_753_item_class%5B0%5D=tag_item_class_3" target="_blank" rel="noopener">
+						<span class="link-tag">Community Market</span>
+						<h3>Market - Profile Backgrounds</h3>
+						<p>Every tradable profile background across every game, searchable by price.</p>
+						<span class="go">Browse &rarr;</span>
+					</a>
+					<a class="link-card" href="https://steamcommunity.com/my/inventory/" target="_blank" rel="noopener">
+						<span class="link-tag">Already own one?</span>
+						<h3>Your Inventory</h3>
+						<p>Backgrounds already unlocked from badges, drops, or purchases.</p>
+						<span class="go">Open inventory &rarr;</span>
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<section id="gallery">
+			<div class="wrap">
+				<h2>Sample gallery</h2>
+				<p class="lede">A small set of real backgrounds pulled from Steam's catalog, to search and preview without leaving this page.</p>
+				<div class="filters">
+					<input type="search" id="bgSearch" placeholder="Search by name or game...">
+					<button class="chip active" data-filter="all">All</button>
+					<button class="chip" data-filter="animated">Animated</button>
+					<button class="chip" data-filter="static">Static</button>
+				</div>
+				<div class="bg-grid" id="bgGrid"></div>
+				<p class="sample-note" id="bgEmpty" style="display: none;">No matches - try a different search, or browse the full catalog above.</p>
+				<p class="sample-note">This is a hand-picked sample, not the full catalog - use the links above to search everything Steam has.</p>
+			</div>
+		</section>
+
+		<section>
+			<div class="wrap">
+				<div class="cta-band">
+					<h2>Ready to crop?</h2>
+					<p>Drop the image you saved into the Cropper and get a Steam-ready showcase set in seconds.</p>
+					<a class="btn" href="../">Open the Cropper</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer class="wrap">
+		<span>&copy; <span id="year"></span> James (xdjames)</span>
+		<a href="https://github.com/james-ccg" target="_blank" rel="noopener">github.com/james-ccg</a>
+	</footer>
+
+	<div class="toast" id="toast">Copied!</div>
+
+	<script>
+		document.getElementById('year').textContent = new Date().getFullYear();
+
+		var navToggle = document.getElementById('navToggle');
+		var navLinks = document.getElementById('navLinks');
+		navToggle.addEventListener('click', function () {
+			var isOpen = navLinks.classList.toggle('open');
+			navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+		});
+
+		// A small, real sample - not a scraped catalog. Every entry below is a
+		// genuine Steam Community Market / Points Shop background (name, game,
+		// and image URL as Steam itself serves them). Displaying them as plain
+		// <img> tags is unaffected by Steam's CORS policy (that only blocks
+		// canvas/fetch access, not visual rendering) - the Cropper's own "paste
+		// a URL" box explains why pasting these specific links won't work there.
+		var BACKGROUNDS = [
+			{ title: 'Theme I', game: 'Dead Space™ 3', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVFkgh0Mm3KOOZjrQKnD_TP_-4pdFvWNs-agjMSy_HEG2cNxPo0fJoPp-eqiMW_uKv8/622x349' },
+			{ title: 'Guarded', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKBvw57QNjjkoHmnjYPMnrRKnBp2r5rdpcR_XRseCh2JO2_3hSjMNxapJHZYLI8LyoHA/622x349' },
+			{ title: 'Camo', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKWq8761RhihYBzn2EbMztFPSapz7_r9sBH_Ta5OOm3ZC38CAEiMd0apJde4JRkHCStA/622x349' },
+			{ title: 'Holding Pattern', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKAvxtvgQyjEwFnyyNPpjiTvSa8Tv-ro0EH_Pb5LWmiJ-wrSdTipBzaJJHZYKzk_i0Ig/622x349' },
+			{ title: 'Blue Abyss', game: 'Summer Sale 2026', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oQM03xoEyX_abMnjRqebpz79_NxWHvTft-LyiJG08HhSisF9PokUdNXp-eqiEATNe_4/622x349' },
+			{ title: 'Theme III', game: 'Dead Space™ 3', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVE0ixwAm3rZbp_pFaGUo2r_qI4GFPaM4OKgjMHgqXkAhc19btgZJ4Hp-eqiKKSJzjo/622x349' },
+			{ title: 'Sit Back and Relax', game: 'The Steam Awards - 2022', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwCWVKg-oQA23hYFnynfOcriRaLE_W-rqNRRHvHbtuHwgJ-x_3MDicQnOoVIItzp-eqir89fKKg/622x349' },
+			{ title: 'Coral Wave', game: 'Summer Sale 2026', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oVhjiRYEm3vZOZnpFaORpDr6-dkGFqHRsbfwiJTi_HdViMQja94bJdXp-eqis_NF8RQ/622x349' },
+			{ title: 'Funeral flowers', game: 'VERGE:Lost chapter', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdQSSV6ohuQJh301XzXyFY8_iQPOT8Gj4-dsDE6Tb4uKjgJ_hrCRahZQkO4xOJ8ut4_2PbonrgA/622x349' },
+			{ title: 'Baptism', game: 'BioShock Infinite', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMOfQOVTKs5vFdm3EhSnimLPMXqR6jA_Tr4qdwHF6PZ4LSnjJ7g8SdQhJMgPYoDf5Wg9dzjJGg/622x349' },
+			{ title: 'Dunes', game: 'Kenshi', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdgedVaohu1Nigx9VmHuFY8nuQaia9Tv9rdVVF_fY4Lej3cPl-HFQ2cV1PNoZccut4_1r8I1WoQ/622x349' },
+			{ title: 'Dota Ancients', game: 'Dota 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKW643vVJl3ksHmCmFPJm5QaGaoG75_4kBH_TQ4OikjJHh-HkDhMInapJde4LYL0QKOg/622x349' },
+			{ title: 'Dragon', game: 'Dota 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKAK096Flgjh0Bk3nfaMu4QaST9T___dpdFaGOt-mm3cTh8CIE2cYgO5Jde4KzeiS0sg/622x349' },
+			{ title: 'Chaos', game: 'Jurassic World Evolution', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAcQyWVqohvlQx3xcFyiuFO569QfCVoWn7rdpWQKfdtOH8icay-nQAisJzZ4xPIcut4_1ZN6xt-Q/622x349' },
+			{ title: 'RE4 Cover Art', game: 'Resident Evil 4 (2005)', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcACSU6ohuwA2gkwCkyzYb8vtRaPH92mv_9UAFaPduOX3gZCwrnNahZRwbI0eJMut4_2JCMcW-g/622x349' },
+			{ title: 'Zelenogorsk', game: 'DayZ', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwWUU6oh7AVk2R0BySvaO5q_R6KR9T74rt8EQqPctLem3JK3_HdS2MAjb4xMI8ut4_35vpSWoQ/622x349' },
+			{ title: 'New base', game: 'Space Engineers', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcQCdVqohtgQ1jxhQmX2JbM_pR6GT8jn4qtgHRabft-TxgcK38XVS2JZ0bd0VcMut4_1MGHmfXQ/622x349' },
+			{ title: 'Minimal 2', game: 'Miniballist', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAdwyQW6ohv1Uzi08CnH2Ob826TqPA8W_4qY5QEaTbubL3jsK9_CBVjsV2b4xJIsut4_3ekf5-5g/622x349' },
+			{ title: 'Rose Petals', game: 'Wallpaper Engine', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdgWcVaoh61Vg3xsFzSmPOJ3oEfOT8Gqq_4hUQ6HetbXzi5K1_XlXi8whbY4aJ8ut4_1Uul53hw/622x349' },
+			{ title: 'Sunset Cruise', game: 'Forza Horizon 5', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHcAGUUKw-oQJhiU9WzymFPsXsEfCR_D_-_NRSH_3QtOmgj5O1_3VTjpYnPNgddtDp-eqiGfmh1os/622x349' },
+			{ title: 'Lost Heaven', game: 'Mafia: Definitive Edition', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' },
+			{ title: 'Eastern Game Fest 2026 - Profile Background', game: 'Eastern Game Fest 2026', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/4561430/8dd3c38eae646ecc8b19bdaecd84fe7f5a47cff4.jpg' },
+			{ title: 'Spark Tower', game: 'Mina the Hollower', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1875580/6bae4bc3e98a451703d9d05a39bb0482010899a6.jpg' },
+			{ title: 'Black Hole', game: 'App 1263950', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1263950/da538bac62ee5e233cd82bb75b0d3c47ba0cdc03.jpg' },
+			{ title: 'Keep Away', game: 'Spring Sale 2026', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/4374420/7b237237dc6e059f4933b237080641e7bcb2bf1b.jpg' },
+			{ title: 'ONCE HUMAN - Background', game: 'Once Human', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/2139460/0803912d8a7dd5a6db695680a75c9acec56b162c.jpg' },
+			{ title: 'Believers of Dusk', game: 'Chicken Hill', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1422650/0aa615dfc281c237805cb9c50299c0969f2e0147.jpg' }
+		];
+
+		var grid = document.getElementById('bgGrid');
+		var empty = document.getElementById('bgEmpty');
+		var searchInput = document.getElementById('bgSearch');
+		var chips = document.querySelectorAll('.chip');
+		var activeFilter = 'all';
+		var toast = document.getElementById('toast');
+		var toastTimer = null;
+
+		function showToast(msg) {
+			toast.textContent = msg;
+			toast.classList.add('visible');
+			clearTimeout(toastTimer);
+			toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 1600);
+		}
+
+		function copyLink(url) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(url).then(function () { showToast('Link copied'); }, function () { window.prompt('Copy this link:', url); });
+			} else {
+				window.prompt('Copy this link:', url);
+			}
+		}
+
+		function render() {
+			var q = searchInput.value.trim().toLowerCase();
+			var items = BACKGROUNDS.filter(function (bg) {
+				if (activeFilter === 'animated' && !bg.animated) return false;
+				if (activeFilter === 'static' && bg.animated) return false;
+				if (q && bg.title.toLowerCase().indexOf(q) === -1 && bg.game.toLowerCase().indexOf(q) === -1) return false;
+				return true;
+			});
+
+			grid.innerHTML = '';
+			items.forEach(function (bg) {
+				var card = document.createElement('div');
+				card.className = 'bg-card';
+
+				var thumb = document.createElement('div');
+				thumb.className = 'thumb';
+				var img = document.createElement('img');
+				img.src = bg.img;
+				img.alt = bg.title;
+				img.loading = 'lazy';
+				thumb.appendChild(img);
+				if (bg.animated) {
+					var badge = document.createElement('span');
+					badge.className = 'anim-badge';
+					badge.textContent = 'ANIMATED';
+					thumb.appendChild(badge);
+				}
+
+				var info = document.createElement('div');
+				info.className = 'info';
+				var title = document.createElement('div');
+				title.className = 'title';
+				title.textContent = bg.title;
+				var game = document.createElement('div');
+				game.className = 'game';
+				game.textContent = bg.game;
+
+				var actions = document.createElement('div');
+				actions.className = 'actions';
+				var copyBtn = document.createElement('button');
+				copyBtn.textContent = 'Copy link';
+				copyBtn.addEventListener('click', function () { copyLink(bg.img); });
+				var cropBtn = document.createElement('button');
+				cropBtn.className = 'primary';
+				cropBtn.textContent = 'Open in Cropper';
+				cropBtn.addEventListener('click', function () {
+					window.location.href = '../?bg=' + encodeURIComponent(bg.img);
+				});
+				actions.appendChild(copyBtn);
+				actions.appendChild(cropBtn);
+
+				info.appendChild(title);
+				info.appendChild(game);
+				info.appendChild(actions);
+				card.appendChild(thumb);
+				card.appendChild(info);
+				grid.appendChild(card);
+			});
+
+			empty.style.display = items.length === 0 ? '' : 'none';
+		}
+
+		searchInput.addEventListener('input', render);
+		chips.forEach(function (chip) {
+			chip.addEventListener('click', function () {
+				chips.forEach(function (c) { c.classList.remove('active'); });
+				chip.classList.add('active');
+				activeFilter = chip.dataset.filter;
+				render();
+			});
+		});
+
+		render();
+	</script>
+</body>
+</html>

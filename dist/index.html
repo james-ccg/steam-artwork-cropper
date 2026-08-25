@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171a21" />
-    <title>Image Cropper for Steam Artwork and Workshop Showcase</title>
+    <title>Image Cropper for Steam Featured, Artwork &amp; Workshop Showcase</title>
     <link rel="shortcut icon" href="./steam/imgs/crop-logo.png" type="image/png" />
     <link rel="stylesheet" href="./steam/css/globalv2.css" />
     <link rel="stylesheet" href="./steam/css/motiva_sans.css" />
@@ -22,15 +22,15 @@
             <div class="content">
                 <div class="logo">
                     <span id="logo_holder">
-                        <a href="https://github.com/james-ccg/steam-artwork-cropper/" target="_blank">
-                            <img src="./steam/imgs/github_logo.png" height="50" style="position: absolute; left: 50px;" />
-                        </a>
+                        <a href="https://james-ccg.github.io/" title="Back to james-ccg.github.io" class="brandLogo">james<span>-ccg</span></a>
                     </span>
                 </div>
 
                 <div class="supernav_container">
-                    <span class="menuitem supernav" href="#artwork" id="artworkTab">ARTWORK SHOWCASE</span>
-                    <span class="menuitem supernav" href="#workshop" id="workshopTab">WORKSHOP SHOWCASE</span>
+                    <a class="menuitem supernav" href="#textOverlayPanel">ARTWORK CREATOR</a>
+                    <a class="menuitem supernav" href="#formatToggleLabel">BACKGROUND CROPPER</a>
+                    <a class="menuitem supernav" target="_blank" href="https://james-ccg.github.io/cropper/backgrounds/">Backgrounds</a>
+                    <a class="menuitem supernav" target="_blank" href="https://james-ccg.github.io/cropper/guide/">Upload Guide</a>
                     <a class="menuitem supernav" target="_blank" href="https://steamcommunity.com/id/James_ccg">James</a>
                 </div>
             </div>
@@ -112,41 +112,42 @@
                                         <button type="button" id="loadBgUrlBtn">Load</button>
                                     </div>
 
+                                    <p id="formatToggleLabel" class="formatToggleLabel">Choose format:</p>
+                                    <div class="formatToggle">
+                                        <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
+                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                                        </button>
+                                        <button type="button" class="formatBtn active" id="artworkTab" title="Artwork Showcase" aria-label="Artwork" aria-pressed="true">
+                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M12 3v18"></path></svg>
+                                        </button>
+                                        <button type="button" class="formatBtn" id="workshopTab" title="Workshop Showcase (Background Cropper)" aria-label="Workshop" aria-pressed="false">
+                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7.5 3v18"></path><path d="M12 3v18"></path><path d="M16.5 3v18"></path></svg>
+                                        </button>
+                                        <button type="button" class="formatBtn" id="avatarTab" title="Avatar / PFP" aria-label="Avatar" aria-pressed="false">
+                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path></svg>
+                                        </button>
+                                    </div>
+
+                                    <a class="needBackgroundPromo" href="./backgrounds/" target="_blank">
+                                        <img class="needBackgroundPromoThumb" src="./steam/imgs/nero.jpg" alt="" />
+                                        <span class="needBackgroundPromoBody">
+                                            <span class="needBackgroundPromoTitle">Need a background?</span>
+                                            <span class="needBackgroundPromoBlurb">Paste a Steam background URL above, or browse the gallery.</span>
+                                            <span class="needBackgroundPromoCta">Browse the gallery &rarr;</span>
+                                        </span>
+                                    </a>
+
                                     <div id="textOverlayPanel">
-                                        <p class="textOverlayToggle">
-                                            <input type="checkbox" id="textOverlayEnabled">
-                                            <label for="textOverlayEnabled">Add text to exported images</label>
-                                        </p>
-                                        <div id="textOverlayControls" style="display: none">
-                                            <input type="text" id="textOverlayText" placeholder="Your text" maxlength="60">
-                                            <div class="textOverlayRow">
-                                                <label>Color <input type="color" id="textOverlayColor" value="#ffffff"></label>
-                                                <label>Size <input type="range" id="textOverlaySize" min="12" max="96" value="32"></label>
-                                                <label><input type="checkbox" id="textOverlayBold" checked> Bold</label>
-                                            </div>
-                                            <div class="textOverlayRow">
-                                                <label>Animation
-                                                    <select id="textOverlayAnimation">
-                                                        <option value="none">None</option>
-                                                        <option value="fadeIn">Fade In</option>
-                                                        <option value="pulse">Pulse</option>
-                                                        <option value="rainbow">Rainbow</option>
-                                                    </select>
-                                                </label>
-                                                <span class="textOverlayHint">(animations only show on GIF exports)</span>
-                                            </div>
-                                            <div class="alignGrid" id="textOverlayAlignGrid">
-                                                <button type="button" class="alignBtn" data-align="top-left" title="Top left"></button>
-                                                <button type="button" class="alignBtn" data-align="top-center" title="Top center"></button>
-                                                <button type="button" class="alignBtn" data-align="top-right" title="Top right"></button>
-                                                <button type="button" class="alignBtn" data-align="middle-left" title="Middle left"></button>
-                                                <button type="button" class="alignBtn active" data-align="middle-center" title="Middle center"></button>
-                                                <button type="button" class="alignBtn" data-align="middle-right" title="Middle right"></button>
-                                                <button type="button" class="alignBtn" data-align="bottom-left" title="Bottom left"></button>
-                                                <button type="button" class="alignBtn" data-align="bottom-center" title="Bottom center"></button>
-                                                <button type="button" class="alignBtn" data-align="bottom-right" title="Bottom right"></button>
-                                            </div>
+                                        <p class="overlayPanelTitle">Artwork Creator - text &amp; border layers, baked into every export, auto-hexified like everything else</p>
+                                        <p class="overlaySectionLabel">Tools</p>
+                                        <div class="overlayToolbar">
+                                            <button type="button" id="addTextLayerBtn">+ Text</button>
+                                            <button type="button" id="addBorderLayerBtn">+ Border</button>
                                         </div>
+                                        <p class="overlaySectionLabel">Layers</p>
+                                        <div id="overlayLayersList" class="overlayLayersList"></div>
+                                        <p class="overlaySectionLabel">Properties</p>
+                                        <div id="overlayProps" class="overlayProps"></div>
                                     </div>
 
                                     <p style="color: yellow; font-weight: bold; margin-top: 10px">
@@ -166,6 +167,20 @@
                         <h2>Original picture</h2>
                         <h2 id="originalSize">-</h2>
                         <br />
+
+                        <div id="featuredInfo" style="display: none">
+                            <h2>Featured picture</h2>
+                            <h2 id="featuredSize">-</h2>
+                            <br />
+                            <p class="reminder">
+                                Featured Showcase is a single continuous image - any height
+                                works, it's just resized to 630px wide.
+                            </p>
+                            <button class="download" id="downloadFeatured">
+                                Download image
+                            </button>
+                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
+                        </div>
 
                         <div id="artworkInfo" style="display: none">
                             <h2>Big picture</h2>
@@ -197,6 +212,7 @@
                             <button class="download" id="downloadArtwork">
                                 Download images
                             </button>
+                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
                         </div>
 
                         <div id="worshopInfo" style="display: none">
@@ -210,8 +226,8 @@
                             <br />
                             <br /><button id="resetSlider">Reset slider</button>
                             <p class="reminder">
-                                Don't forget to check "Disable slider" if you want to crop the
-                                whole image.
+                                "Disable slider" is on by default (crops the whole image).
+                                Uncheck it to drag the slider and pick a specific slice instead.
                             </p>
                             <p class="warning" style="display: none;">
                                 <span style="font-weight: bolder;">WARNING: </span>
@@ -232,8 +248,23 @@
                             <button class="download" id="downloadWorkshop">
                                 Download images
                             </button>
+                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
                         </div>
-                        
+
+                        <div id="avatarInfo" style="display: none">
+                            <h2>Avatar picture</h2>
+                            <h2 id="avatarSize">-</h2>
+                            <br />
+                            <p class="reminder">
+                                Steam avatars are a plain 184x184 square - a non-square image
+                                is center-cropped first. Upload it as-is through Steam's normal
+                                avatar changer; no hexify trick needed here.
+                            </p>
+                            <button class="download" id="downloadAvatar">
+                                Download image
+                            </button>
+                        </div>
+
                         <br>
                         <p style="color: yellow">
                             <a href="https://github.com/james-ccg/steam-artwork-cropper" target="_blank" style="font-weight: bold; text-decoration: underline">Github</a>
@@ -243,6 +274,24 @@
                 </div>
 
                 <div class="profile_leftcol">
+                    <!-- Featured showcase area -->
+                    <div class="profile_customization_area" id="featuredArea" style="display: none">
+                        <div class="profile_customization myart">
+                            <div class="profile_customization_header">Featured Showcase</div>
+                            <div class="profile_customization_block">
+                                <div class="screenshot_showcase">
+                                    <div class="screenshot_showcase_primary showcase_slot">
+                                        <div class="screenshot_showcase_screenshot" style="width: 630px; max-width: 630px">
+                                            <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="featuredImg" />
+                                        </div>
+                                        <div class="screenshot_showcase_itemname"></div>
+                                    </div>
+                                    <div style="clear: both"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Artwork showcase area -->
                     <div class="profile_customization_area" id="artworkArea">
                         <div class="profile_customization myart">
@@ -320,6 +369,24 @@
                                         <div class="label">Submissions</div>
                                     </a>
                                     <div style="clear: left"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Avatar / PFP area -->
+                    <div class="profile_customization_area" id="avatarArea" style="display: none">
+                        <div class="profile_customization myart">
+                            <div class="profile_customization_header">Avatar / PFP</div>
+                            <div class="profile_customization_block">
+                                <div class="screenshot_showcase">
+                                    <div class="screenshot_showcase_primary showcase_slot">
+                                        <div class="screenshot_showcase_screenshot" style="width: 184px; max-width: 184px">
+                                            <img width="100%" style="max-width: 184px" src="./steam/imgs/1.jpg" id="avatarImg" />
+                                        </div>
+                                        <div class="screenshot_showcase_itemname"></div>
+                                    </div>
+                                    <div style="clear: both"></div>
                                 </div>
                             </div>
                         </div>

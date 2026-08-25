@@ -9,6 +9,9 @@ const changeTab = require('./changeTab');
 const inputImage = require('./inputImage');
 const { getComputedValueFor } = require('./functionsExport');
 const workshopShowcaseLoadImage = require('./workshopCropper');
+const featuredShowcaseLoadImage = require('./featuredCropper');
+const avatarShowcaseLoadImage = require('./avatarCropper');
+const demoDefaults = require('./demoDefaults');
 const {
 	MAX_EXPORT_BYTES,
 	canvasToBlob,
@@ -118,7 +121,7 @@ const artworkShowcase = {
 		let zip = new JSZip();
 		zip.file(
 			'readme.txt',
-			'Make sure to follow the guide on how to upload longer images :)'
+			require('./uploadGuideText')
 		);
 
 		if (inputImage.file.type == 'image/gif') {
@@ -303,17 +306,27 @@ async function as_createGifs(zip, gifs, currentGif) {
 // Shared by both the file picker and the "paste a URL" loader below, so a
 // background loaded from a link is routed exactly like a local upload.
 function loadNewFile(file) {
+	demoDefaults.markUserProvidedImage();
 	if (!file) return;
 	inputImage.file = file;
 	tabInfo.reset();
-	if (tabInfo.currentTab == '#artwork') {
+	if (tabInfo.currentTab == '#featured') {
+		featuredShowcaseLoadImage();
+		rightPanel.featuredInfo.show();
+		tabInfo.loaded.featured = true;
+	} else if (tabInfo.currentTab == '#workshop') {
+		workshopShowcaseLoadImage();
+		rightPanel.workshopInfo.show();
+		tabInfo.loaded.workshop = true;
+	} else if (tabInfo.currentTab == '#avatar') {
+		avatarShowcaseLoadImage();
+		rightPanel.avatarInfo.show();
+		tabInfo.loaded.avatar = true;
+	} else {
+		// #artwork
 		artworkShowcase.loadImage();
 		rightPanel.artworkInfo.show();
-		tabInfo.artworkLoaded = true;
-	} else {
-		// #workshop
-		workshopShowcaseLoadImage();
-		tabInfo.workshopLoaded = true;
+		tabInfo.loaded.artwork = true;
 	}
 }
 
@@ -322,6 +335,14 @@ inputImage.selectedImage.onchange = function () {
 };
 
 setupUrlLoader(loadNewFile);
+
+// Artwork is the default active tab, so its demo loads immediately; Featured
+// and Workshop's demos load lazily the first time each tab is opened (see
+// their own click handlers), matching how a real upload is only measured
+// once its tab is actually visible.
+demoDefaults.loadDefaultArtwork(artworkShowcase.loadImage).then(function () {
+	tabInfo.loaded.artwork = true;
+});
 
 function testSize() {
 	// Get values for the images shown on the Steam Artwork showcase
@@ -547,4 +568,4 @@ document
 	.addEventListener('click', artworkShowcase.downloadImages);
 document
 	.getElementById('artworkTab')
-	.addEventListener('click', () => changeTab(0, artworkShowcase.loadImage));
+	.addEventListener('click', () => changeTab('artwork', artworkShowcase.loadImage));

@@ -4,6 +4,14 @@ const rightPanel = {
     smallSize: document.getElementById('smallSize'), // Size of the right image
     toggleSmall: document.getElementById('toggleSmall'), // Checkbox for adding hole in the bottom right
     leftOffset: document.getElementById('leftOffset'), // Offset for the right image
+    featuredInfo: {
+        show: function () {
+            document.getElementById("featuredInfo").style.removeProperty('display');
+        },
+        hide: function () {
+            document.getElementById("featuredInfo").style.setProperty('display', 'none');
+        }
+    },
     artworkInfo: {
         show: function () {
             document.getElementById("artworkInfo").style.removeProperty('display');
@@ -18,6 +26,14 @@ const rightPanel = {
         },
         hide: function () {
             document.getElementById("worshopInfo").style.setProperty('display', 'none');
+        }
+    },
+    avatarInfo: {
+        show: function () {
+            document.getElementById("avatarInfo").style.removeProperty('display');
+        },
+        hide: function () {
+            document.getElementById("avatarInfo").style.setProperty('display', 'none');
         }
     }
 }
