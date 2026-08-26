@@ -151,7 +151,7 @@
 
 		.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
 		.bg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
-		.bg-card .thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #0d1015; overflow: hidden; }
+		.bg-card .thumb { display: block; position: relative; width: 100%; aspect-ratio: 16/9; background: #0d1015; overflow: hidden; }
 		.bg-card .thumb img, .bg-card .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
 		.bg-card .anim-badge {
 			position: absolute; top: 8px; right: 8px; background: rgba(13,16,21,0.82);
@@ -160,7 +160,8 @@
 		}
 		.bg-card .anim-badge::before { content: '\25B6'; font-size: 0.55rem; }
 		.bg-card .info { padding: 11px 13px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-		.bg-card .title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.bg-card .title { display: block; font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+		.bg-card .title:hover { color: var(--accent); }
 		.bg-card .meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--text-dim); }
 		.bg-card .meta-row .cat { text-transform: capitalize; }
 		.bg-card .dots { display: flex; gap: 3px; }
@@ -195,6 +196,46 @@
 		}
 		.note strong { color: var(--text); }
 
+		/* ---- Item detail view ---- */
+		.detail-wrap { padding: 32px 24px 8px; }
+		.detail-back {
+			display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim);
+			font-size: 0.88rem; margin-bottom: 22px;
+		}
+		.detail-back:hover { color: var(--accent); }
+		.detail-media {
+			position: relative; width: 100%; border-radius: 12px; overflow: hidden;
+			border: 1px solid var(--border); background: #0d1015; aspect-ratio: 16 / 9;
+		}
+		.detail-media img, .detail-media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+		.detail-media .anim-badge {
+			position: absolute; top: 12px; right: 12px; background: rgba(13,16,21,0.82);
+			border: 1px solid var(--accent); color: var(--accent); font-size: 0.66rem; font-weight: 700;
+			padding: 4px 10px; border-radius: 999px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 5px;
+		}
+		.detail-media .anim-badge::before { content: '\25B6'; font-size: 0.58rem; }
+		.detail-title { font-size: clamp(1.5rem, 3.5vw, 2.1rem); margin: 22px 0 4px; }
+		.detail-sub { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 20px; }
+		.detail-meta { display: flex; flex-wrap: wrap; gap: 26px 40px; margin: 0 0 22px; }
+		.detail-field { display: flex; flex-direction: column; gap: 8px; }
+		.detail-field-label {
+			font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-dim);
+		}
+		.detail-field .tag {
+			display: inline-block; background: var(--surface); border: 1px solid var(--border);
+			color: var(--text); padding: 4px 12px; border-radius: 999px; font-size: 0.82rem; text-transform: capitalize;
+		}
+		.detail-colors { display: flex; gap: 8px; align-items: center; }
+		.detail-colors .swatch { width: 18px; height: 18px; }
+		.detail-desc { color: var(--text-dim); max-width: 720px; line-height: 1.7; margin: 0 0 26px; }
+		.detail-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
+		.btn.ghost {
+			background: transparent; color: var(--text); border: 1px solid var(--border);
+		}
+		.btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+		.detail-related { border-top: 1px solid var(--border); padding-top: 32px; }
+		.detail-related h2 { font-size: 1.2rem; margin: 0 0 18px; text-transform: capitalize; }
+
 		.cta-band {
 			margin-top: 8px; padding: 26px; border-radius: 10px; text-align: center;
 			background: linear-gradient(160deg, var(--surface) 0%, var(--surface-hover) 100%);
@@ -205,7 +246,9 @@
 		.btn {
 			display: inline-block; padding: 10px 20px; border-radius: 8px; font-weight: 700;
 			font-size: 0.9rem; background: var(--accent); color: #0d1015;
+			border: 0; cursor: pointer; font-family: inherit; text-align: center;
 		}
+		.btn:hover { opacity: 0.92; }
 		.toast {
 			position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
 			background: var(--accent); color: #0d1015; padding: 10px 18px; border-radius: 8px;
@@ -242,6 +285,36 @@
 	</header>
 
 	<main>
+		<div id="detailView" style="display:none">
+			<div class="detail-wrap wrap">
+				<a class="detail-back" href="./">&larr; Back to catalogue</a>
+				<div class="detail-media" id="detailMedia"></div>
+				<h1 class="detail-title" id="detailTitle"></h1>
+				<p class="detail-sub" id="detailSub"></p>
+				<div class="detail-meta">
+					<div class="detail-field">
+						<span class="detail-field-label">Category</span>
+						<span class="tag" id="detailCat"></span>
+					</div>
+					<div class="detail-field">
+						<span class="detail-field-label">Colours</span>
+						<span class="detail-colors" id="detailColors"></span>
+					</div>
+					<div class="detail-field">
+						<span class="detail-field-label">Source</span>
+						<span id="detailSource"></span>
+					</div>
+				</div>
+				<p class="detail-desc" id="detailDesc"></p>
+				<div class="detail-actions" id="detailActions"></div>
+				<div class="detail-related">
+					<h2 id="detailRelHeading"></h2>
+					<div class="bg-grid" id="detailRelGrid"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="catalogView">
 		<section class="hero">
 			<div class="wrap">
 				<span class="eyebrow">Steam profile backgrounds</span>
@@ -338,6 +411,7 @@
 				</div>
 			</div>
 		</section>
+		</div><!-- /#catalogView -->
 	</main>
 
 	<footer class="wrap">
@@ -417,6 +491,15 @@
 			{ n: 'Lost Heaven', cat: 'architecture', colors: ['black', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' }
 		];
 
+		function slugify(s) {
+			return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+		}
+		BACKGROUNDS.forEach(function (bg) { bg.slug = slugify(bg.n); });
+		function bySlug(slug) {
+			for (var i = 0; i < BACKGROUNDS.length; i++) { if (BACKGROUNDS[i].slug === slug) return BACKGROUNDS[i]; }
+			return null;
+		}
+
 		var grid = document.getElementById('bgGrid');
 		var empty = document.getElementById('bgEmpty');
 		var searchInput = document.getElementById('bgSearch');
@@ -424,6 +507,8 @@
 		var clearBtn = document.getElementById('clearFilters');
 		var toast = document.getElementById('toast');
 		var toastTimer = null;
+		var catalogView = document.getElementById('catalogView');
+		var detailView = document.getElementById('detailView');
 
 		var state = { type: 'all', cat: null, color: null, q: '' };
 
@@ -557,12 +642,17 @@
 			clearBtn.style.display = anyFilter ? '' : 'none';
 		}
 
+		function goDetail(bg) {
+			window.location.href = '?item=' + bg.slug;
+		}
+
 		function makeCard(bg) {
 			var card = document.createElement('div');
 			card.className = 'bg-card';
 
-			var thumb = document.createElement('div');
+			var thumb = document.createElement('a');
 			thumb.className = 'thumb';
+			thumb.href = '?item=' + bg.slug;
 
 			if (bg.a) {
 				var video = document.createElement('video');
@@ -598,9 +688,10 @@
 			var info = document.createElement('div');
 			info.className = 'info';
 
-			var title = document.createElement('p');
+			var title = document.createElement('a');
 			title.className = 'title';
 			title.textContent = bg.n;
+			title.href = '?item=' + bg.slug;
 
 			var metaRow = document.createElement('div');
 			metaRow.className = 'meta-row';
@@ -668,7 +759,128 @@
 			render();
 		});
 
-		render();
+		// ---- per-item detail view (own URL: backgrounds/?item=<slug>) ----
+		function colourNames(bg) {
+			return bg.colors.map(function (c) { return c.charAt(0).toUpperCase() + c.slice(1); }).join(', ');
+		}
+
+		function showDetail(bg) {
+			catalogView.style.display = 'none';
+			detailView.style.display = '';
+			document.title = bg.n + ' - Steam Backgrounds';
+
+			var media = document.getElementById('detailMedia');
+			media.innerHTML = '';
+			if (bg.a) {
+				var v = document.createElement('video');
+				v.src = movieUrl(bg);
+				v.poster = posterUrl(bg);
+				v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+				v.setAttribute('preload', 'auto');
+				v.addEventListener('error', function () {
+					var img = document.createElement('img');
+					img.src = posterUrl(bg); img.alt = bg.n;
+					if (v.parentNode) v.parentNode.replaceChild(img, v);
+				});
+				media.appendChild(v);
+				var badge = document.createElement('span');
+				badge.className = 'anim-badge';
+				badge.textContent = 'ANIMATED';
+				media.appendChild(badge);
+			} else {
+				var img = document.createElement('img');
+				img.src = posterUrl(bg); img.alt = bg.n;
+				media.appendChild(img);
+			}
+
+			document.getElementById('detailTitle').textContent = bg.n;
+			document.getElementById('detailSub').textContent =
+				(bg.a ? 'Animated' : 'Static') + ' profile background · 1920 × 1080';
+			document.getElementById('detailCat').textContent = bg.cat;
+
+			var dc = document.getElementById('detailColors');
+			dc.innerHTML = '';
+			bg.colors.forEach(function (c) {
+				var s = document.createElement('span');
+				s.className = 'swatch';
+				s.style.background = COLOR_HEX[c] || '#666';
+				s.title = c;
+				dc.appendChild(s);
+			});
+			dc.appendChild(document.createTextNode(' ' + colourNames(bg)));
+
+			var src = document.getElementById('detailSource');
+			src.innerHTML = '';
+			var srcLink = document.createElement('a');
+			srcLink.style.color = 'var(--accent)';
+			srcLink.target = '_blank';
+			srcLink.rel = 'noopener';
+			if (bg.a) {
+				srcLink.href = 'https://store.steampowered.com/points/shop/c/backgrounds';
+				srcLink.textContent = 'Steam Points Shop →';
+			} else {
+				srcLink.href = 'https://steamcommunity.com/market/search?category_753_item_class%5B0%5D=tag_item_class_3';
+				srcLink.textContent = 'Steam Community Market →';
+			}
+			src.appendChild(srcLink);
+			if (bg.a) src.appendChild(document.createTextNode(' · app ' + bg.app));
+
+			document.getElementById('detailDesc').textContent =
+				'A ' + (bg.a ? 'looping animated' : 'static') + ' Steam profile background in the ' + bg.cat +
+				' category, in ' + colourNames(bg).toLowerCase() + '. Steam shows profile backgrounds full-bleed at ' +
+				'1920×1080; the Cropper measures and cuts one down to whichever showcase shape you need.';
+
+			var actions = document.getElementById('detailActions');
+			actions.innerHTML = '';
+			var crop = document.createElement('button');
+			crop.className = 'btn';
+			crop.textContent = 'Crop this background';
+			crop.addEventListener('click', function () {
+				window.location.href = '../?bg=' + encodeURIComponent(posterUrl(bg));
+			});
+			actions.appendChild(crop);
+			var copy = document.createElement('button');
+			copy.className = 'btn ghost';
+			copy.textContent = 'Copy image link';
+			copy.addEventListener('click', function () { copyLink(posterUrl(bg)); });
+			actions.appendChild(copy);
+			if (bg.a) {
+				var copyV = document.createElement('button');
+				copyV.className = 'btn ghost';
+				copyV.textContent = 'Copy .webm link';
+				copyV.addEventListener('click', function () { copyLink(movieUrl(bg)); });
+				actions.appendChild(copyV);
+			}
+
+			var relHeading = document.getElementById('detailRelHeading');
+			var relGrid = document.getElementById('detailRelGrid');
+			relGrid.innerHTML = '';
+			var related = BACKGROUNDS.filter(function (b) { return b.cat === bg.cat && b.slug !== bg.slug; });
+			if (related.length === 0) {
+				related = BACKGROUNDS.filter(function (b) { return b.a === bg.a && b.slug !== bg.slug; });
+				relHeading.textContent = 'More backgrounds';
+			} else {
+				relHeading.textContent = 'More ' + bg.cat + ' backgrounds';
+			}
+			related.slice(0, 4).forEach(function (b) { relGrid.appendChild(makeCard(b)); });
+
+			window.scrollTo(0, 0);
+		}
+
+		function route() {
+			var item = new URLSearchParams(window.location.search).get('item');
+			if (item) {
+				var bg = bySlug(item);
+				if (bg) { showDetail(bg); return; }
+				window.history.replaceState({}, '', './');
+			}
+			detailView.style.display = 'none';
+			catalogView.style.display = '';
+			document.title = 'Steam Backgrounds - James (xdjames)';
+			render();
+		}
+
+		route();
 	</script>
 </body>
 </html>
