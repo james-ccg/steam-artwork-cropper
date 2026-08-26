@@ -783,6 +783,8 @@
 					if (v.parentNode) v.parentNode.replaceChild(img, v);
 				});
 				media.appendChild(v);
+				var mp = v.play();
+				if (mp && mp.catch) mp.catch(function () {});
 				var badge = document.createElement('span');
 				badge.className = 'anim-badge';
 				badge.textContent = 'ANIMATED';
