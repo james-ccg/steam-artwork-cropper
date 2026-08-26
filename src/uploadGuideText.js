@@ -1,12 +1,12 @@
 // Plain-text upload guide bundled into every exported zip's readme.txt, so
 // the steps still work offline / without finding the site again. The full
 // version (with the Guide Showcase section, copy buttons, etc.) lives at
-// dist/guide/index.html.
+// dist/faq/index.html under "Uploading to Steam".
 module.exports = `Every image in this zip has already been hexified (its last byte rewritten
 to 0x21) so it renders at full size on Steam's showcases - just upload as-is.
 
 HOW TO UPLOAD TO STEAM
-Full guide: https://james-ccg.github.io/cropper/guide/
+Full guide: https://james-ccg.github.io/cropper/faq/#upload-guide
 
 Artwork, Screenshot, and Workshop Showcase images don't have a normal upload
 button - Steam reuses its Guide image editor for them via a one-line console
@@ -28,7 +28,7 @@ Workshop Showcase:
 $J('[name=consumer_app_id]').val(480),$J('[name=file_type]').val(0),$J('[name=visibility]').val(0);
 
 (Guide Showcase, including the icon and long-guide variants, is at the full
-guide link above.)
+FAQ link above.)
 
 by xdjames - https://steamcommunity.com/id/james_ccg/
 `;

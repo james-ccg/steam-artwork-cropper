@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="FAQ and guides for the Steam Artwork & Background Cropper: how Steam's Artwork, Featured, Workshop and Background showcases work, how to crop artwork with this tool, and how to upload each type to Steam." />
+	<meta name="theme-color" content="#171a21" />
+	<title>FAQ &amp; Guides - James (xdjames)</title>
+	<link rel="shortcut icon" href="../steam/imgs/crop-logo.png" type="image/png" />
+	<style>
+		:root {
+			--bg: #0f1115;
+			--bg-alt: #161923;
+			--surface: #1b1f2a;
+			--surface-alt: #232838;
+			--border: #2a2f3d;
+			--text: #e7e9ee;
+			--text-dim: #9aa1b0;
+			--accent: #6dcff6;
+			--accent-strong: #4fb8e6;
+			--match: #7fdca8;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+			line-height: 1.55;
+		}
+		a { color: inherit; text-decoration: none; }
+		.wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+		header {
+			position: sticky;
+			top: 0;
+			z-index: 10;
+			background: rgba(15, 17, 21, 0.85);
+			backdrop-filter: blur(8px);
+			border-bottom: 1px solid var(--border);
+		}
+		.nav {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			height: 64px;
+		}
+		.brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.02em; }
+		.brand span { color: var(--accent); }
+		.nav-links { display: flex; gap: 28px; font-size: 0.95rem; color: var(--text-dim); }
+		.nav-links a:hover { color: var(--text); }
+		.nav-links a.current { color: var(--text); }
+		.nav-toggle {
+			display: none;
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			color: var(--text);
+			width: 36px;
+			height: 36px;
+			font-size: 1.1rem;
+			cursor: pointer;
+		}
+		@media (max-width: 640px) {
+			.nav-links {
+				position: absolute;
+				top: 64px;
+				left: 0;
+				right: 0;
+				background: var(--bg-alt);
+				border-bottom: 1px solid var(--border);
+				flex-direction: column;
+				gap: 0;
+				display: none;
+			}
+			.nav-links.open { display: flex; }
+			.nav-links a { padding: 14px 24px; border-top: 1px solid var(--border); }
+			.nav-toggle { display: block; }
+			footer .foot-row { flex-direction: column; text-align: center; }
+		}
+
+		.hero { padding: 52px 0 26px; text-align: center; }
+		.eyebrow {
+			color: var(--accent);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
+			display: block;
+			margin-bottom: 14px;
+		}
+		h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0 0 14px; }
+		.hero p { color: var(--text-dim); max-width: 640px; margin: 0 auto; font-size: 1rem; }
+
+		.toc {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin: 30px 0 46px;
+			justify-content: center;
+		}
+		.toc a {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			color: var(--text-dim);
+			padding: 8px 15px;
+			border-radius: 999px;
+			font-size: 0.85rem;
+		}
+		.toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+		/* ---- generic section ---- */
+		.sec { margin: 0 0 10px; scroll-margin-top: 80px; }
+		.sec-tag {
+			color: var(--accent);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 0.72rem;
+			display: block;
+			margin-bottom: 10px;
+		}
+		.sec h2 { font-size: 1.5rem; margin: 0 0 10px; }
+		.sec .lede { color: var(--text-dim); font-size: 0.95rem; max-width: 660px; margin: 0 0 22px; }
+		h3 { font-size: 1.06rem; margin: 32px 0 8px; }
+		h4 { margin: 24px 0 6px; font-size: 0.95rem; }
+		p.measure { font-size: 0.92rem; max-width: 660px; color: var(--text-dim); }
+		p.measure strong, p.measure b { color: var(--text); }
+		p.measure code, .body code, li code, td code {
+			background: #0a0c10;
+			border: 1px solid var(--border);
+			border-radius: 4px;
+			padding: 1px 5px;
+			font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+			font-size: 0.84em;
+			color: #b6e6ff;
+		}
+		hr.div { border: none; border-top: 1px solid var(--border); margin: 46px 0; }
+		.anchor-offset { scroll-margin-top: 80px; }
+
+		/* ---- quick answers (details/summary) ---- */
+		.qa-list { margin: 0 0 8px; }
+		.qa { border-top: 1px solid var(--border); }
+		.qa:last-child { border-bottom: 1px solid var(--border); }
+		.qa summary {
+			cursor: pointer;
+			padding: 15px 0;
+			font-weight: 600;
+			font-size: 0.97rem;
+			list-style: none;
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+		}
+		.qa summary::-webkit-details-marker { display: none; }
+		.qa summary::after { content: "+"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+		.qa[open] summary::after { content: "\2212"; }
+		.qa .qa-body { padding: 0 0 16px; color: var(--text-dim); font-size: 0.9rem; max-width: 640px; }
+		.qa .qa-body p { margin: 0 0 10px; }
+		.qa .qa-body p:last-child { margin-bottom: 0; }
+		.qa a, .measure a, .body a, li a { color: var(--accent); }
+		.qa a:hover, .measure a:hover, .body a:hover { text-decoration: underline; }
+
+		/* ---- diagrams ---- */
+		.diagram {
+			margin: 10px 0 18px;
+			padding: 18px;
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			overflow-x: auto;
+		}
+		.diagram svg { display: block; width: 100%; height: auto; max-width: 620px; margin: 0 auto; }
+		.diagram figcaption { color: var(--text-dim); font-size: 0.82rem; margin-top: 12px; line-height: 1.55; }
+		.d-live { fill: rgba(109, 207, 246, 0.13); }
+		.d-live-stroke { fill: none; stroke: var(--accent-strong); stroke-width: 1.5; }
+		.d-dead { fill: #202531; }
+		.d-dead-stroke { fill: none; stroke: var(--border); stroke-width: 1; }
+		.d-tick { stroke: var(--text-dim); stroke-width: 1; fill: none; }
+		.d-dim { fill: var(--text-dim); font-size: 11px; }
+		.d-label { fill: var(--text); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+		.d-note { fill: var(--text-dim); font-size: 10px; }
+		.d-lead { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; }
+
+		/* ---- spec table ---- */
+		.spec-wrap { overflow-x: auto; margin: 16px 0 8px; }
+		.spec { width: 100%; border-collapse: collapse; font-size: 0.87rem; min-width: 520px; }
+		.spec th, .spec td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+		.spec thead th {
+			color: var(--text-dim);
+			font-weight: 600;
+			font-size: 0.72rem;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+		}
+		.spec td.num { font-family: "SFMono-Regular", Consolas, Menlo, monospace; color: var(--accent); white-space: nowrap; }
+		.spec tbody tr:hover { background: var(--bg-alt); }
+
+		/* ---- map grid ---- */
+		.map { display: grid; gap: 12px; margin-top: 18px; }
+		.map-row { padding: 14px 16px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; }
+		.map-row h4 { margin: 0 0 6px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+		.map-row p { margin: 0; font-size: 0.85rem; color: var(--text-dim); }
+		.chip {
+			font-size: 0.64rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			padding: 2px 7px;
+			border-radius: 999px;
+			flex-shrink: 0;
+		}
+		.chip.match { color: var(--match); background: rgba(127, 220, 168, 0.14); }
+		.chip.none { color: var(--text-dim); background: var(--surface-alt); }
+
+		/* ---- callout / why box ---- */
+		.why {
+			margin: 6px 0 26px;
+			padding: 16px 18px;
+			border: 1px dashed var(--border);
+			border-radius: 8px;
+			color: var(--text-dim);
+			font-size: 0.88rem;
+			line-height: 1.65;
+		}
+		.why strong { color: var(--text); }
+
+		.tips {
+			margin: 20px 0 4px;
+			padding: 16px 18px;
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-left: 3px solid var(--accent);
+			border-radius: 6px;
+			font-size: 0.88rem;
+			color: var(--text-dim);
+		}
+		.tips b { color: var(--text); }
+		.tips ul { margin: 8px 0 0; padding-left: 18px; }
+		.tips li { margin: 4px 0; }
+
+		/* ---- ordered steps (from the upload guide) ---- */
+		.step {
+			display: flex;
+			gap: 16px;
+			padding: 14px 0;
+			border-top: 1px solid var(--border);
+		}
+		.step:first-of-type { border-top: none; }
+		.step-num {
+			flex-shrink: 0;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background: var(--accent);
+			color: #0d1015;
+			font-weight: 700;
+			font-size: 0.82rem;
+			margin-top: 2px;
+		}
+		.step-body { flex: 1; min-width: 0; }
+		.step-body p { margin: 0; font-size: 0.92rem; }
+		.step-body a { color: var(--accent); }
+
+		.code-block {
+			position: relative;
+			margin-top: 10px;
+			background: #0a0c10;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			overflow: hidden;
+		}
+		.code-block pre {
+			margin: 0;
+			padding: 14px 90px 14px 14px;
+			overflow-x: auto;
+			font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+			font-size: 0.82rem;
+			color: #b6e6ff;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+		.copy-btn {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			color: var(--text-dim);
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-size: 0.74rem;
+			cursor: pointer;
+			font-family: inherit;
+		}
+		.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+		.ug-block { margin-bottom: 40px; }
+		.ug-block > h3 { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+		.ug-block .subtitle { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 12px; }
+		.subguide { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--border); }
+		.subguide h4 { margin: 0 0 2px; font-size: 1rem; }
+		.icon-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+		.icon-links a {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: var(--surface-alt);
+			border: 1px solid var(--border);
+			padding: 6px 12px;
+			border-radius: 6px;
+			font-size: 0.85rem;
+			color: var(--accent);
+		}
+		.icon-links a:hover { border-color: var(--accent); }
+
+		.cta-band {
+			margin-top: 30px;
+			padding: 26px;
+			border-radius: 8px;
+			text-align: center;
+			background: linear-gradient(160deg, var(--surface) 0%, var(--surface-alt) 100%);
+			border: 1px solid var(--accent);
+		}
+		.cta-band h3 { margin: 0 0 6px; }
+		.cta-band p { color: var(--text-dim); margin: 0 0 18px; font-size: 0.9rem; }
+		.btn {
+			display: inline-block;
+			padding: 10px 20px;
+			border-radius: 6px;
+			font-weight: 700;
+			font-size: 0.9rem;
+			background: var(--accent);
+			color: #0d1015;
+		}
+
+		.toast {
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%) translateY(20px);
+			background: var(--accent);
+			color: #0d1015;
+			padding: 10px 18px;
+			border-radius: 6px;
+			font-size: 0.85rem;
+			font-weight: 600;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.2s ease, transform 0.2s ease;
+		}
+		.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+		footer.wrap {
+			border-top: 1px solid var(--border);
+			padding: 26px 24px;
+			color: var(--text-dim);
+			font-size: 0.82rem;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			margin-top: 60px;
+		}
+		footer .disclaimer { line-height: 1.6; max-width: 780px; }
+		footer .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+		footer.wrap a:hover { color: var(--accent); }
+
+		@media (prefers-reduced-motion: reduce) {
+			html { scroll-behavior: auto; }
+			.toast { transition: none; }
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<nav class="nav wrap">
+			<a class="brand" href="https://james-ccg.github.io/#top">james<span>-ccg</span></a>
+			<button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+			<div class="nav-links" id="navLinks">
+				<a href="https://james-ccg.github.io/#about">About</a>
+				<a href="https://james-ccg.github.io/#projects">My Projects</a>
+				<a href="../">Cropper</a>
+				<a href="../backgrounds/">Backgrounds</a>
+				<a href="./" class="current">FAQ</a>
+				<a href="https://james-ccg.github.io/#contact">Contact</a>
+			</div>
+		</nav>
+	</header>
+
+	<main>
+		<section class="hero wrap">
+			<span class="eyebrow">FAQ &amp; guides</span>
+			<h1>Everything about the Cropper</h1>
+			<p>
+				How Steam's profile images are actually sized, how to make yours with this tool, and
+				how to get each one onto Steam - all in one place.
+			</p>
+		</section>
+
+		<div class="wrap">
+			<nav class="toc" aria-label="Jump to a section">
+				<a href="#quick">Quick answers</a>
+				<a href="#showcases">How Steam showcases work</a>
+				<a href="#creating">Creating your artwork</a>
+				<a href="#upload-guide">Uploading to Steam</a>
+			</nav>
+
+			<!-- ============================ QUICK ANSWERS ============================ -->
+			<section class="sec anchor-offset" id="quick">
+				<span class="sec-tag">Start here</span>
+				<h2>Quick answers</h2>
+				<p class="lede">The things people ask most often before they dig into the guides below.</p>
+
+				<div class="qa-list">
+					<details class="qa">
+						<summary>Do I have to install anything, or does my image get uploaded somewhere?</summary>
+						<div class="qa-body">
+							<p>
+								Neither. The Cropper is a single web page that runs entirely in your browser.
+								Your image is read, measured, cropped and zipped locally - it never leaves your
+								machine, and there's no account, server or upload involved.
+							</p>
+						</div>
+					</details>
+					<details class="qa">
+						<summary>Why does my artwork look shrunk or blurry after I upload it to Steam?</summary>
+						<div class="qa-body">
+							<p>
+								Steam checks the stored dimensions of an image when it displays it and quietly
+								downscales anything it thinks is oversized. Every file this tool exports is already
+								<strong>hexified</strong> (its last byte rewritten) so that check reads a smaller
+								size and leaves the image alone. If it still looks shrunk, you most likely uploaded
+								an un-hexified copy, or skipped the console step in the
+								<a href="#upload-guide">upload guide</a>.
+							</p>
+						</div>
+					</details>
+					<details class="qa">
+						<summary>Does it work with animated GIFs?</summary>
+						<div class="qa-body">
+							<p>
+								Yes - Artwork, Workshop and Background all accept animated GIFs. Frames are cropped
+								individually and re-encoded. If a GIF comes out over Steam's 5&nbsp;MB limit, the
+								tool drops frames (keeping the overall playback length) until it fits, or tells you
+								it couldn't.
+							</p>
+						</div>
+					</details>
+					<details class="qa">
+						<summary>Is the console command safe? Can it get my account banned?</summary>
+						<div class="qa-body">
+							<p>
+								The command only changes a few hidden fields in Steam's own image-upload form
+								before you save - it doesn't touch any game, the Steam client, or VAC. It's a
+								profile-customization technique the community has used for years and it's what
+								every tool of this kind relies on. That said, it isn't an officially supported
+								feature, so use it at your own discretion.
+							</p>
+						</div>
+					</details>
+					<details class="qa">
+						<summary>What's the difference between "Artwork Creator" and "Background Cropper"?</summary>
+						<div class="qa-body">
+							<p>
+								Two modes of the same tool. <strong>Artwork Creator</strong> handles the Featured,
+								Artwork and Workshop showcases and lets you add text/border layers.
+								<strong>Background Cropper</strong> handles the full-page profile background and
+								previews it with the real avatar and showcases sitting on top. See
+								<a href="#creating">Creating your artwork</a>.
+							</p>
+						</div>
+					</details>
+					<details class="qa">
+						<summary>Is this affiliated with Valve or Steam?</summary>
+						<div class="qa-body">
+							<p>
+								No. It's an independent tool. Steam and the Steam logo are trademarks of Valve
+								Corporation; all other trademarks are property of their respective owners.
+							</p>
+						</div>
+					</details>
+				</div>
+			</section>
+
+			<hr class="div" />
+
+			<!-- ============================ HOW SHOWCASES WORK ============================ -->
+			<section class="sec anchor-offset" id="showcases">
+				<span class="sec-tag">Reference</span>
+				<h2>How Steam showcases work</h2>
+				<p class="lede">
+					Steam has no upload button for an Artwork Showcase, a Workshop panorama or a profile
+					background. Each one is an image slipped in through an unrelated editor, and none of
+					them render at full size until the file is tampered with. This is the geometry each
+					crop has to hit - the model the Cropper is built against.
+				</p>
+
+				<div class="why">
+					<strong>Two Steam-side quirks shape everything the tool does.</strong>
+					<strong>1&nbsp;-&nbsp;the console command:</strong> Artwork, Screenshot and Workshop images
+					all pass through Steam's <em>Guide</em> image editor, which never asks which showcase you
+					mean, so a one-line command answers that before you save.
+					<strong>2&nbsp;-&nbsp;hexify:</strong> Steam downscales images it judges oversized at
+					display time, so the file's last non-zero byte is rewritten to <code>0x21</code> - which
+					changes what Steam's size check reads without touching any byte a decoder needs. The
+					step-by-step for both is in <a href="#upload-guide">Uploading to Steam</a>.
+				</div>
+
+				<h3 id="artwork-showcase" class="anchor-offset">Artwork &amp; Screenshot Showcase</h3>
+				<figure class="diagram">
+					<svg viewBox="0 0 620 244" role="img" aria-labelledby="art-dia">
+						<title id="art-dia">Artwork Showcase: a 506px primary panel, a roughly 9px gutter, and a 100px secondary column that can split into an image above a 57px "plus N more" box, both columns ending level.</title>
+						<line class="d-tick" x1="24" y1="26" x2="24" y2="34" />
+						<line class="d-tick" x1="452" y1="26" x2="452" y2="34" />
+						<line class="d-tick" x1="24" y1="30" x2="452" y2="30" />
+						<text class="d-dim" x="238" y="20" text-anchor="middle">506 px rendered</text>
+
+						<rect class="d-live" x="24" y="44" width="428" height="182" />
+						<rect class="d-live-stroke" x="24" y="44" width="428" height="182" />
+						<text class="d-label" x="238" y="130" text-anchor="middle">PRIMARY</text>
+						<text class="d-dim" x="238" y="148" text-anchor="middle">any height</text>
+
+						<rect class="d-dead" x="452" y="44" width="14" height="182" />
+						<text class="d-note" x="459" y="240" text-anchor="middle">~9px</text>
+
+						<rect class="d-live" x="466" y="44" width="86" height="120" />
+						<rect class="d-live-stroke" x="466" y="44" width="86" height="120" />
+						<text class="d-label" x="509" y="99" text-anchor="middle" style="font-size:10px">2ND</text>
+						<text class="d-dim" x="509" y="115" text-anchor="middle" style="font-size:9.5px">100 px</text>
+
+						<rect class="d-dead" x="466" y="174" width="86" height="52" />
+						<rect class="d-dead-stroke" x="466" y="174" width="86" height="52" />
+						<text class="d-note" x="509" y="197" text-anchor="middle">+ N more</text>
+						<text class="d-note" x="509" y="211" text-anchor="middle">57 px</text>
+
+						<line class="d-tick" x1="568" y1="44" x2="576" y2="44" />
+						<line class="d-tick" x1="568" y1="226" x2="576" y2="226" />
+						<line class="d-tick" x1="572" y1="44" x2="572" y2="226" />
+						<text class="d-note" x="588" y="138" text-anchor="middle">equal</text>
+					</svg>
+					<figcaption>
+						Two artworks &rarr; primary + secondary. Three or more &rarr; the secondary image
+						shrinks to sit above a "+N more" box; both columns still end level.
+					</figcaption>
+				</figure>
+				<p class="measure">
+					The Artwork Showcase sits in the profile's <strong>652px left column</strong>, inside a
+					block with ~10px padding each side - about <strong>632px</strong> of usable width. One
+					artwork is a single image. With two, it splits into a <strong>primary panel rendered
+					506px wide</strong> beside a <strong>secondary column 100px wide</strong>, ~9px gutter
+					between. With three or more, the secondary column stacks a shorter image on a
+					<strong>57px "+N&nbsp;more" counter</strong>, and the two columns are forced to equal
+					total height.
+				</p>
+				<p class="measure">
+					<strong>The panorama trick:</strong> take one tall image, cut a 506-wide slice from the
+					left and a 100-wide slice from the <em>right edge</em> - both from the same rows - and
+					upload them as artwork&nbsp;#1 and&nbsp;#2. On the profile they read as one uncut
+					picture. The catch: the slices render at different widths, so for their heights to
+					match, the right slice's <em>source</em> width has to be
+					<code>leftSliceWidth &times; 100 / 506</code>, not simply 100px. Solving that split is
+					the whole job of an artwork cropper. The <strong>Screenshot Showcase</strong> is the
+					identical layout - only <code>file_type&nbsp;=&nbsp;5</code> at upload differs.
+				</p>
+
+				<h3 id="workshop-showcase" class="anchor-offset">Workshop Showcase</h3>
+				<figure class="diagram">
+					<svg viewBox="0 0 640 168" role="img" aria-labelledby="ws-dia">
+						<title id="ws-dia">Workshop Showcase: five equal slots roughly 122.4px wide with roughly 4px gaps across a roughly 628px strip.</title>
+						<g>
+							<rect class="d-live" x="26" y="28" width="116" height="104" />
+							<rect class="d-live-stroke" x="26" y="28" width="116" height="104" />
+							<text class="d-label" x="84" y="84" text-anchor="middle" style="font-size:11px">1</text>
+							<rect class="d-dead" x="142" y="28" width="7" height="104" />
+							<rect class="d-live" x="149" y="28" width="116" height="104" />
+							<rect class="d-live-stroke" x="149" y="28" width="116" height="104" />
+							<text class="d-label" x="207" y="84" text-anchor="middle" style="font-size:11px">2</text>
+							<rect class="d-dead" x="265" y="28" width="7" height="104" />
+							<rect class="d-live" x="272" y="28" width="116" height="104" />
+							<rect class="d-live-stroke" x="272" y="28" width="116" height="104" />
+							<text class="d-label" x="330" y="84" text-anchor="middle" style="font-size:11px">3</text>
+							<rect class="d-dead" x="388" y="28" width="7" height="104" />
+							<rect class="d-live" x="395" y="28" width="116" height="104" />
+							<rect class="d-live-stroke" x="395" y="28" width="116" height="104" />
+							<text class="d-label" x="453" y="84" text-anchor="middle" style="font-size:11px">4</text>
+							<rect class="d-dead" x="511" y="28" width="7" height="104" />
+							<rect class="d-live" x="518" y="28" width="116" height="104" />
+							<rect class="d-live-stroke" x="518" y="28" width="116" height="104" />
+							<text class="d-label" x="576" y="84" text-anchor="middle" style="font-size:11px">5</text>
+						</g>
+						<line class="d-lead" x1="142" y1="28" x2="142" y2="14" />
+						<line class="d-lead" x1="149" y1="28" x2="149" y2="14" />
+						<text class="d-note" x="145" y="11" text-anchor="middle">~4px gap, cropped out</text>
+						<text class="d-dim" x="330" y="152" text-anchor="middle">~628px strip &middot; 5 &times; ~122.4px + 4 &times; ~4px</text>
+					</svg>
+					<figcaption>
+						Slices are equal width. The gaps between them are dead space cut out of the source
+						before it's sliced - not a plain cut into fifths.
+					</figcaption>
+				</figure>
+				<p class="measure">
+					The Workshop Showcase shows up to <strong>five Workshop submissions</strong> in a strip
+					inside that same ~632px block. Steam's CSS gives each item a fifth of the block minus
+					its 2px margins, so a slot is <strong>122.4px wide</strong> with ~4px between slots -
+					the reconstructed panorama runs slot&nbsp;1's left edge to slot&nbsp;5's right edge,
+					about <strong>628px</strong>. Upload one wide image cut into five consecutive vertical
+					slices as five items - against <code>consumer_app_id&nbsp;=&nbsp;480</code>, Steam's
+					test app, so it needn't be a real submission - and the strip reads as one panorama.
+					Slice height is whatever the tallest slice is.
+				</p>
+
+				<h3 id="background-showcase" class="anchor-offset">Profile Background &amp; Featured Showcase</h3>
+				<figure class="diagram">
+					<svg viewBox="0 0 640 300" role="img" aria-labelledby="bg-dia">
+						<title id="bg-dia">Profile background shown up to 1920px wide and centered, with the avatar region and the artwork and featured showcase regions overlaid where they fall on it.</title>
+						<rect class="d-dead" x="20" y="20" width="600" height="258" />
+						<rect class="d-dead-stroke" x="20" y="20" width="600" height="258" />
+						<text class="d-dim" x="320" y="294" text-anchor="middle">background &middot; centered, shown up to 1920px wide</text>
+
+						<line class="d-lead" x1="320" y1="20" x2="320" y2="278" />
+						<text class="d-note" x="326" y="32">center</text>
+
+						<rect class="d-live" x="176" y="34" width="46" height="46" />
+						<rect class="d-live-stroke" x="176" y="34" width="46" height="46" />
+						<text class="d-note" x="199" y="59" text-anchor="middle">avatar</text>
+						<text class="d-note" x="199" y="71" text-anchor="middle">~164&sup2;</text>
+
+						<rect class="d-live" x="178" y="104" width="196" height="150" />
+						<rect class="d-live-stroke" x="178" y="104" width="196" height="150" />
+						<rect class="d-live" x="382" y="104" width="40" height="150" />
+						<rect class="d-live-stroke" x="382" y="104" width="40" height="150" />
+						<text class="d-label" x="276" y="176" text-anchor="middle" style="font-size:10px">ARTWORK</text>
+						<text class="d-dim" x="276" y="191" text-anchor="middle" style="font-size:9px">506 + gap + 100</text>
+						<line class="d-lead" x1="178" y1="104" x2="178" y2="90" />
+						<text class="d-dim" x="182" y="88" style="font-size:9.5px">~467px left of center &middot; y ~256</text>
+
+						<line class="d-tick" x1="178" y1="266" x2="430" y2="266" />
+						<line class="d-tick" x1="178" y1="262" x2="178" y2="266" />
+						<line class="d-tick" x1="430" y1="262" x2="430" y2="266" />
+						<text class="d-note" x="304" y="277" text-anchor="middle">featured showcase spans 630px from the same left edge</text>
+					</svg>
+					<figcaption>
+						The background is one output. The avatar and showcases are separate uploads that
+						cover parts of it - positions from steam.design's published crop config.
+					</figcaption>
+				</figure>
+				<p class="measure">
+					The profile background is a full-bleed image behind the whole profile. Steam
+					<strong>centers it horizontally</strong> and shows it <strong>up to 1920px wide</strong>;
+					only an ultra-wide window stretches it past that. Nothing is cropped to an aspect ratio -
+					a 2560&times;1440 source just shows its middle 1920px. Points&nbsp;Shop backgrounds are
+					1920&times;1080; Market ones vary; a 512&times;512 one tiles. Animated backgrounds are
+					<strong><code>.webm</code></strong> served from Steam's CDN with a <code>.jpg</code>
+					poster.
+				</p>
+				<p class="measure">
+					Because the background sits under everything, the advanced move - what
+					<a href="https://steam.design" target="_blank" rel="noopener">steam.design</a> automates -
+					is cropping the <em>background itself</em> into the regions behind the avatar and the
+					artwork showcase so the profile looks like one continuous composition. This tool
+					<strong>deliberately doesn't do that compositing</strong> - it treats the background as
+					its own output and shows the real furniture on top, so you can judge coverage instead.
+					The <strong>Featured Showcase</strong> is the simple case: 630px wide, any height, one
+					continuous image sharing the artwork region's left edge.
+				</p>
+
+				<h3>The spec sheet</h3>
+				<p class="measure">
+					Rendered widths - the size an image actually occupies on the profile, which is what a
+					crop targets. Sources: steam.design's published crop configuration and Steam's
+					<code>profilev2.css</code>.
+				</p>
+				<div class="spec-wrap">
+					<table class="spec">
+						<thead>
+							<tr><th>Element</th><th>Rendered size</th><th>Notes</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Profile left column</td><td class="num">652 px</td><td>~632px usable inside the customization block</td></tr>
+							<tr><td>Artwork - primary</td><td class="num">506 &times; h</td><td>the wide panel; height is free</td></tr>
+							<tr><td>Artwork - secondary</td><td class="num">100 &times; h</td><td>renders ~9px right of the primary</td></tr>
+							<tr><td>Artwork - "+N" box</td><td class="num">100 &times; 57</td><td>appears with 3+ artworks, 11px below the secondary image</td></tr>
+							<tr><td>Featured Showcase</td><td class="num">630 &times; h</td><td>single continuous image</td></tr>
+							<tr><td>Workshop slot</td><td class="num">~122.4 &times; h</td><td>5 across a ~628px strip, ~4px gaps</td></tr>
+							<tr><td>Avatar (in-composition)</td><td class="num">164 &times; 164</td><td>region behind the header avatar; upload source is 184&sup2;</td></tr>
+							<tr><td>Background - display width</td><td class="num">&le; 1920 px</td><td>centered; wider only on ultra-wide windows</td></tr>
+						</tbody>
+					</table>
+				</div>
+
+				<h3>How the Cropper maps to this</h3>
+				<div class="map">
+					<div class="map-row">
+						<h4>Artwork split <span class="chip match">Match</span></h4>
+						<p>Targets the 506 / 100 rendered widths and solves for the source split that makes both slices the same on-page height. The "+N" box is handled by the "Bottom right space" toggle.</p>
+					</div>
+					<div class="map-row">
+						<h4>Featured Showcase <span class="chip match">Match</span></h4>
+						<p>Fixed 630px width, height scaled from the source. Exactly the spec.</p>
+					</div>
+					<div class="map-row">
+						<h4>Workshop slicing <span class="chip match">Match</span></h4>
+						<p>Slots are 122.4px wide; a source maps onto the 5&nbsp;&times;&nbsp;122.4&nbsp;+&nbsp;4&nbsp;&times;&nbsp;4&nbsp;=&nbsp;628px strip between slot&nbsp;1 and slot&nbsp;5, with the ~4px gaps discarded.</p>
+					</div>
+					<div class="map-row">
+						<h4>Profile background <span class="chip match">Match</span></h4>
+						<p>Keeps native resolution, only scales down past 1920px wide. Loads animated <code>.webm</code> backgrounds. Forces no aspect ratio.</p>
+					</div>
+					<div class="map-row">
+						<h4>Hexify <span class="chip match">Match</span></h4>
+						<p>Every exported image's last non-zero byte is rewritten to <code>0x21</code> before zipping - JPEG, PNG and GIF alike.</p>
+					</div>
+					<div class="map-row">
+						<h4>Background &rarr; region compositing <span class="chip none">Not done</span></h4>
+						<p>The "slice one background into avatar + artwork pieces that line up" workflow is steam.design's specialty. This tool shows the background with the real furniture on top instead.</p>
+					</div>
+				</div>
+			</section>
+
+			<hr class="div" />
+
+			<!-- ============================ CREATING YOUR ARTWORK ============================ -->
+			<section class="sec anchor-offset" id="creating">
+				<span class="sec-tag">Guide</span>
+				<h2>How to create Steam artwork</h2>
+				<p class="lede">
+					The Cropper measures and cuts all four profile-image types for you, in the browser,
+					with nothing uploaded anywhere. Here's the whole flow.
+				</p>
+
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<p>
+							<strong>Load your image.</strong> Click <em>Select image</em> and pick a file,
+							paste a direct image link in the URL box and hit <em>Load</em>, or drag an image
+							anywhere onto the page. Static images (PNG/JPG) and animated GIFs both work.
+						</p>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body">
+						<p>
+							<strong>Pick what you're making.</strong> Two modes sit in the top bar.
+							<em>Artwork Creator</em> covers the Featured, Artwork and Workshop showcases -
+							switch between them with the format buttons, and the preview redraws inside a
+							pixel-accurate mock of the Steam profile. <em>Background Cropper</em> covers the
+							profile background and applies your image as the page background so you can see
+							how the avatar and showcases sit on top of it.
+						</p>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body">
+						<p><strong>Adjust for the format.</strong></p>
+						<ul style="margin:8px 0 0; padding-left:18px; font-size:0.92rem;">
+							<li style="margin:5px 0"><b>Featured</b> - nothing to set; any height works, it's scaled to 630px wide.</li>
+							<li style="margin:5px 0"><b>Artwork</b> - the tool solves the wide/narrow split for you. Tick <em>Bottom right space</em> if your profile shows 3&nbsp;or&nbsp;more artworks (it leaves room for the "+N more" counter). GIF-only: <em>Fix gif trail</em>, <em>Disable gif transparency</em>.</li>
+							<li style="margin:5px 0"><b>Workshop</b> - <em>Disable slider</em> is on by default and cuts the whole image into 5 slices. Uncheck it to drag a slider and pick one horizontal band instead. If the source is smaller than the strip, tick <em>Resize image to fit whole showcase</em>.</li>
+							<li style="margin:5px 0"><b>Background</b> - native resolution is kept; it's only scaled down if it's wider than 1920px.</li>
+						</ul>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">4</span>
+					<div class="step-body">
+						<p>
+							<strong>Add text or borders (optional).</strong> In Artwork Creator,
+							<em>+ Text</em> and <em>+ Border</em> add overlay layers that are baked into every
+							exported image and hexified along with it. Select a layer in the list to edit its
+							properties.
+						</p>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">5</span>
+					<div class="step-body">
+						<p>
+							<strong>Export.</strong> Hit <em>Export</em> to download a zip of the finished
+							images. Each one is already <strong>hexified</strong> so Steam shows it at full
+							size, and oversized files are auto-compressed under Steam's 5&nbsp;MB limit
+							(oversized GIFs drop frames, keeping total duration, until they fit). Then follow
+							<a href="#upload-guide">Uploading to Steam</a> below.
+						</p>
+					</div>
+				</div>
+
+				<div class="tips">
+					<b>Tips</b>
+					<ul>
+						<li>Keep your browser window maximized while you work - the preview mirrors the real Steam profile layout.</li>
+						<li>Nothing leaves your machine; the Cropper is entirely client-side.</li>
+						<li>Every zip includes a <code>readme.txt</code> with the upload steps, so you have them offline.</li>
+						<li>Not sure what size anything should be? See <a href="#showcases">How Steam showcases work</a>.</li>
+					</ul>
+				</div>
+			</section>
+
+			<hr class="div" />
+
+			<!-- ============================ UPLOAD GUIDE ============================ -->
+			<section class="sec anchor-offset" id="upload-guide">
+				<span class="sec-tag">Guide</span>
+				<h2>Uploading to Steam</h2>
+				<p class="lede">
+					Cropping is only half the job - Steam has no normal upload button for these showcase
+					types. Here's exactly how to get each one live, with copy-paste steps for every case.
+				</p>
+
+				<div class="why">
+					<strong>Why the console command?</strong> Artwork, Screenshot and Workshop Showcase
+					images all go through Steam's <em>Guide</em> image editor, which normally expects a
+					guide's cover image - not a showcase piece. The one-line command below tells that editor
+					which showcase type and dimensions you actually mean before you save, which is the same
+					trick the wider Steam customization community has used for years.
+				</div>
+
+				<div class="ug-block" id="ug-artwork">
+					<h3>Artwork Showcase</h3>
+					<p class="subtitle">The wide/thin image pair the Cropper's Artwork tab produces.</p>
+					<div class="step">
+						<span class="step-num">1</span>
+						<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<div class="step-body"><p>Select your artwork image.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">4</span>
+						<div class="step-body">
+							<p>Paste this and press Enter:</p>
+							<div class="code-block">
+								<pre data-code="$J('#image_width').val(1000),$J('#image_height').val(1);">$J('#image_width').val(1000),$J('#image_height').val(1);</pre>
+								<button type="button" class="copy-btn">Copy</button>
+							</div>
+						</div>
+					</div>
+					<div class="step">
+						<span class="step-num">5</span>
+						<div class="step-body"><p>Click <strong>Save and Continue</strong>, then set your profile's Artwork Showcase to display it.</p></div>
+					</div>
+				</div>
+
+				<div class="ug-block" id="ug-screenshot">
+					<h3>Screenshot Showcase</h3>
+					<p class="subtitle">Same flow as Artwork Showcase, with one extra field set.</p>
+					<div class="step">
+						<span class="step-num">1</span>
+						<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<div class="step-body"><p>Select your artwork image.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">4</span>
+						<div class="step-body">
+							<p>Paste this and press Enter:</p>
+							<div class="code-block">
+								<pre data-code="$J('#image_width').val(1000),$J('#image_height').val(1),$J('[name=file_type]').val(5);">$J('#image_width').val(1000),$J('#image_height').val(1),$J('[name=file_type]').val(5);</pre>
+								<button type="button" class="copy-btn">Copy</button>
+							</div>
+						</div>
+					</div>
+					<div class="step">
+						<span class="step-num">5</span>
+						<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+					</div>
+				</div>
+
+				<div class="ug-block" id="ug-workshop">
+					<h3>Workshop Showcase</h3>
+					<p class="subtitle">The 5-slice strip the Cropper's Workshop tab produces - upload all five images this way.</p>
+					<div class="step">
+						<span class="step-num">1</span>
+						<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<div class="step-body"><p>Select one slice.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">4</span>
+						<div class="step-body">
+							<p>Paste this and press Enter:</p>
+							<div class="code-block">
+								<pre data-code="$J('[name=consumer_app_id]').val(480),$J('[name=file_type]').val(0),$J('[name=visibility]').val(0);">$J('[name=consumer_app_id]').val(480),$J('[name=file_type]').val(0),$J('[name=visibility]').val(0);</pre>
+								<button type="button" class="copy-btn">Copy</button>
+							</div>
+						</div>
+					</div>
+					<div class="step">
+						<span class="step-num">5</span>
+						<div class="step-body"><p>Click <strong>Save and Continue</strong>. Repeat for the other four slices, then order them 1&ndash;5 in your Workshop Showcase.</p></div>
+					</div>
+				</div>
+
+				<div class="ug-block" id="ug-guide">
+					<h3>Guide Showcase</h3>
+					<p class="subtitle">Not something this Cropper exports, but the same trick applies - included for the full picture.</p>
+					<div class="step">
+						<span class="step-num">1</span>
+						<div class="step-body">
+							<p>Open the editor for the icon style you want:</p>
+							<div class="icon-links">
+								<a href="https://steamcommunity.com/sharedfiles/editguide/?appid=753" target="_blank" rel="noopener">Steam Icon &rarr;</a>
+								<a href="https://steamcommunity.com/sharedfiles/editguide/?appid=760" target="_blank" rel="noopener">Transparent Icon &rarr;</a>
+							</div>
+						</div>
+					</div>
+					<div class="step">
+						<span class="step-num">2</span>
+						<div class="step-body"><p>Select your artwork image.</p></div>
+					</div>
+					<div class="step">
+						<span class="step-num">3</span>
+						<div class="step-body"><p>Click <strong>Save and Continue</strong> - no console step needed for either icon style.</p></div>
+					</div>
+
+					<div class="subguide">
+						<h4>Long Guide</h4>
+						<p class="subtitle">For a tall Guide Showcase image instead of a small icon.</p>
+						<div class="step">
+							<span class="step-num">1</span>
+							<div class="step-body"><p>Open <a href="https://steamcommunity.com/sharedfiles/edititem/767/3/" target="_blank" rel="noopener">steamcommunity.com/sharedfiles/edititem/767/3/</a></p></div>
+						</div>
+						<div class="step">
+							<span class="step-num">2</span>
+							<div class="step-body"><p>Select your artwork image.</p></div>
+						</div>
+						<div class="step">
+							<span class="step-num">3</span>
+							<div class="step-body"><p>Right-click anywhere on the page &rarr; <strong>Inspect</strong> &rarr; open the <strong>Console</strong> tab.</p></div>
+						</div>
+						<div class="step">
+							<span class="step-num">4</span>
+							<div class="step-body">
+								<p>Paste this and press Enter:</p>
+								<div class="code-block">
+									<pre data-code="$J('[name=consumer_app_id]').val(753);$J('#image_width').val('1000');$J('#image_height').val('1');$J('[name=file_type]').val('9');">$J('[name=consumer_app_id]').val(753);$J('#image_width').val('1000');$J('#image_height').val('1');$J('[name=file_type]').val('9');</pre>
+									<button type="button" class="copy-btn">Copy</button>
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<span class="step-num">5</span>
+							<div class="step-body"><p>Click <strong>Save and Continue</strong>.</p></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="cta-band">
+					<h3>Haven't cropped your artwork yet?</h3>
+					<p>Get Steam-sized, auto-hexified pieces in one drop.</p>
+					<a class="btn" href="../">Open the Cropper</a>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<footer class="wrap">
+		<p class="disclaimer">
+			Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of Valve Corporation.
+			All other trademarks are property of their respective owners.
+		</p>
+		<div class="foot-row">
+			<span>&copy; <span id="year"></span> James (xdjames)</span>
+			<a href="https://james-ccg.github.io/">james-ccg.github.io</a>
+		</div>
+	</footer>
+
+	<div class="toast" id="toast">Copied!</div>
+
+	<script>
+		document.getElementById('year').textContent = new Date().getFullYear();
+
+		var navToggle = document.getElementById('navToggle');
+		var navLinks = document.getElementById('navLinks');
+		navToggle.addEventListener('click', function () {
+			var isOpen = navLinks.classList.toggle('open');
+			navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+		});
+
+		var toast = document.getElementById('toast');
+		var toastTimer = null;
+		function showToast(msg) {
+			toast.textContent = msg;
+			toast.classList.add('visible');
+			clearTimeout(toastTimer);
+			toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 1600);
+		}
+
+		document.querySelectorAll('.copy-btn').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var code = btn.previousElementSibling.getAttribute('data-code');
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(code).then(function () { showToast('Copied!'); }, function () { window.prompt('Copy this code:', code); });
+				} else {
+					window.prompt('Copy this code:', code);
+				}
+			});
+		});
+	</script>
+</body>
+</html>
