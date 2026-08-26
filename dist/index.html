@@ -188,9 +188,11 @@
                             <h2 id="backgroundSize">-</h2>
                             <br />
                             <p class="reminder">
-                                Steam shows profile backgrounds at their native size and height -
-                                nothing gets cropped here, it's only scaled down if wider than
-                                1920px (Steam's max), so it matches once it's uploaded.
+                                Steam shows a <b>static</b> background at its native size, centered -
+                                it's not scaled to fit, so aim for ~1920&times;1080 (narrower gets
+                                black bars, wider is clipped by the window). An <b>animated</b>
+                                background is always shown 1920px wide. The preview above is the
+                                real thing - the avatar and showcases sit on top of it.
                             </p>
                             <button class="download" id="downloadBackground" style="display: none"></button>
                         </div>
@@ -289,17 +291,18 @@
                         </div>
                     </div>
 
-                    <!-- Background Cropper area - Steam profile backgrounds aren't a
-                         showcase widget, so this is just a plain 1920x1080 preview
-                         rather than a mock of any specific Steam page element. -->
+                    <!-- Background Cropper area - a profile background isn't a showcase
+                         widget. The real preview is the page backdrop swap done by
+                         profilePreview.js; this block just shows the source at its true
+                         aspect ratio as a reference thumbnail. -->
                     <div class="profile_customization_area" id="backgroundArea" style="display: none">
-                        <div class="profile_customization myart">
+                        <div class="profile_customization">
                             <div class="profile_customization_header">Profile Background</div>
                             <div class="profile_customization_block">
                                 <div class="screenshot_showcase">
-                                    <div class="screenshot_showcase_primary showcase_slot">
-                                        <div class="screenshot_showcase_screenshot" style="width: 630px; max-width: 630px">
-                                            <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="backgroundImg" />
+                                    <div class="screenshot_showcase_primary single showcase_slot">
+                                        <div class="screenshot_showcase_screenshot" id="backgroundPreviewFrame">
+                                            <img style="max-width: 100%; height: auto; display: block" src="./steam/imgs/1.jpg" id="backgroundImg" />
                                         </div>
                                         <div class="screenshot_showcase_itemname"></div>
                                     </div>

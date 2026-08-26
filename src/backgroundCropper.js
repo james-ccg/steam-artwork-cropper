@@ -19,21 +19,39 @@ const { encodeGifUnderLimit, decodeGifFrames } = require('./gifExport');
 const { hexifyToBase64 } = require('./hexify');
 const uploadGuideText = require('./uploadGuideText');
 
-// Steam profile backgrounds are shown behind the page at their native size,
-// pinned to center/top (see profilev2.css's `background-position: center
-// top` and the `background-size: auto` breakpoint on .has_profile_background)
-// - Steam doesn't force-crop them to any particular height, it just displays
-// however tall the upload is. 1920px is the documented max native width
-// though, so a wider upload gets scaled down to that (preserving its full
-// height, proportionally) instead of losing content off the sides or bottom
-// the way a fixed-aspect crop would. Anything already 1920px or narrower is
-// left completely alone.
-const BACKGROUND_MAX_WIDTH = 1920;
+// How Steam actually displays a profile background (profilev2.css):
+//   - A STATIC background uses `background-size: auto` on every window
+//     <= 1920px wide (`background-position: center top`), i.e. it's shown at
+//     its own native size, centered and top-pinned. It is NOT scaled to fit -
+//     a narrower image gets black bars at the sides, a wider one is clipped by
+//     the window. So there's nothing to "resize" for a correctly-shaped
+//     source; this only caps a poster-sized upload so exports stay printable
+//     and under Steam's 5MB limit.
+//   - An ANIMATED background is a <video> pinned to `width: 1920px` and
+//     centered, so an animated source IS effectively displayed at 1920 wide
+//     (height proportional). That scaling is applied here.
+const ANIMATED_DISPLAY_WIDTH = 1920;
+const STATIC_MAX_DIMENSION = 2560;
 
-function computeOutputSize(imgWidth, imgHeight) {
-	if (imgWidth <= BACKGROUND_MAX_WIDTH) return { width: imgWidth, height: imgHeight };
-	const scale = BACKGROUND_MAX_WIDTH / imgWidth;
-	return { width: BACKGROUND_MAX_WIDTH, height: Math.max(1, Math.round(imgHeight * scale)) };
+function computeOutputSize(srcWidth, srcHeight, isAnimated) {
+	let w = srcWidth;
+	let h = srcHeight;
+
+	if (isAnimated) {
+		if (w > ANIMATED_DISPLAY_WIDTH) {
+			h = Math.max(1, Math.round((h * ANIMATED_DISPLAY_WIDTH) / w));
+			w = ANIMATED_DISPLAY_WIDTH;
+		}
+		return { width: w, height: h };
+	}
+
+	const longest = Math.max(w, h);
+	if (longest > STATIC_MAX_DIMENSION) {
+		const scale = STATIC_MAX_DIMENSION / longest;
+		w = Math.max(1, Math.round(w * scale));
+		h = Math.max(1, Math.round(h * scale));
+	}
+	return { width: w, height: h };
 }
 
 const backgroundShowcase = {
@@ -45,7 +63,9 @@ const backgroundShowcase = {
 			inputImage.width = img.width;
 			inputImage.height = img.height;
 
-			const size = computeOutputSize(img.width, img.height);
+			const isAnimated =
+				!!inputImage.file && inputImage.file.type === 'image/gif';
+			const size = computeOutputSize(img.width, img.height, isAnimated);
 			backgroundShowcase.canvas = new CustomCanvas(size.width, size.height);
 			backgroundShowcase.canvas.drawImage(
 				img,
@@ -59,12 +79,18 @@ const backgroundShowcase = {
 				size.height
 			);
 
-			backgroundShowcase.img.src = backgroundShowcase.canvas.toDataURL(
-				inputImage.file.type,
-				1
-			);
+			// Preview straight off the source object URL (which also animates
+			// for a GIF) instead of a toDataURL() of the canvas - a PNG or
+			// poster-sized background would otherwise become a multi-megabyte
+			// data: string shoved into the <img>.
+			backgroundShowcase.img.src = img.src;
+
 			rightPanel.originalSize.innerText = `${img.width} x ${img.height}`;
-			document.getElementById('backgroundSize').innerText = `${size.width} x ${size.height}`;
+			const resized =
+				size.width !== img.width || size.height !== img.height;
+			document.getElementById('backgroundSize').innerText = resized
+				? `${size.width} x ${size.height} (from ${img.width} x ${img.height})`
+				: `${size.width} x ${size.height}`;
 			inputImage.setStatusMsg('Done');
 		};
 
@@ -135,11 +161,15 @@ async function addRasterToZip(zip) {
 }
 
 async function background_createGif(zip, gifs) {
-	const size = computeOutputSize(gifs[0].dims.width, gifs[0].dims.height);
+	// The GIF's logical screen can be larger than any single frame's patch
+	// (frames are partial rectangles), so size the compositing canvas to the
+	// full extent of every frame rather than assuming frame 0 covers it.
+	const canvasW = Math.max(...gifs.map((f) => f.dims.left + f.dims.width));
+	const canvasH = Math.max(...gifs.map((f) => f.dims.top + f.dims.height));
+	const size = computeOutputSize(canvasW, canvasH, true);
 
 	const createFrameBuilder = () => {
-		let background = new CustomCanvas(gifs[0].dims.width, gifs[0].dims.height);
-		background.imageData(gifs[0].patch);
+		let background = new CustomCanvas(canvasW, canvasH);
 
 		return function buildFrame(i) {
 			let temp = new CustomCanvas(gifs[i].dims.width, gifs[i].dims.height);
@@ -151,8 +181,8 @@ async function background_createGif(zip, gifs) {
 				background.canvas,
 				0,
 				0,
-				background.canvas.width,
-				background.canvas.height,
+				canvasW,
+				canvasH,
 				0,
 				0,
 				size.width,
