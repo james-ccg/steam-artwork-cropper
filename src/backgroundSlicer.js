@@ -84,6 +84,41 @@ const SHOWCASE_TYPES = {
 		fixedH: 160,
 		cols: [{ suffix: '', dx: -461, w: 160 }],
 	},
+	favoriteguide: {
+		label: 'Favorite Guide',
+		file: 'FavoriteGuide',
+		myart: false,
+		header: true,
+		fixedH: 160,
+		cols: [{ suffix: '', dx: -461, w: 160 }],
+	},
+	// Grids: `grid` describes a rows x cols layout of equal cells. Each row's
+	// height is `slot.height` (one value for the whole grid); rowGap is Steam's
+	// margin between cells.
+	workshopgrid: {
+		label: 'Workshop Showcase (5×3 grid)',
+		file: 'Workshop',
+		myart: false,
+		header: true,
+		defaultH: 122,
+		grid: { rows: 3, cols: 5, cellW: 122.4, colPitch: 126.4, gap: 4, dx0: -465 },
+	},
+	guides: {
+		label: 'My Guides (4×2 grid)',
+		file: 'Guide',
+		myart: false,
+		header: true,
+		fixedH: 66,
+		grid: { rows: 4, cols: 2, cellW: 66, colPitch: 314, gap: 7, dx0: -456 },
+	},
+	achievements: {
+		label: 'Achievement Showcase (7×3 grid)',
+		file: 'Achievement',
+		myart: false,
+		header: true,
+		fixedH: 64,
+		grid: { rows: 3, cols: 7, cellW: 64, colPitch: 90, gap: 5, dx0: -459 },
+	},
 	spacer: {
 		label: 'Empty space / another showcase',
 		file: null,
@@ -96,10 +131,18 @@ const SHOWCASE_TYPES = {
 
 const TYPE_KEYS = Object.keys(SHOWCASE_TYPES);
 
-function contentHeight(slot) {
+function rowHeight(slot) {
 	const t = SHOWCASE_TYPES[slot.type];
 	if (t.fixedH) return t.fixedH;
 	return Math.max(1, Math.round(slot.height || t.defaultH));
+}
+
+function contentHeight(slot) {
+	const t = SHOWCASE_TYPES[slot.type];
+	if (t.grid) {
+		return t.grid.rows * rowHeight(slot) + (t.grid.rows - 1) * t.grid.gap;
+	}
+	return rowHeight(slot);
 }
 
 function widgetOuterHeight(slot) {
@@ -156,6 +199,8 @@ function sliceRects(bgWidth, opts) {
 	if (opts.avatar) {
 		out.push({
 			file: 'Avatar',
+			group: 'avatar',
+			groupLabel: 'Avatar',
 			sx: centre + AVATAR_DX,
 			sy: AVATAR_TOP,
 			w: AVATAR_SIZE,
@@ -167,13 +212,38 @@ function sliceRects(bgWidth, opts) {
 	const tops = stackTops(slots);
 	slots.forEach((slot, i) => {
 		const t = SHOWCASE_TYPES[slot.type];
-		if (!t || !t.file || !t.cols.length) return; // spacer / unknown
+		if (!t || !t.file || (!t.grid && !(t.cols && t.cols.length))) return;
 		const top = tops[i];
-		const h = opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
 		const prefix = slots.length > 1 ? `${i + 1}_` : '';
+		const group = `slot${i}`;
+
+		if (t.grid) {
+			const g = t.grid;
+			const rh = rowHeight(slot);
+			for (let k = 0; k < g.rows; k++) {
+				const rowTop = Math.round(top + k * (rh + g.gap));
+				for (let c = 0; c < g.cols; c++) {
+					out.push({
+						file: `${prefix}${t.file}_r${k + 1}c${c + 1}`,
+						group,
+						groupLabel: t.label,
+						sx: Math.round(centre + g.dx0 + c * g.colPitch),
+						sy: rowTop,
+						w: Math.round(g.cellW),
+						h: rh,
+					});
+				}
+			}
+			return;
+		}
+
+		const h =
+			opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
 		t.cols.forEach((col) => {
 			out.push({
 				file: `${prefix}${t.file}${col.suffix}`,
+				group,
+				groupLabel: t.label,
 				sx: centre + col.dx,
 				sy: top,
 				w: col.w,
@@ -207,62 +277,70 @@ const PREVIEW_MAX_BOX_H = 220;
 
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	container.innerHTML = '';
-	const centre = Math.floor(bgWidth / 2);
 	const s = PREVIEW_SCALE;
-	const bgW = bgWidth * s;
-	const bgH = bgHeight * s;
 
-	function box(dx, w, top, h, extraClass) {
-		const el = document.createElement('div');
-		el.className = 'bgSliceBox' + (extraClass ? ' ' + extraClass : '');
-		el.style.width = w * s + 'px';
-		el.style.height = Math.min(PREVIEW_MAX_BOX_H, h * s) + 'px';
-		el.style.backgroundImage = `url("${bgSrc}")`;
-		el.style.backgroundRepeat = 'no-repeat';
-		el.style.backgroundSize = `${bgW}px ${bgH}px`;
-		el.style.backgroundPosition = `${-(centre + dx) * s}px ${-top * s}px`;
-		return el;
-	}
+	// Drive the preview straight off sliceRects() so grids and single showcases
+	// use the exact same geometry that the export does.
+	const byGroup = {};
+	sliceRects(bgWidth, opts).forEach((r) => {
+		(byGroup[r.group] = byGroup[r.group] || []).push(r);
+	});
 
-	function row(label, boxesEl) {
-		const r = document.createElement('div');
-		r.className = 'bgSliceRow';
+	function addRow(label, rectsOrGhost) {
+		const rowEl = document.createElement('div');
+		rowEl.className = 'bgSliceRow';
 		const l = document.createElement('span');
 		l.className = 'bgSliceLabel';
 		l.textContent = label;
-		r.appendChild(l);
-		r.appendChild(boxesEl);
-		return r;
-	}
+		rowEl.appendChild(l);
 
-	if (opts.avatar) {
-		const b = document.createElement('div');
-		b.className = 'bgSliceBoxes';
-		b.appendChild(
-			box(AVATAR_DX, AVATAR_SIZE, AVATAR_TOP, AVATAR_SIZE, 'bgSliceBoxAvatar')
-		);
-		container.appendChild(row('Avatar', b));
-	}
-
-	const slots = opts.slots || [];
-	const tops = stackTops(slots);
-	slots.forEach((slot, i) => {
-		const t = SHOWCASE_TYPES[slot.type];
-		if (!t) return;
-		const top = tops[i];
-		const h = opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
 		const boxes = document.createElement('div');
 		boxes.className = 'bgSliceBoxes';
-		if (t.cols.length) {
-			t.cols.forEach((col) => boxes.appendChild(box(col.dx, col.w, top, h)));
-		} else {
+
+		if (rectsOrGhost === 'ghost') {
 			const ghost = document.createElement('div');
 			ghost.className = 'bgSliceBox bgSliceBoxGhost';
-			ghost.style.width = 506 * s + 'px';
-			ghost.style.height = Math.min(PREVIEW_MAX_BOX_H, h * s) + 'px';
+			ghost.style.width = 300 * s + 'px';
+			ghost.style.height = 40 + 'px';
 			boxes.appendChild(ghost);
+		} else {
+			// A grid (many cells) is drawn at a reduced scale so all its
+			// columns fit the panel; a single showcase uses the full scale.
+			const cols = new Set(rectsOrGhost.map((r) => r.sx)).size;
+			const isGrid = rectsOrGhost.length > cols;
+			const cs = isGrid
+				? Math.min(s, 600 / (cols * rectsOrGhost[0].w))
+				: s;
+			if (isGrid) {
+				boxes.classList.add('bgSliceBoxesGrid');
+				boxes.style.gridTemplateColumns = `repeat(${cols}, ${
+					rectsOrGhost[0].w * cs
+				}px)`;
+			}
+			rectsOrGhost.forEach((r) => {
+				const el = document.createElement('div');
+				el.className =
+					'bgSliceBox' + (r.group === 'avatar' ? ' bgSliceBoxAvatar' : '');
+				el.style.width = r.w * cs + 'px';
+				el.style.height = Math.min(PREVIEW_MAX_BOX_H, r.h * cs) + 'px';
+				el.style.backgroundImage = `url("${bgSrc}")`;
+				el.style.backgroundRepeat = 'no-repeat';
+				el.style.backgroundSize = `${bgWidth * cs}px ${bgHeight * cs}px`;
+				el.style.backgroundPosition = `${-r.sx * cs}px ${-r.sy * cs}px`;
+				boxes.appendChild(el);
+			});
 		}
-		container.appendChild(row(t.label, boxes));
+		rowEl.appendChild(boxes);
+		container.appendChild(rowEl);
+	}
+
+	if (byGroup.avatar) addRow('Avatar', byGroup.avatar);
+
+	(opts.slots || []).forEach((slot, i) => {
+		const t = SHOWCASE_TYPES[slot.type];
+		if (!t) return;
+		if (byGroup['slot' + i]) addRow(t.label, byGroup['slot' + i]);
+		else addRow(t.label, 'ghost'); // spacer / unmodelled
 	});
 
 	if (!container.children.length) {

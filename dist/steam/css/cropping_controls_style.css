@@ -615,6 +615,11 @@ button.download {
 	align-items: flex-start;
 	gap: 6px;
 }
+.bgSliceBoxes.bgSliceBoxesGrid {
+	display: grid;
+	gap: 2px;
+	max-width: 100%;
+}
 .bgSliceBox {
 	background-color: #000;
 	border: 1px solid #3a4d5a;
