@@ -47,12 +47,16 @@ function refresh() {
 
 // The "Choose format:" toggle is shown in both modes now. The Background
 // option only makes sense in Background Cropper mode, so its button is hidden
-// in Artwork Creator mode (and if it was the active format, we fall back to
-// Artwork). #backgroundTab is a real icon button in .formatToggle; it's
-// clicked programmatically here so switching modes reuses the same
-// tab/changeTab machinery as the other three formats, without this module
-// having to import the format modules (which already import it).
-function updateFormatVisibility() {
+// in Artwork Creator mode. #backgroundTab is a real icon button in
+// .formatToggle; it's clicked programmatically here so switching modes reuses
+// the same tab/changeTab machinery as the other three formats, without this
+// module having to import the format modules (which already import it).
+//
+// The two nav links are mode toggles: "Background Cropper" always lands on
+// the Background format, and (mirroring that) "Artwork Creator" resets to the
+// Artwork format whenever it's actually switching modes - so leaving
+// Background Cropper never strands you on a format you'd picked inside it.
+function updateFormatVisibility(switchingModes) {
 	const backgroundTab = document.getElementById('backgroundTab');
 	if (!backgroundTab) return;
 	if (mode === 'cropper') {
@@ -60,7 +64,7 @@ function updateFormatVisibility() {
 		backgroundTab.click();
 	} else {
 		backgroundTab.style.setProperty('display', 'none');
-		if (tabInfo.currentTab === '#background') {
+		if (switchingModes || tabInfo.currentTab === '#background') {
 			const artworkTab = document.getElementById('artworkTab');
 			if (artworkTab) artworkTab.click();
 		}
@@ -68,8 +72,9 @@ function updateFormatVisibility() {
 }
 
 function setMode(newMode) {
+	const changed = newMode !== mode;
 	mode = newMode;
-	updateFormatVisibility();
+	updateFormatVisibility(changed);
 	refresh();
 }
 
