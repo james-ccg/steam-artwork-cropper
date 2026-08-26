@@ -37,5 +37,5 @@ module.exports = {
 	loadDefaultFeatured: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
 	loadDefaultArtwork: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
 	loadDefaultWorkshop: (loadImageFn) => loadDefault('./steam/imgs/nero.jpg', loadImageFn),
-	loadDefaultBackground: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
+	loadDefaultBackground: (loadImageFn) => loadDefault('./steam/imgs/james_background.jpg', loadImageFn),
 };

@@ -557,3 +557,70 @@ button.download {
 .alignBtn.active::after {
 	background: #67c1f5;
 }
+
+/* ---- Background Cropper: resize vs slice modes ---- */
+.bgModeToggle {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 12px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #2a3f4d;
+}
+.bgModeToggle label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: #c6d4df;
+	cursor: pointer;
+}
+.bgModeToggle input {
+	cursor: pointer;
+}
+
+#bgSliceControls .dimHint,
+.dimHint {
+	color: #7a8b97;
+	font-weight: normal;
+}
+#bgSliceControls p {
+	margin: 6px 0;
+	font-size: 13px;
+}
+#bgSliceControls label {
+	cursor: pointer;
+}
+
+/* live "where each piece is cut" preview */
+#bgSlicePreview {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 4px 0 2px;
+}
+.bgSliceRow {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.bgSliceLabel {
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #8fa3b0;
+}
+.bgSliceBoxes {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+}
+.bgSliceBox {
+	background-color: #000;
+	border: 1px solid #3a4d5a;
+	border-radius: 3px;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.bgSliceBoxAvatar {
+	border-radius: 6px;
+}

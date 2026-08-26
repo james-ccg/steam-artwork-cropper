@@ -214,6 +214,7 @@
 			flex-shrink: 0;
 		}
 		.chip.match { color: var(--match); background: rgba(127, 220, 168, 0.14); }
+		.chip.partial { color: #d9a441; background: rgba(217, 164, 65, 0.15); }
 		.chip.none { color: var(--text-dim); background: var(--surface-alt); }
 
 		/* ---- callout / why box ---- */
@@ -663,10 +664,11 @@
 					Because the background sits under everything, the advanced move - what
 					<a href="https://steam.design" target="_blank" rel="noopener">steam.design</a> automates -
 					is cropping the <em>background itself</em> into the regions behind the avatar and the
-					artwork showcase so the profile looks like one continuous composition. This tool
-					<strong>deliberately doesn't do that compositing</strong> - it treats the background as
-					its own output and shows the real furniture on top, so you can judge coverage instead.
-					The <strong>Featured Showcase</strong> is the simple case: 630px wide, any height, one
+					artwork showcase so the profile looks like one continuous composition. The Background
+					Cropper's <strong>&ldquo;Slice for showcases&rdquo;</strong> mode does this: it cuts the
+					exact rectangle each showcase covers (Artwork primary 506 + side 100, Featured 630,
+					Avatar 164) so the piece reads as an uncut continuation of the background. The
+					<strong>Featured Showcase</strong> is the simple case: 630px wide, any height, one
 					continuous image sharing the artwork region's left edge.
 				</p>
 
@@ -710,15 +712,15 @@
 					</div>
 					<div class="map-row">
 						<h4>Profile background <span class="chip match">Match</span></h4>
-						<p>Keeps native resolution, only scales down past 1920px wide. Loads animated <code>.webm</code> backgrounds. Forces no aspect ratio.</p>
+						<p>A static background keeps its native resolution (Steam shows it native, centered - it isn't scaled to fit); only an animated background is scaled to 1920px wide, the way Steam pins it. Forces no aspect ratio.</p>
 					</div>
 					<div class="map-row">
 						<h4>Hexify <span class="chip match">Match</span></h4>
-						<p>Every exported image's last non-zero byte is rewritten to <code>0x21</code> before zipping - JPEG, PNG and GIF alike.</p>
+						<p>Every exported image is hexified before zipping so Steam renders it at full size - a per-format nudge for JPEG, PNG, GIF and WebP.</p>
 					</div>
 					<div class="map-row">
-						<h4>Background &rarr; region compositing <span class="chip none">Not done</span></h4>
-						<p>The "slice one background into avatar + artwork pieces that line up" workflow is steam.design's specialty. This tool shows the background with the real furniture on top instead.</p>
+						<h4>Background &rarr; region compositing <span class="chip partial">Partial</span></h4>
+						<p>The Background Cropper's "Slice for showcases" mode cuts one background into the Artwork (506&nbsp;+&nbsp;100), Featured (630) and Avatar (164) pieces that line up on the profile. Screenshot / Workshop / Guide pieces and animated-background slicing are still to come.</p>
 					</div>
 				</div>
 			</section>

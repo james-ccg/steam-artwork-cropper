@@ -18,6 +18,24 @@ const {
 const { encodeGifUnderLimit, decodeGifFrames } = require('./gifExport');
 const { hexifyToBase64 } = require('./hexify');
 const uploadGuideText = require('./uploadGuideText');
+const backgroundSlicer = require('./backgroundSlicer');
+
+const SLICE_README = `These images are slices of one profile background. Uploaded to the
+matching showcase, each one fills the space that showcase covers, so the
+profile reads as a single seamless picture.
+
+  Background                    -> set as your profile background (unchanged)
+  Artwork_Middle + Artwork_Side -> the two images of an Artwork Showcase
+  Featured                      -> a Featured Artwork Showcase
+  Avatar                        -> set as your profile avatar
+
+Set the Background first, then upload each showcase piece with the console
+commands in the upload guide:
+https://james-ccg.github.io/cropper/faq/#upload-guide
+Every piece is already hexified, so it renders at full size.
+
+by xdjames - https://steamcommunity.com/id/james_ccg/
+`;
 
 // How Steam actually displays a profile background (profilev2.css):
 //   - A STATIC background uses `background-size: auto` on every window
@@ -52,6 +70,65 @@ function computeOutputSize(srcWidth, srcHeight, isAnimated) {
 		h = Math.max(1, Math.round(h * scale));
 	}
 	return { width: w, height: h };
+}
+
+// 'resize' - export the whole background (with the size rules above).
+// 'slice'  - cut the background into per-showcase pieces (backgroundSlicer.js).
+let bgMode = 'resize';
+
+function sliceOpts() {
+	return {
+		artwork: document.getElementById('bgSliceArtwork').checked,
+		featured: document.getElementById('bgSliceFeatured').checked,
+		avatar: document.getElementById('bgSliceAvatar').checked,
+		longImages: document.getElementById('bgSliceLong').checked,
+	};
+}
+
+function refreshSlicePreview() {
+	const container = document.getElementById('bgSlicePreview');
+	if (!container) return;
+	if (bgMode !== 'slice' || !backgroundShowcase.canvas) {
+		container.innerHTML = '';
+		return;
+	}
+	// Slices are cut from the background at its NATIVE resolution (that's what
+	// Steam displays and what the piece has to line up against), not the
+	// size-capped resize-mode canvas.
+	backgroundSlicer.renderPreview(
+		container,
+		backgroundShowcase.img.src,
+		inputImage.width,
+		inputImage.height,
+		sliceOpts()
+	);
+}
+
+function nativeSourceCanvas() {
+	const src = document.createElement('canvas');
+	src.width = inputImage.img.naturalWidth || inputImage.width;
+	src.height = inputImage.img.naturalHeight || inputImage.height;
+	src.getContext('2d').drawImage(inputImage.img, 0, 0);
+	return src;
+}
+
+function setBgMode(mode) {
+	bgMode = mode === 'slice' ? 'slice' : 'resize';
+	const slicing = bgMode === 'slice';
+
+	const resizeControls = document.getElementById('bgResizeControls');
+	const sliceControls = document.getElementById('bgSliceControls');
+	const resizePreview = document.getElementById('bgResizePreview');
+	const slicePreview = document.getElementById('bgSlicePreview');
+	if (resizeControls) resizeControls.style.display = slicing ? 'none' : '';
+	if (sliceControls) sliceControls.style.display = slicing ? '' : 'none';
+	if (resizePreview) resizePreview.style.display = slicing ? 'none' : '';
+	if (slicePreview) slicePreview.style.display = slicing ? '' : 'none';
+
+	document.getElementById('bgModeResize').checked = !slicing;
+	document.getElementById('bgModeSlice').checked = slicing;
+
+	refreshSlicePreview();
 }
 
 const backgroundShowcase = {
@@ -92,6 +169,7 @@ const backgroundShowcase = {
 				? `${size.width} x ${size.height} (from ${img.width} x ${img.height})`
 				: `${size.width} x ${size.height}`;
 			inputImage.setStatusMsg('Done');
+			refreshSlicePreview();
 		};
 
 		if (inputImage.file != null) {
@@ -104,6 +182,12 @@ const backgroundShowcase = {
 			alert('Please select an image first!');
 			return;
 		}
+
+		if (bgMode === 'slice') {
+			exportSlices();
+			return;
+		}
+
 		inputImage.setStatusMsg('Cropping image, please wait...');
 
 		let zip = new JSZip();
@@ -127,6 +211,55 @@ const backgroundShowcase = {
 		}
 	},
 };
+
+async function exportSlices() {
+	const opts = sliceOpts();
+	if (!opts.artwork && !opts.featured && !opts.avatar) {
+		alert('Pick at least one showcase to slice for.');
+		return;
+	}
+	if (inputImage.file.type === 'image/gif') {
+		alert(
+			'Slicing animated backgrounds is coming soon - for now, switch to "Resize whole background" for GIFs, or use a still image.'
+		);
+		return;
+	}
+
+	inputImage.setStatusMsg('Slicing background, please wait...');
+	const src = nativeSourceCanvas();
+	const pieces = backgroundSlicer.computeSlices(src, opts);
+
+	const zip = new JSZip();
+	zip.file('readme.txt', SLICE_README);
+	const link = backgroundSlicer.layoutLink(inputImage.sourceUrl || '', opts);
+	if (link) zip.file('layout.txt', link + '\n');
+
+	const sourceType =
+		inputImage.file.type === 'image/apng' ? 'image/png' : inputImage.file.type;
+
+	// Bundle the background itself too, so the user uploads a set that lines
+	// up - the pieces were cut against exactly these pixels.
+	inputImage.setStatusMsg('Adding the background...');
+	await backgroundSlicer.addPieceToZip(
+		zip,
+		{ file: 'Background', canvas: src },
+		sourceType
+	);
+
+	for (const piece of pieces) {
+		inputImage.setStatusMsg(`Slicing ${piece.file}...`);
+		await backgroundSlicer.addPieceToZip(zip, piece, sourceType);
+	}
+
+	inputImage.setStatusMsg('Creating zip file, please wait...');
+	zip.generateAsync({ type: 'blob' }).then(function (content) {
+		download(
+			content,
+			`${inputImage.file.name}_slices_${new Date().getTime()}.zip`
+		);
+		inputImage.setStatusMsg('Done');
+	});
+}
 
 async function addRasterToZip(zip) {
 	const canvas = textOverlay.applyToCanvas(backgroundShowcase.canvas.canvas);
@@ -231,5 +364,17 @@ document
 	.addEventListener('click', () =>
 		changeTab('background', () => demoDefaults.loadDefaultBackground(backgroundShowcase.loadImage))
 	);
+
+const bgModeResize = document.getElementById('bgModeResize');
+const bgModeSlice = document.getElementById('bgModeSlice');
+if (bgModeResize) bgModeResize.addEventListener('change', () => setBgMode('resize'));
+if (bgModeSlice) bgModeSlice.addEventListener('change', () => setBgMode('slice'));
+
+['bgSliceArtwork', 'bgSliceFeatured', 'bgSliceAvatar', 'bgSliceLong'].forEach(
+	(id) => {
+		const el = document.getElementById(id);
+		if (el) el.addEventListener('change', refreshSlicePreview);
+	}
+);
 
 module.exports = backgroundShowcase.loadImage;

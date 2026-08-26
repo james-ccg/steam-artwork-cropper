@@ -37,4 +37,94 @@ function hexifyToBase64(blob) {
 	});
 }
 
-module.exports = { hexifyBytes, hexifyToBase64 };
+// Format-aware variant used by the background slicer. The generic hexifyBytes
+// above (strip trailing zeros, drop the last byte, append 0x21) works, but a
+// per-format nudge keeps the file cleaner for each container - this mirrors
+// what steamartworkhub.com's cropper does, which is proven against the same
+// showcase-upload path:
+//   - GIF : final byte -> 0x21 (GIF trailer is a single 0x3B)
+//   - JPEG: final byte -> 0xDA, turning the FF D9 EOI into FF DA
+//   - PNG : rewrite the IEND CRC + append 0xE1 so Steam's resizer bails but
+//           every browser still ignores the trailing bytes after IEND
+//   - WebP: bump the RIFF chunk-size field when an ANMF (animation) chunk is
+//           present
+const FORMAT_FROM_MIME = {
+	'image/png': 'png',
+	'image/apng': 'png',
+	'image/jpeg': 'jpg',
+	'image/gif': 'gif',
+	'image/webp': 'webp',
+};
+
+function hexifyByType(bytes, format) {
+	let data = bytes;
+	const size = data.length;
+	if (size === 0) return data;
+
+	switch (format) {
+		case 'gif':
+			data[size - 1] = 0x21;
+			return data;
+		case 'jpg':
+		case 'jpeg':
+			data[size - 1] = 0xda;
+			return data;
+		case 'png': {
+			if (data[size - 1] === 0xe1) return data;
+			const grown = new Uint8Array(size + 1);
+			grown.set(data);
+			grown.set(
+				[0x01, 0x49, 0x45, 0x4e, 0x44, 0x00, 0xd1, 0x1a, 0x4f, 0xe1],
+				size - 9
+			);
+			return grown;
+		}
+		case 'webp': {
+			if (
+				size > 0x34 &&
+				data[0x2c] === 0x41 &&
+				data[0x2d] === 0x4e &&
+				data[0x2e] === 0x4d &&
+				data[0x2f] === 0x46
+			) {
+				const v =
+					((data[0x30] |
+						(data[0x31] << 8) |
+						(data[0x32] << 16) |
+						(data[0x33] << 24)) >>>
+						0) + 1;
+				data[0x30] = v & 0xff;
+				data[0x31] = (v >> 8) & 0xff;
+				data[0x32] = (v >> 16) & 0xff;
+				data[0x33] = (v >> 24) & 0xff;
+			}
+			return data;
+		}
+		default:
+			return hexifyGeneric(data);
+	}
+}
+
+function hexifyGeneric(bytes) {
+	let end = bytes.length;
+	while (end > 0 && bytes[end - 1] === 0) end--;
+	const out = new Uint8Array(Math.max(0, end - 1) + 1);
+	out.set(bytes.subarray(0, Math.max(0, end - 1)));
+	out[out.length - 1] = 0x21;
+	return out;
+}
+
+function hexifyBlobByType(blob) {
+	const format = FORMAT_FROM_MIME[blob.type] || null;
+	return new Promise((resolve) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			const bytes = new Uint8Array(reader.result);
+			const hexed = format ? hexifyByType(bytes, format) : hexifyGeneric(bytes);
+			resolve(window.btoa(bytesToBinaryString(hexed)));
+		};
+		reader.readAsArrayBuffer(blob);
+	});
+}
+
+module.exports = { hexifyBytes, hexifyToBase64, hexifyByType, hexifyBlobByType };
