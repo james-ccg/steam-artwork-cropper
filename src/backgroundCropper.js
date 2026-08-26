@@ -100,11 +100,15 @@ let bgStack = [{ type: 'artwork', height: 0 }];
 
 function sliceOpts() {
 	const fmt = document.querySelector('input[name="bgSliceFormat"]:checked');
+	const a = animatedOpts();
 	return {
 		slots: bgStack,
 		avatar: document.getElementById('bgSliceAvatar').checked,
 		longImages: document.getElementById('bgSliceLong').checked,
 		format: fmt ? fmt.value : 'source',
+		animFormat: a.format,
+		animFps: a.fps,
+		animQuality: a.quality,
 	};
 }
 
@@ -356,6 +360,7 @@ function loadVideoBackground(file) {
 		inputImage.setStatusMsg('Done');
 		refreshAnimatedControls();
 		refreshSlicePreview();
+		applyPendingSliceMode();
 		URL.revokeObjectURL(url);
 	};
 	v.src = url;
@@ -405,6 +410,7 @@ const backgroundShowcase = {
 			inputImage.setStatusMsg('Done');
 			refreshAnimatedControls();
 			refreshSlicePreview();
+			applyPendingSliceMode();
 		};
 
 		if (inputImage.file != null) {
@@ -693,17 +699,71 @@ if (bgAnimEnable) {
 	});
 }
 
-// A ?#slice=... link restores the whole stack; the background URL in it is
-// loaded by urlLoader.js, this just seeds the stack + options.
-(function restoreFromHash() {
+// Arriving with `#slice=<base64>` (a shared layout link) or `?slice=1` (from
+// the Backgrounds gallery's "Slice for showcases" button) opens the tool
+// straight into Background Cropper + slice mode. The layout link also seeds
+// the whole stack and every option. The background itself is fetched by
+// urlLoader.js (from the link's `bg` or the `?bg=` query); once it lands,
+// applyPendingSliceMode() flips into slice mode.
+let pendingSliceMode = false;
+
+(function restoreFromLink() {
+	const params = new URLSearchParams(window.location.search);
 	const st = backgroundSlicer.parseLayoutLink(window.location.hash);
-	if (!st) return;
+
+	if (params.get('slice') === '1') pendingSliceMode = true;
+	if (!st) {
+		maybeEnterSliceMode(!!params.get('bg'));
+		return;
+	}
+	pendingSliceMode = true;
+
 	if (st.slots && st.slots.length) bgStack = st.slots;
-	const av = document.getElementById('bgSliceAvatar');
-	const lng = document.getElementById('bgSliceLong');
-	if (av) av.checked = st.avatar;
-	if (lng) lng.checked = st.longImages;
+	const set = (id, prop, val) => {
+		const el = document.getElementById(id);
+		if (el) el[prop] = val;
+	};
+	set('bgSliceAvatar', 'checked', st.avatar);
+	set('bgSliceLong', 'checked', st.longImages);
+	const stillFmt = document.querySelector(
+		`input[name="bgSliceFormat"][value="${st.format}"]`
+	);
+	if (stillFmt) stillFmt.checked = true;
+	if (st.animFormat) {
+		const af = document.querySelector(
+			`input[name="bgAnimFormat"][value="${st.animFormat}"]`
+		);
+		if (af) af.checked = true;
+	}
+	if (st.animFps) set('bgAnimFps', 'value', String(st.animFps));
+	if (st.animQuality) set('bgAnimQuality', 'value', String(st.animQuality));
+
+	// If the link carries a background URL and urlLoader didn't already pick
+	// one up from ?bg=, feed it in.
+	const bgUrlInput = document.getElementById('bgUrlInput');
+	if (st.bg && bgUrlInput && !params.get('bg')) {
+		bgUrlInput.value = st.bg;
+	}
+
+	maybeEnterSliceMode(!!(st.bg || params.get('bg')));
 })();
+
+// When no background is being fetched (a shared link with just a config, or a
+// bare ?slice=1), there's nothing to wait for - flip into Background Cropper
+// slice mode once every module has finished loading.
+function maybeEnterSliceMode(hasBackground) {
+	if (!pendingSliceMode || hasBackground) return;
+	setTimeout(() => {
+		require('./profilePreview').setMode('cropper');
+		applyPendingSliceMode();
+	}, 0);
+}
+
+function applyPendingSliceMode() {
+	if (!pendingSliceMode) return;
+	pendingSliceMode = false;
+	setBgMode('slice');
+}
 
 renderStack();
 

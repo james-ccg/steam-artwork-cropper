@@ -783,16 +783,26 @@
 
 			var actions = document.createElement('div');
 			actions.className = 'actions';
+			// Animated backgrounds load straight from the .webm (the cropper
+			// rewrites the host to the CORS-friendly fastly edge); static ones
+			// still need a save-and-upload, so they hand over the poster.
+			var cropUrl = bg.a ? movieUrl(bg) : posterUrl(bg);
 			var cropBtn = document.createElement('button');
 			cropBtn.className = 'primary';
 			cropBtn.textContent = 'Open in Cropper';
 			cropBtn.addEventListener('click', function () {
-				window.location.href = '../?bg=' + encodeURIComponent(posterUrl(bg));
+				window.location.href = '../?bg=' + encodeURIComponent(cropUrl);
+			});
+			var sliceBtn = document.createElement('button');
+			sliceBtn.textContent = 'Slice for showcases';
+			sliceBtn.addEventListener('click', function () {
+				window.location.href = '../?bg=' + encodeURIComponent(cropUrl) + '&slice=1';
 			});
 			var copyBtn = document.createElement('button');
 			copyBtn.textContent = bg.a ? 'Copy .webm' : 'Copy link';
 			copyBtn.addEventListener('click', function () { copyLink(bg.a ? movieUrl(bg) : posterUrl(bg)); });
 			actions.appendChild(cropBtn);
+			actions.appendChild(sliceBtn);
 			actions.appendChild(copyBtn);
 
 			info.appendChild(title);
@@ -902,13 +912,22 @@
 
 			var actions = document.getElementById('detailActions');
 			actions.innerHTML = '';
+			var cropUrl = bg.a ? movieUrl(bg) : posterUrl(bg);
 			var crop = document.createElement('button');
 			crop.className = 'btn';
 			crop.textContent = 'Crop this background';
 			crop.addEventListener('click', function () {
-				window.location.href = '../?bg=' + encodeURIComponent(posterUrl(bg));
+				window.location.href = '../?bg=' + encodeURIComponent(cropUrl);
 			});
 			actions.appendChild(crop);
+
+			var slice = document.createElement('button');
+			slice.className = 'btn';
+			slice.textContent = 'Slice for showcases';
+			slice.addEventListener('click', function () {
+				window.location.href = '../?bg=' + encodeURIComponent(cropUrl) + '&slice=1';
+			});
+			actions.appendChild(slice);
 
 			var buy = document.createElement('a');
 			buy.className = 'btn ghost';

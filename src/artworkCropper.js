@@ -338,6 +338,7 @@ function loadNewFile(file) {
 }
 
 inputImage.selectedImage.onchange = function () {
+	inputImage.sourceUrl = null; // a picked file has no shareable URL
 	loadNewFile(inputImage.selectedImage.files[0]);
 };
 

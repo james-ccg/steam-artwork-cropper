@@ -4,23 +4,24 @@
 // hexify, and export code paths; nothing downstream needs separate handling
 // for a URL-sourced image vs. a picked one).
 //
-// Steam's own background/item-image CDN (community.cloudflare.steamstatic.com,
-// cdn.cloudflare.steamstatic.com) does not send CORS headers, so the browser
-// blocks reading those bytes here even though the image loads fine as a plain
-// <img> - this is a restriction on Steam's server, not something a client-side
-// tool can work around. Other hosts (Steam's own avatar CDN, imgur, Discord's
-// CDN, etc.) generally do allow it. Rather than fail with a generic network
-// error for the single most common case, this recognises the blocked hosts
-// up front and tells people to save-and-upload instead.
+// Most of Steam's item-image CDN edges (community/cdn .cloudflare / .akamai)
+// don't send CORS headers, so the browser blocks reading those bytes here
+// even though the image loads fine as a plain <img>. But the
+// `shared.fastly.steamstatic.com/community_assets/...` edge - which serves
+// both the animated-background `.webm` files and their `.jpg` posters - does
+// send `Access-Control-Allow-Origin: *`, so rewriting the host to that one
+// makes an animated background from the Backgrounds gallery directly
+// loadable. Anything still on a blocked host gets a save-and-upload hint.
+const CORS_HOST_REWRITE = {
+	'shared.cloudflare.steamstatic.com': 'shared.fastly.steamstatic.com',
+	'shared.akamai.steamstatic.com': 'shared.fastly.steamstatic.com',
+};
 const KNOWN_CORS_BLOCKED_HOSTS = [
 	'community.cloudflare.steamstatic.com',
 	'cdn.cloudflare.steamstatic.com',
 	'community.akamai.steamstatic.com',
 	'steamcdn-a.akamaihd.net',
 	'community.fastly.steamstatic.com',
-	'shared.fastly.steamstatic.com',
-	'shared.cloudflare.steamstatic.com',
-	'shared.akamai.steamstatic.com',
 ];
 
 async function fetchImageAsFile(url) {
@@ -32,6 +33,10 @@ async function fetchImageAsFile(url) {
 	}
 	if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
 		throw new Error('not a valid URL');
+	}
+
+	if (CORS_HOST_REWRITE[parsed.hostname]) {
+		parsed.hostname = CORS_HOST_REWRITE[parsed.hostname];
 	}
 
 	let response;
@@ -50,8 +55,10 @@ async function fetchImageAsFile(url) {
 	if (!response.ok) throw new Error(`server responded ${response.status}`);
 
 	const blob = await response.blob();
-	if (blob.type && !blob.type.startsWith('image/')) {
-		throw new Error('that link is not a direct image link');
+	const isImage = blob.type && blob.type.startsWith('image/');
+	const isBgVideo = blob.type === 'video/webm' || blob.type === 'video/mp4';
+	if (blob.type && !isImage && !isBgVideo) {
+		throw new Error('that link is not a direct image or video link');
 	}
 
 	const nameFromUrl = decodeURIComponent(

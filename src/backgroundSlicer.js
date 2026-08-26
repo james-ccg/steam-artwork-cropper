@@ -184,6 +184,28 @@ function cutRect(bgCanvas, sx, sy, w, h) {
 	return out.canvas;
 }
 
+// Steam renders a square background as a repeating tile. A slice of it must
+// therefore tile too, so instead of black-filling anything outside the source
+// this repeats the tile across the whole piece (from the right phase).
+function cutRectTiled(bgCanvas, sx, sy, w, h) {
+	const out = new CustomCanvas(w, h);
+	const ctx = out.canvas.getContext('2d');
+	const bw = bgCanvas.width;
+	const bh = bgCanvas.height;
+	const x0 = ((sx % bw) + bw) % bw;
+	const y0 = ((sy % bh) + bh) % bh;
+	for (let dy = -y0; dy < h; dy += bh) {
+		for (let dx = -x0; dx < w; dx += bw) {
+			ctx.drawImage(bgCanvas, dx, dy);
+		}
+	}
+	return out.canvas;
+}
+
+function isTiling(width, height) {
+	return width === height && (width === 512 || width === 256);
+}
+
 /**
  * The rectangle (in background pixels) each showcase piece is cut from.
  * Shared by the still slicer (cutRect per rect) and the animated slicer
@@ -261,11 +283,12 @@ function sliceRects(bgWidth, opts) {
  * @returns {Array<{file:string, canvas:HTMLCanvasElement, w:number, h:number}>}
  */
 function computeSlices(bgCanvas, opts) {
+	const cut = isTiling(bgCanvas.width, bgCanvas.height) ? cutRectTiled : cutRect;
 	return sliceRects(bgCanvas.width, opts).map((r) => ({
 		file: r.file,
 		w: r.w,
 		h: r.h,
-		canvas: cutRect(bgCanvas, r.sx, r.sy, r.w, r.h),
+		canvas: cut(bgCanvas, r.sx, r.sy, r.w, r.h),
 	}));
 }
 
@@ -386,13 +409,17 @@ async function addPieceToZip(zip, piece, sourceType, format) {
 }
 
 // A short, shareable link that re-opens the tool on this background with the
-// same stack. Mirrors steam.design's `#<background>` hash idea.
+// same stack + options. Mirrors steam.design's `#<background>` hash idea.
 function layoutLink(bgUrl, opts) {
 	const state = {
 		bg: bgUrl || null,
 		s: (opts.slots || []).map((sl) => [sl.type, sl.height || 0]),
 		a: !!opts.avatar,
 		long: !!opts.longImages,
+		f: opts.format && opts.format !== 'source' ? opts.format : undefined,
+		af: opts.animFormat,
+		afps: opts.animFps || undefined,
+		aq: opts.animQuality || undefined,
 	};
 	try {
 		const base =
@@ -417,6 +444,10 @@ function parseLayoutLink(hash) {
 				.map((row) => ({ type: row[0], height: row[1] || 0 })),
 			avatar: !!st.a,
 			longImages: !!st.long,
+			format: st.f || 'source',
+			animFormat: st.af || null,
+			animFps: st.afps || 0,
+			animQuality: st.aq || 0,
 		};
 	} catch (e) {
 		return null;

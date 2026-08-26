@@ -4,6 +4,7 @@ const { _URL } = require('./functionsExport');
 const inputImage = {
     selectedImage: document.getElementById('selectedImage'), // Input file DOM element
     file: null, // Quick access to the selected file
+    sourceUrl: null, // URL the file was fetched from (for the slice-layout share link); null for a picked file
     img: null, // Image object that stores the image src
     width: 0,
     height: 0,
