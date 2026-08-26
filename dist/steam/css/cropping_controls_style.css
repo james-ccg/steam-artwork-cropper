@@ -624,3 +624,131 @@ button.download {
 .bgSliceBoxAvatar {
 	border-radius: 6px;
 }
+.bgSliceBoxGhost {
+	background: repeating-linear-gradient(
+		45deg,
+		#1c2730,
+		#1c2730 6px,
+		#232f39 6px,
+		#232f39 12px
+	);
+	border-style: dashed;
+}
+
+/* stack editor */
+.bgSliceSubLabel {
+	margin: 12px 0 5px;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #8fa3b0;
+}
+.bgSliceStack {
+	list-style: none;
+	margin: 0 0 6px;
+	padding: 0;
+}
+.bgStackRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 0;
+}
+.bgStackRow.ui-sortable-helper {
+	background: #1b2731;
+	border-radius: 4px;
+}
+.bgStackHandle {
+	cursor: grab;
+	color: #6f828f;
+	font-size: 15px;
+	line-height: 1;
+	user-select: none;
+	padding: 0 2px;
+}
+.bgStackType {
+	flex: 1 1 auto;
+	min-width: 0;
+	background: #12181d;
+	color: #c6d4df;
+	border: 1px solid #33454f;
+	border-radius: 3px;
+	padding: 3px 4px;
+	font-size: 12px;
+}
+.bgStackHeight {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: #8fa3b0;
+	white-space: nowrap;
+}
+.bgStackHeight input {
+	width: 48px;
+	background: #12181d;
+	color: #c6d4df;
+	border: 1px solid #33454f;
+	border-radius: 3px;
+	padding: 2px 3px;
+	font-size: 12px;
+}
+.bgStackDel {
+	flex-shrink: 0;
+	background: none;
+	border: none;
+	color: #7a8b97;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0 4px;
+}
+.bgStackDel:hover {
+	color: #e46a6a;
+}
+.bgStackMoveWrap {
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	line-height: 0;
+}
+.bgStackMove {
+	background: none;
+	border: none;
+	color: #6f828f;
+	font-size: 8px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 1px 3px;
+}
+.bgStackMove:hover:not(:disabled) {
+	color: #d6e4ef;
+}
+.bgStackMove:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+.bgSliceAddBtn {
+	background: #1b2731;
+	color: #9fb4c2;
+	border: 1px dashed #3a4d5a;
+	border-radius: 4px;
+	padding: 5px 10px;
+	font-size: 12px;
+	cursor: pointer;
+	margin-bottom: 6px;
+}
+.bgSliceAddBtn:hover {
+	color: #d6e4ef;
+	border-color: #5a7383;
+}
+.bgSliceFormatRow {
+	display: flex;
+	gap: 12px;
+	font-size: 12px;
+	color: #c6d4df;
+}
+.bgSliceFormatRow label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	cursor: pointer;
+}

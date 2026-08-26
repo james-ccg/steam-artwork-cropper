@@ -205,14 +205,25 @@
                             <div id="bgSliceControls" style="display: none">
                                 <h2>Slice for showcases</h2>
                                 <p class="reminder">
-                                    Cuts the exact piece of the background that each showcase covers,
-                                    so the profile reads as one seamless picture. Upload each piece as
-                                    that showcase's image (see the upload guide).
+                                    Cuts the exact piece of the background each showcase covers, so the
+                                    profile reads as one seamless picture. List your showcases <b>top to
+                                    bottom</b> in the same order as your profile, then upload each piece
+                                    as that showcase's image (see the upload guide).
                                 </p>
-                                <p><label><input type="checkbox" id="bgSliceArtwork" checked /> Artwork Showcase <span class="dimHint">(506 + 100)</span></label></p>
-                                <p><label><input type="checkbox" id="bgSliceFeatured" /> Featured Showcase <span class="dimHint">(630)</span></label></p>
-                                <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Avatar <span class="dimHint">(164)</span></label></p>
+
+                                <p class="bgSliceSubLabel">Your showcases (top &rarr; bottom)</p>
+                                <ol id="bgSliceStack" class="bgSliceStack"></ol>
+                                <button type="button" id="bgSliceAdd" class="bgSliceAddBtn">+ Add showcase</button>
+
+                                <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164&times;164)</span></label></p>
                                 <p><label><input type="checkbox" id="bgSliceLong" /> Long images <span class="dimHint">(cut 2000px tall for a stretched showcase)</span></label></p>
+
+                                <p class="bgSliceSubLabel">Showcase piece format</p>
+                                <p class="bgSliceFormatRow">
+                                    <label><input type="radio" name="bgSliceFormat" value="source" checked /> Same as source</label>
+                                    <label><input type="radio" name="bgSliceFormat" value="png" /> PNG</label>
+                                    <label><input type="radio" name="bgSliceFormat" value="jpg" /> JPG</label>
+                                </p>
                             </div>
 
                             <button class="download" id="downloadBackground" style="display: none"></button>

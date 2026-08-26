@@ -8,11 +8,12 @@
 // image, and the showcase then reads as an uncut continuation of the
 // background - the profile looks like one seamless picture.
 //
-// Geometry is steam.design's published crop config. x offsets are relative
-// to the background's horizontal centre (n = floor(bgWidth / 2)); y is from
-// the top of the background. The widths are the exact on-profile rendered
-// slot widths, so each piece sits 1:1 over the background pixels it was taken
-// from.
+// x offsets are relative to the background's horizontal centre
+// (n = floor(bgWidth / 2)) and are fixed per showcase type (every showcase is
+// left-aligned in the 632px customization column). y depends on where the
+// showcase sits in the vertical stack, which the user arranges as an ordered
+// list; stackTops() turns that order + each showcase's height into a y for
+// every piece, using Steam's own widget spacing (profilev2.css).
 const CustomCanvas = require('./CustomCanvas');
 const {
 	MAX_EXPORT_BYTES,
@@ -23,194 +24,249 @@ const {
 } = require('./exportLimit');
 const { hexifyBlobByType } = require('./hexify');
 
-const CENTRE_TO_ARTWORK_LEFT = -467; // Artwork / Featured showcase left edge
-const CENTRE_TO_SIDE_LEFT = 48; // narrow right column (-467 + 506 + 9px gutter)
-const CENTRE_TO_AVATAR_LEFT = -461;
-const SHOWCASE_TOP = 256;
-const AVATAR_TOP = 36;
+// --- Steam widget spacing (profilev2.css) --------------------------------
+const STACK_TOP = 241; // top of the first .profile_customization, in bg px
+// (calibrated so a .myart showcase first in the stack puts its content at
+// y = 256, which is steam.design's published artwork-showcase offset)
+const WIDGET_MARGIN = 12; // .profile_customization { margin-bottom: 12px }
+const HEADER_H = 40; // .profile_customization_header (30 line-height + 5+5 pad)
+const PAD_TOP_MYART = 15; // .myart .profile_customization_block padding-top
+const PAD_TOP = 20; // .profile_customization_block padding-top
+const PAD_BOTTOM = 11; // ...both have padding-bottom: 11px
 
-const ARTWORK_PRIMARY_W = 506;
-const ARTWORK_SIDE_W = 100;
-const FEATURED_W = 630;
+const AVATAR_DX = -461;
+const AVATAR_TOP = 36;
 const AVATAR_SIZE = 164;
 
 // A "long image" piece is cut this tall so the showcase can be dragged to any
-// height after upload; only the top (bgHeight - SHOWCASE_TOP) of it lines up
-// with the background, the rest is black.
+// height after upload; only the top of it lines up with the background.
 const LONG_IMAGE_HEIGHT = 2000;
 
-const PIECE_GROUPS = {
-	avatar: [
-		{
-			key: 'avatar',
-			file: 'Avatar',
-			label: 'Avatar',
-			dx: CENTRE_TO_AVATAR_LEFT,
-			dy: AVATAR_TOP,
-			w: AVATAR_SIZE,
-			fixedH: AVATAR_SIZE,
-		},
-	],
-	featured: [
-		{
-			key: 'featured',
-			file: 'Featured',
-			label: 'Featured Showcase',
-			dx: CENTRE_TO_ARTWORK_LEFT,
-			dy: SHOWCASE_TOP,
-			w: FEATURED_W,
-		},
-	],
-	artwork: [
-		{
-			key: 'artwork_middle',
-			file: 'Artwork_Middle',
-			label: 'Artwork Showcase - primary',
-			dx: CENTRE_TO_ARTWORK_LEFT,
-			dy: SHOWCASE_TOP,
-			w: ARTWORK_PRIMARY_W,
-		},
-		{
-			key: 'artwork_side',
-			file: 'Artwork_Side',
-			label: 'Artwork Showcase - right column',
-			dx: CENTRE_TO_SIDE_LEFT,
-			dy: SHOWCASE_TOP,
-			w: ARTWORK_SIDE_W,
-		},
-	],
+// --- Showcase catalog ---------------------------------------------------
+// cols: the croppable image columns of a showcase, each {suffix, dx, w}.
+// grid: a rows x cols grid of square cells (Workshop 5x3).
+const SHOWCASE_TYPES = {
+	artwork: {
+		label: 'Artwork Showcase',
+		file: 'Artwork',
+		myart: true,
+		header: false,
+		defaultH: 300,
+		cols: [
+			{ suffix: '_Middle', dx: -467, w: 506 },
+			{ suffix: '_Side', dx: 48, w: 100 },
+		],
+	},
+	screenshot: {
+		label: 'Screenshot Showcase',
+		file: 'Screenshot',
+		myart: true,
+		header: false,
+		defaultH: 300,
+		cols: [
+			{ suffix: '_Middle', dx: -467, w: 506 },
+			{ suffix: '_Side', dx: 48, w: 100 },
+		],
+	},
+	featured: {
+		label: 'Featured Artwork Showcase',
+		file: 'Featured',
+		myart: true,
+		header: false,
+		defaultH: 300,
+		cols: [{ suffix: '', dx: -467, w: 630 }],
+	},
+	workshop: {
+		label: 'Workshop Showcase (single item)',
+		file: 'Workshop',
+		myart: false,
+		header: true,
+		fixedH: 160,
+		cols: [{ suffix: '', dx: -461, w: 160 }],
+	},
+	spacer: {
+		label: 'Empty space / another showcase',
+		file: null,
+		myart: true,
+		header: false,
+		defaultH: 120,
+		cols: [],
+	},
 };
 
-// Deepest-on-the-page first, so the ZIP lists avatar, then featured, then the
-// artwork pair - the order people upload them in.
-const GROUP_ORDER = ['avatar', 'featured', 'artwork'];
+const TYPE_KEYS = Object.keys(SHOWCASE_TYPES);
 
-function pieceHeight(piece, bgHeight, longImages) {
-	if (piece.fixedH) return piece.fixedH;
-	if (longImages) return LONG_IMAGE_HEIGHT;
-	return Math.max(1, bgHeight - piece.dy);
+function contentHeight(slot) {
+	const t = SHOWCASE_TYPES[slot.type];
+	if (t.fixedH) return t.fixedH;
+	return Math.max(1, Math.round(slot.height || t.defaultH));
 }
 
-// Cut one piece from the background canvas. The source rectangle can fall
-// partly (or wholly) outside the background - a narrow background, or a
-// long-image piece taller than the source - so the piece canvas starts black
-// and only the covered region is copied in.
-function cutPiece(bgCanvas, centre, piece, height) {
-	const sx = centre + piece.dx;
-	const sy = piece.dy;
+function widgetOuterHeight(slot) {
+	const t = SHOWCASE_TYPES[slot.type];
+	const header = t.header ? HEADER_H : 0;
+	const padTop = t.myart ? PAD_TOP_MYART : PAD_TOP;
+	return header + padTop + contentHeight(slot) + PAD_BOTTOM + WIDGET_MARGIN;
+}
 
-	const out = new CustomCanvas(piece.w, height);
-	out.fillSolid(piece.w, height);
+// content-area top (bg px) of every slot, in stack order.
+function stackTops(slots) {
+	const tops = [];
+	let y = STACK_TOP;
+	slots.forEach((slot) => {
+		const t = SHOWCASE_TYPES[slot.type];
+		const header = t.header ? HEADER_H : 0;
+		const padTop = t.myart ? PAD_TOP_MYART : PAD_TOP;
+		tops.push(y + header + padTop);
+		y += widgetOuterHeight(slot);
+	});
+	return tops;
+}
+
+// Cut one rectangle from the background canvas. The rectangle can fall partly
+// (or wholly) outside the background - a narrow background, or a long-image
+// piece taller than the source - so the piece starts black and only the
+// covered region is copied in.
+function cutRect(bgCanvas, sx, sy, w, h) {
+	const out = new CustomCanvas(w, h);
+	out.fillSolid(w, h);
 
 	const cx = Math.max(0, sx);
 	const cy = Math.max(0, sy);
-	const cw = Math.min(bgCanvas.width, sx + piece.w) - cx;
-	const ch = Math.min(bgCanvas.height, sy + height) - cy;
+	const cw = Math.min(bgCanvas.width, sx + w) - cx;
+	const ch = Math.min(bgCanvas.height, sy + h) - cy;
 	if (cw > 0 && ch > 0) {
 		out.drawImage(bgCanvas, cx, cy, cw, ch, cx - sx, cy - sy, cw, ch);
 	}
-	return out;
+	return out.canvas;
 }
 
 /**
- * @param {HTMLCanvasElement} bgCanvas  the (already size-normalised) background
- * @param {{artwork:boolean, featured:boolean, avatar:boolean, longImages:boolean}} opts
- * @returns {Array<{key:string, file:string, label:string, canvas:HTMLCanvasElement, w:number, h:number}>}
+ * @param {HTMLCanvasElement} bgCanvas  background at its native resolution
+ * @param {{slots:Array<{type:string,height?:number}>, avatar:boolean, longImages:boolean}} opts
+ * @returns {Array<{file:string, canvas:HTMLCanvasElement, w:number, h:number}>}
  */
 function computeSlices(bgCanvas, opts) {
 	const centre = Math.floor(bgCanvas.width / 2);
 	const out = [];
-	GROUP_ORDER.forEach((group) => {
-		if (!opts[group]) return;
-		PIECE_GROUPS[group].forEach((piece) => {
-			const h = pieceHeight(piece, bgCanvas.height, opts.longImages);
+
+	if (opts.avatar) {
+		out.push({
+			file: 'Avatar',
+			w: AVATAR_SIZE,
+			h: AVATAR_SIZE,
+			canvas: cutRect(
+				bgCanvas,
+				centre + AVATAR_DX,
+				AVATAR_TOP,
+				AVATAR_SIZE,
+				AVATAR_SIZE
+			),
+		});
+	}
+
+	const slots = opts.slots || [];
+	const tops = stackTops(slots);
+	slots.forEach((slot, i) => {
+		const t = SHOWCASE_TYPES[slot.type];
+		if (!t || !t.file || !t.cols.length) return; // spacer / unknown
+		const top = tops[i];
+		const h = opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
+		const prefix = slots.length > 1 ? `${i + 1}_` : '';
+		t.cols.forEach((col) => {
 			out.push({
-				key: piece.key,
-				file: piece.file,
-				label: piece.label,
-				canvas: cutPiece(bgCanvas, centre, piece, h).canvas,
-				w: piece.w,
+				file: `${prefix}${t.file}${col.suffix}`,
+				w: col.w,
 				h,
+				canvas: cutRect(bgCanvas, centre + col.dx, top, col.w, h),
 			});
 		});
 	});
+
 	return out;
 }
 
-// Where on the background (in background pixels) a group's box sits - used by
-// the live preview to position a background-image behind each mock box.
-function groupRect(group, bgWidth) {
-	const centre = Math.floor(bgWidth / 2);
-	const pieces = PIECE_GROUPS[group];
-	const left = centre + pieces[0].dx;
-	const last = pieces[pieces.length - 1];
-	const right = centre + last.dx + last.w;
-	return { left, top: pieces[0].dy, width: right - left };
-}
-
-// Live preview: a mock of each showcase box with the background positioned
-// behind it exactly where the corresponding piece will be cut, so you can see
-// the seam line up (or not) before exporting.
-const PREVIEW_SCALE = 0.62;
-const PREVIEW_GROUP_LABEL = {
-	avatar: 'Avatar',
-	featured: 'Featured Showcase',
-	artwork: 'Artwork Showcase',
-};
+// --- live preview ------------------------------------------------------
+// A scaled mock of the stack: each showcase box shows the background pixels
+// it will be cut from, so the seam is visible (or not) before exporting.
+const PREVIEW_SCALE = 0.6;
+const PREVIEW_MAX_BOX_H = 220;
 
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	container.innerHTML = '';
 	const centre = Math.floor(bgWidth / 2);
 	const s = PREVIEW_SCALE;
+	const bgW = bgWidth * s;
+	const bgH = bgHeight * s;
 
-	const bodyH = opts.longImages
-		? 320
-		: Math.max(40, Math.min(360, bgHeight - SHOWCASE_TOP));
+	function box(dx, w, top, h, extraClass) {
+		const el = document.createElement('div');
+		el.className = 'bgSliceBox' + (extraClass ? ' ' + extraClass : '');
+		el.style.width = w * s + 'px';
+		el.style.height = Math.min(PREVIEW_MAX_BOX_H, h * s) + 'px';
+		el.style.backgroundImage = `url("${bgSrc}")`;
+		el.style.backgroundRepeat = 'no-repeat';
+		el.style.backgroundSize = `${bgW}px ${bgH}px`;
+		el.style.backgroundPosition = `${-(centre + dx) * s}px ${-top * s}px`;
+		return el;
+	}
 
-	GROUP_ORDER.forEach((group) => {
-		if (!opts[group]) return;
+	function row(label, boxesEl) {
+		const r = document.createElement('div');
+		r.className = 'bgSliceRow';
+		const l = document.createElement('span');
+		l.className = 'bgSliceLabel';
+		l.textContent = label;
+		r.appendChild(l);
+		r.appendChild(boxesEl);
+		return r;
+	}
 
-		const row = document.createElement('div');
-		row.className = 'bgSliceRow';
+	if (opts.avatar) {
+		const b = document.createElement('div');
+		b.className = 'bgSliceBoxes';
+		b.appendChild(
+			box(AVATAR_DX, AVATAR_SIZE, AVATAR_TOP, AVATAR_SIZE, 'bgSliceBoxAvatar')
+		);
+		container.appendChild(row('Avatar', b));
+	}
 
-		const label = document.createElement('span');
-		label.className = 'bgSliceLabel';
-		label.textContent = PREVIEW_GROUP_LABEL[group];
-		row.appendChild(label);
-
+	const slots = opts.slots || [];
+	const tops = stackTops(slots);
+	slots.forEach((slot, i) => {
+		const t = SHOWCASE_TYPES[slot.type];
+		if (!t) return;
+		const top = tops[i];
+		const h = opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
 		const boxes = document.createElement('div');
 		boxes.className = 'bgSliceBoxes';
-
-		PIECE_GROUPS[group].forEach((piece) => {
-			const h = piece.fixedH || bodyH;
-			const box = document.createElement('div');
-			box.className = 'bgSliceBox';
-			box.style.width = piece.w * s + 'px';
-			box.style.height = h * s + 'px';
-			box.style.backgroundImage = `url("${bgSrc}")`;
-			box.style.backgroundRepeat = 'no-repeat';
-			box.style.backgroundSize = `${bgWidth * s}px ${bgHeight * s}px`;
-			box.style.backgroundPosition = `${-(centre + piece.dx) * s}px ${
-				-piece.dy * s
-			}px`;
-			if (piece.key === 'avatar') box.classList.add('bgSliceBoxAvatar');
-			boxes.appendChild(box);
-		});
-
-		row.appendChild(boxes);
-		container.appendChild(row);
+		if (t.cols.length) {
+			t.cols.forEach((col) => boxes.appendChild(box(col.dx, col.w, top, h)));
+		} else {
+			const ghost = document.createElement('div');
+			ghost.className = 'bgSliceBox bgSliceBoxGhost';
+			ghost.style.width = 506 * s + 'px';
+			ghost.style.height = Math.min(PREVIEW_MAX_BOX_H, h * s) + 'px';
+			boxes.appendChild(ghost);
+		}
+		container.appendChild(row(t.label, boxes));
 	});
 
 	if (!container.children.length) {
-		const empty = document.createElement('p');
-		empty.className = 'reminder';
-		empty.textContent = 'Pick at least one showcase to slice for.';
-		container.appendChild(empty);
+		const p = document.createElement('p');
+		p.className = 'reminder';
+		p.textContent = 'Add a showcase (or the avatar) to slice for.';
+		container.appendChild(p);
 	}
 }
 
-async function addPieceToZip(zip, piece, sourceType) {
-	const requestedType = sourceType === 'image/apng' ? 'image/png' : sourceType;
+async function addPieceToZip(zip, piece, sourceType, format) {
+	// format: 'png' | 'jpg' | null (follow the source). Avatars and the
+	// bundled Background always follow the source type.
+	let requestedType = sourceType === 'image/apng' ? 'image/png' : sourceType;
+	if (format === 'png') requestedType = 'image/png';
+	else if (format === 'jpg') requestedType = 'image/jpeg';
+
 	const blob = await canvasToBlob(
 		piece.canvas,
 		requestedType,
@@ -239,11 +295,12 @@ async function addPieceToZip(zip, piece, sourceType) {
 }
 
 // A short, shareable link that re-opens the tool on this background with the
-// same piece selection. Mirrors steam.design's `#<background>` hash idea.
+// same stack. Mirrors steam.design's `#<background>` hash idea.
 function layoutLink(bgUrl, opts) {
 	const state = {
 		bg: bgUrl || null,
-		p: GROUP_ORDER.filter((g) => opts[g]),
+		s: (opts.slots || []).map((sl) => [sl.type, sl.height || 0]),
+		a: !!opts.avatar,
 		long: !!opts.longImages,
 	};
 	try {
@@ -257,13 +314,31 @@ function layoutLink(bgUrl, opts) {
 	}
 }
 
+function parseLayoutLink(hash) {
+	try {
+		const m = /#slice=([A-Za-z0-9+/=]+)/.exec(hash || '');
+		if (!m) return null;
+		const st = JSON.parse(window.atob(m[1]));
+		return {
+			bg: st.bg || null,
+			slots: (st.s || [])
+				.filter((row) => SHOWCASE_TYPES[row[0]])
+				.map((row) => ({ type: row[0], height: row[1] || 0 })),
+			avatar: !!st.a,
+			longImages: !!st.long,
+		};
+	} catch (e) {
+		return null;
+	}
+}
+
 module.exports = {
+	SHOWCASE_TYPES,
+	TYPE_KEYS,
 	computeSlices,
-	groupRect,
+	stackTops,
 	renderPreview,
 	addPieceToZip,
 	layoutLink,
-	GROUP_ORDER,
-	PIECE_GROUPS,
-	SHOWCASE_TOP,
+	parseLayoutLink,
 };

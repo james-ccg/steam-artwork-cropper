@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const $ = require('jquery');
 const JSZip = require('jszip');
 const download = require('downloadjs');
 
@@ -24,13 +25,16 @@ const SLICE_README = `These images are slices of one profile background. Uploade
 matching showcase, each one fills the space that showcase covers, so the
 profile reads as a single seamless picture.
 
-  Background                    -> set as your profile background (unchanged)
-  Artwork_Middle + Artwork_Side -> the two images of an Artwork Showcase
-  Featured                      -> a Featured Artwork Showcase
-  Avatar                        -> set as your profile avatar
+  Background            -> set as your profile background (unchanged)
+  Avatar               -> set as your profile avatar
+  <N>_Artwork_Middle   -> the wide image of your Nth showcase (an Artwork
+  <N>_Artwork_Side          Showcase = Middle + Side; Screenshot is the same)
+  <N>_Featured         -> a Featured Artwork Showcase
+  <N>_Workshop         -> a single-item Workshop Showcase
 
-Set the Background first, then upload each showcase piece with the console
-commands in the upload guide:
+The number prefix is the showcase's position in your profile, top to bottom.
+Set the Background and Avatar first, then upload each showcase piece with the
+console commands in the upload guide:
 https://james-ccg.github.io/cropper/faq/#upload-guide
 Every piece is already hexified, so it renders at full size.
 
@@ -76,13 +80,136 @@ function computeOutputSize(srcWidth, srcHeight, isAnimated) {
 // 'slice'  - cut the background into per-showcase pieces (backgroundSlicer.js).
 let bgMode = 'resize';
 
+// The ordered showcase stack the user is slicing for. Starts with one Artwork
+// Showcase, matching the pre-stack default.
+let bgStack = [{ type: 'artwork', height: 0 }];
+
 function sliceOpts() {
+	const fmt = document.querySelector('input[name="bgSliceFormat"]:checked');
 	return {
-		artwork: document.getElementById('bgSliceArtwork').checked,
-		featured: document.getElementById('bgSliceFeatured').checked,
+		slots: bgStack,
 		avatar: document.getElementById('bgSliceAvatar').checked,
 		longImages: document.getElementById('bgSliceLong').checked,
+		format: fmt ? fmt.value : 'source',
 	};
+}
+
+// Rebuild the stack editor. Each row: a drag handle, a type <select>, a height
+// field (hidden for fixed-height / spacer types), and a remove button. Order
+// is read back from the DOM so jQuery UI sortable "just works".
+function renderStack() {
+	const list = document.getElementById('bgSliceStack');
+	if (!list) return;
+	list.innerHTML = '';
+
+	bgStack.forEach((slot, i) => {
+		const def = backgroundSlicer.SHOWCASE_TYPES[slot.type];
+		const li = document.createElement('li');
+		li.className = 'bgStackRow';
+		li.dataset.index = String(i);
+
+		const handle = document.createElement('span');
+		handle.className = 'bgStackHandle';
+		handle.textContent = '≡';
+		handle.title = 'Drag to reorder';
+
+		const move = (delta) => {
+			const j = i + delta;
+			if (j < 0 || j >= bgStack.length) return;
+			const [row] = bgStack.splice(i, 1);
+			bgStack.splice(j, 0, row);
+			renderStack();
+			refreshSlicePreview();
+		};
+		const up = document.createElement('button');
+		up.type = 'button';
+		up.className = 'bgStackMove';
+		up.textContent = '▲';
+		up.title = 'Move up';
+		up.disabled = i === 0;
+		up.addEventListener('click', () => move(-1));
+		const down = document.createElement('button');
+		down.type = 'button';
+		down.className = 'bgStackMove';
+		down.textContent = '▼';
+		down.title = 'Move down';
+		down.disabled = i === bgStack.length - 1;
+		down.addEventListener('click', () => move(1));
+
+		const sel = document.createElement('select');
+		sel.className = 'bgStackType';
+		backgroundSlicer.TYPE_KEYS.forEach((key) => {
+			const opt = document.createElement('option');
+			opt.value = key;
+			opt.textContent = backgroundSlicer.SHOWCASE_TYPES[key].label;
+			if (key === slot.type) opt.selected = true;
+			sel.appendChild(opt);
+		});
+		sel.addEventListener('change', () => {
+			slot.type = sel.value;
+			slot.height = 0;
+			renderStack();
+			refreshSlicePreview();
+		});
+
+		const hWrap = document.createElement('span');
+		hWrap.className = 'bgStackHeight';
+		if (def && !def.fixedH) {
+			const hIn = document.createElement('input');
+			hIn.type = 'number';
+			hIn.min = '20';
+			hIn.max = '4000';
+			hIn.value = String(slot.height || def.defaultH);
+			hIn.title = 'Showcase height on the profile (px)';
+			hIn.addEventListener('input', () => {
+				slot.height = parseInt(hIn.value, 10) || def.defaultH;
+				refreshSlicePreview();
+			});
+			hWrap.appendChild(hIn);
+			hWrap.appendChild(document.createTextNode(' px'));
+		} else if (def && def.fixedH) {
+			hWrap.textContent = def.fixedH + ' px';
+		}
+
+		const del = document.createElement('button');
+		del.type = 'button';
+		del.className = 'bgStackDel';
+		del.textContent = '×';
+		del.title = 'Remove';
+		del.addEventListener('click', () => {
+			bgStack.splice(i, 1);
+			renderStack();
+			refreshSlicePreview();
+		});
+
+		const moveWrap = document.createElement('span');
+		moveWrap.className = 'bgStackMoveWrap';
+		moveWrap.append(up, down);
+
+		li.append(handle, sel, hWrap, moveWrap, del);
+		list.appendChild(li);
+	});
+
+	if ($ && $.fn && $.fn.sortable) {
+		const $list = $(list);
+		if ($list.data('ui-sortable')) $list.sortable('destroy');
+		$list.sortable({
+			handle: '.bgStackHandle',
+			axis: 'y',
+			tolerance: 'pointer',
+			update: function () {
+				const order = $list
+					.children()
+					.map(function () {
+						return parseInt(this.dataset.index, 10);
+					})
+					.get();
+				bgStack = order.map((idx) => bgStack[idx]);
+				renderStack();
+				refreshSlicePreview();
+			},
+		});
+	}
 }
 
 function refreshSlicePreview() {
@@ -214,8 +341,11 @@ const backgroundShowcase = {
 
 async function exportSlices() {
 	const opts = sliceOpts();
-	if (!opts.artwork && !opts.featured && !opts.avatar) {
-		alert('Pick at least one showcase to slice for.');
+	const hasShowcase = opts.slots.some(
+		(sl) => (backgroundSlicer.SHOWCASE_TYPES[sl.type] || {}).file
+	);
+	if (!hasShowcase && !opts.avatar) {
+		alert('Add a showcase (or the avatar) to slice for.');
 		return;
 	}
 	if (inputImage.file.type === 'image/gif') {
@@ -238,17 +368,22 @@ async function exportSlices() {
 		inputImage.file.type === 'image/apng' ? 'image/png' : inputImage.file.type;
 
 	// Bundle the background itself too, so the user uploads a set that lines
-	// up - the pieces were cut against exactly these pixels.
+	// up - the pieces were cut against exactly these pixels. Always the source
+	// format (the format toggle only applies to the showcase pieces).
 	inputImage.setStatusMsg('Adding the background...');
 	await backgroundSlicer.addPieceToZip(
 		zip,
 		{ file: 'Background', canvas: src },
-		sourceType
+		sourceType,
+		null
 	);
 
 	for (const piece of pieces) {
 		inputImage.setStatusMsg(`Slicing ${piece.file}...`);
-		await backgroundSlicer.addPieceToZip(zip, piece, sourceType);
+		// Avatars keep the source format (Steam's avatar upload is normal);
+		// only the console-uploaded showcase pieces follow the format toggle.
+		const fmt = piece.file === 'Avatar' ? null : opts.format;
+		await backgroundSlicer.addPieceToZip(zip, piece, sourceType, fmt);
 	}
 
 	inputImage.setStatusMsg('Creating zip file, please wait...');
@@ -370,11 +505,36 @@ const bgModeSlice = document.getElementById('bgModeSlice');
 if (bgModeResize) bgModeResize.addEventListener('change', () => setBgMode('resize'));
 if (bgModeSlice) bgModeSlice.addEventListener('change', () => setBgMode('slice'));
 
-['bgSliceArtwork', 'bgSliceFeatured', 'bgSliceAvatar', 'bgSliceLong'].forEach(
-	(id) => {
-		const el = document.getElementById(id);
-		if (el) el.addEventListener('change', refreshSlicePreview);
-	}
-);
+['bgSliceAvatar', 'bgSliceLong'].forEach((id) => {
+	const el = document.getElementById(id);
+	if (el) el.addEventListener('change', refreshSlicePreview);
+});
+
+document.querySelectorAll('input[name="bgSliceFormat"]').forEach((el) => {
+	el.addEventListener('change', refreshSlicePreview);
+});
+
+const bgSliceAdd = document.getElementById('bgSliceAdd');
+if (bgSliceAdd) {
+	bgSliceAdd.addEventListener('click', () => {
+		bgStack.push({ type: 'featured', height: 0 });
+		renderStack();
+		refreshSlicePreview();
+	});
+}
+
+// A ?#slice=... link restores the whole stack; the background URL in it is
+// loaded by urlLoader.js, this just seeds the stack + options.
+(function restoreFromHash() {
+	const st = backgroundSlicer.parseLayoutLink(window.location.hash);
+	if (!st) return;
+	if (st.slots && st.slots.length) bgStack = st.slots;
+	const av = document.getElementById('bgSliceAvatar');
+	const lng = document.getElementById('bgSliceLong');
+	if (av) av.checked = st.avatar;
+	if (lng) lng.checked = st.longImages;
+})();
+
+renderStack();
 
 module.exports = backgroundShowcase.loadImage;
