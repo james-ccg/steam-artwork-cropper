@@ -18,6 +18,19 @@ const { hexifyBytes, hexifyToBase64 } = require('./hexify');
 const textOverlay = require('./textOverlay');
 const demoDefaults = require('./demoDefaults');
 
+// A Workshop Showcase renders five items in a strip. Steam's own CSS gives
+// each item a 20%-of-632px container (126.4px) with a 2px margin on every
+// side, so the item image itself is 122.4px wide and neighbours sit 4px
+// apart. The reconstructed panorama runs from item 1's left edge to item 5's
+// right edge - 5*122.4 + 4*4 = 628px - so that span, not the full 632px
+// block, is what a source image's width maps onto.
+const WS_SLOT_WIDTH = 122.4;
+const WS_SLOT_GAP = 4;
+const WS_PANORAMA_SPAN = WS_SLOT_WIDTH * 5 + WS_SLOT_GAP * 4; // 628
+// Integer canvas width for a single displayed slot (fractions aren't valid
+// canvas dimensions; Steam scales the 122px source up to 122.4px on display).
+const WS_SLOT_CANVAS_WIDTH = Math.round(WS_SLOT_WIDTH); // 122
+
 // Filenames that are still over Steam's 5MB limit after best-effort
 // compression, collected across a single downloadImages() run so the final
 // status message can warn about them (dropping frames/quality has a floor -
@@ -168,11 +181,8 @@ const workshopShowcase = {
 			workshopShowcase.imgPreview[0],
 			'height'
 		);
-		// workshopShowcase.sliceWidth = Math.round(
-		// 	(122.4 * inputImage.width) / 632
-		// );
 		workshopShowcase.sliceWidth = Math.round(
-			(123 * inputImage.width) / 632
+			(WS_SLOT_WIDTH * inputImage.width) / WS_PANORAMA_SPAN
 		);
 		workshopShowcase.gapWitdh = Math.round(
 			(inputImage.width - workshopShowcase.sliceWidth * 5) / 4
@@ -181,8 +191,12 @@ const workshopShowcase = {
 		workshopShowcase.dragContainer.css('bottom', '');
 		$('#togglePreview').prop('checked', false);
 
-		// if (workshopShowcase.sliceWidth < 122 || inputImage.height < 122) {
-		if (workshopShowcase.sliceWidth < 123 || inputImage.height < 123) {
+		// Below one full slot's worth of pixels there's nothing left to slice,
+		// so fall back to showing the source at 1:1 with the "too small" warning.
+		if (
+			workshopShowcase.sliceWidth < WS_SLOT_CANVAS_WIDTH ||
+			inputImage.height < WS_SLOT_CANVAS_WIDTH
+		) {
 			workshopShowcase.showOriginalImagePreview();
 			$('#resizeImage').prop('checked', false);
 		} else {
@@ -234,7 +248,7 @@ const workshopShowcase = {
 
 				if (!$('#toggleSlider').is(':checked')) {
 					cropCanvas = new CustomCanvas(
-						123,
+						WS_SLOT_CANVAS_WIDTH,
 						getComputedValueFor(
 							workshopShowcase.dragElem[0],
 							'height'
@@ -242,7 +256,7 @@ const workshopShowcase = {
 					);
 				} else {
 					cropCanvas = new CustomCanvas(
-						123,
+						WS_SLOT_CANVAS_WIDTH,
 						getComputedValueFor(
 							workshopShowcase.imgPreview[0],
 							'height'
@@ -422,7 +436,7 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 			if (isImageSmall) {
 				if (!toggleSliderChecked) {
 					frame = new CustomCanvas(
-						123,
+						WS_SLOT_CANVAS_WIDTH,
 						getComputedValueFor(
 							workshopShowcase.dragElem[0],
 							'height'
@@ -430,7 +444,7 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 					);
 				} else {
 					frame = new CustomCanvas(
-						123,
+						WS_SLOT_CANVAS_WIDTH,
 						getComputedValueFor(
 							workshopShowcase.imgPreview[0],
 							'height'
