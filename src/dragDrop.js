@@ -51,7 +51,8 @@ function setupDragAndDrop(inputSelector) {
 		hideOverlay();
 
 		const files = event.dataTransfer.files;
-		if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+		const t = files && files.length > 0 ? files[0].type : '';
+		if (t.startsWith('image/') || t === 'video/webm' || t === 'video/mp4') {
 			input.files = files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		}

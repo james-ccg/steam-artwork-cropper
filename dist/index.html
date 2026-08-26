@@ -4,6 +4,20 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
+    <!-- Cross-origin isolation via a service worker (coi-serviceworker), so the
+         browser exposes SharedArrayBuffer for the multi-threaded ffmpeg.wasm
+         used by the Background Cropper's animated slicing. "credentialless"
+         keeps Steam's cross-origin fonts/skin images loading in the mock.
+         First visit triggers one automatic reload; after that the SW is
+         cached and there's no reload. -->
+    <script>
+        window.coi = {
+            coepCredentialless: () => true,
+            quiet: true,
+        };
+    </script>
+    <script src="./coi-serviceworker.min.js"></script>
+
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171a21" />
     <title>Image Cropper for Steam Featured, Artwork &amp; Workshop Showcase</title>
@@ -13,7 +27,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=5">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=6">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -107,7 +121,7 @@
                                     <div class="imageSourceGrid">
                                         <div class="imageSourceCol">
                                             <h3 class="imageSourceLabel">Select image:</h3>
-                                            <input type="file" name="" id="selectedImage" accept="image/*">
+                                            <input type="file" name="" id="selectedImage" accept="image/*,video/webm,video/mp4">
                                         </div>
                                         <div class="imageSourceCol">
                                             <h3 class="imageSourceLabel">or paste a direct image link:</h3>
@@ -218,12 +232,33 @@
                                 <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164&times;164)</span></label></p>
                                 <p><label><input type="checkbox" id="bgSliceLong" /> Long images <span class="dimHint">(cut 2000px tall for a stretched showcase)</span></label></p>
 
-                                <p class="bgSliceSubLabel">Showcase piece format</p>
+                                <p class="bgSliceSubLabel">Showcase piece format <span class="dimHint">(still backgrounds)</span></p>
                                 <p class="bgSliceFormatRow">
                                     <label><input type="radio" name="bgSliceFormat" value="source" checked /> Same as source</label>
                                     <label><input type="radio" name="bgSliceFormat" value="png" /> PNG</label>
                                     <label><input type="radio" name="bgSliceFormat" value="jpg" /> JPG</label>
                                 </p>
+
+                                <div id="bgAnimControls" style="display: none">
+                                    <p class="bgSliceSubLabel">Animated output</p>
+                                    <div id="bgAnimIsolationNotice" class="bgAnimNotice" style="display: none">
+                                        Animated slicing needs a one-time setup (a service worker for
+                                        cross-origin isolation). The page reloads once.
+                                        <button type="button" id="bgAnimEnable" class="bgSliceAddBtn">Enable animated slicing</button>
+                                    </div>
+                                    <p class="bgSliceFormatRow">
+                                        <label><input type="radio" name="bgAnimFormat" value="webm" checked /> WEBM</label>
+                                        <label><input type="radio" name="bgAnimFormat" value="mp4" /> MP4</label>
+                                        <label><input type="radio" name="bgAnimFormat" value="gif" /> GIF</label>
+                                        <label><input type="radio" name="bgAnimFormat" value="webp" /> WEBP</label>
+                                        <label><input type="radio" name="bgAnimFormat" value="apng" /> APNG</label>
+                                    </p>
+                                    <p class="bgAnimNumRow">
+                                        <label>FPS <input type="number" id="bgAnimFps" min="0" max="60" value="0" /> <span class="dimHint">0 = source</span></label>
+                                        <label>Quality <input type="number" id="bgAnimQuality" min="0" max="100" value="0" /> <span class="dimHint">0 = auto</span></label>
+                                    </p>
+                                    <p class="reminder">Runs an in-browser video encoder - a full profile's worth of pieces can take a few minutes. The status line shows progress.</p>
+                                </div>
                             </div>
 
                             <button class="download" id="downloadBackground" style="display: none"></button>

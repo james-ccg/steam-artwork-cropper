@@ -54,6 +54,8 @@ const FORMAT_FROM_MIME = {
 	'image/jpeg': 'jpg',
 	'image/gif': 'gif',
 	'image/webp': 'webp',
+	'video/mp4': 'mp4',
+	'video/webm': 'webm',
 };
 
 function hexifyByType(bytes, format) {
@@ -62,6 +64,12 @@ function hexifyByType(bytes, format) {
 	if (size === 0) return data;
 
 	switch (format) {
+		case 'mp4':
+		case 'webm':
+			// Video containers are structurally strict and Steam serves them
+			// as-is (no display-time resize on an animated showcase), so leave
+			// the bytes alone rather than corrupt the container.
+			return data;
 		case 'gif':
 			data[size - 1] = 0x21;
 			return data;
@@ -127,4 +135,17 @@ function hexifyBlobByType(blob) {
 	});
 }
 
-module.exports = { hexifyBytes, hexifyToBase64, hexifyByType, hexifyBlobByType };
+// For the animated slicer, which hands back raw bytes + a mime type.
+function hexifyBytesToBase64(bytes, mime) {
+	const format = FORMAT_FROM_MIME[mime] || null;
+	const hexed = format ? hexifyByType(bytes, format) : hexifyGeneric(bytes);
+	return window.btoa(bytesToBinaryString(hexed));
+}
+
+module.exports = {
+	hexifyBytes,
+	hexifyToBase64,
+	hexifyByType,
+	hexifyBlobByType,
+	hexifyBytesToBase64,
+};

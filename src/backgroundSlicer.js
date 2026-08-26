@@ -142,26 +142,24 @@ function cutRect(bgCanvas, sx, sy, w, h) {
 }
 
 /**
- * @param {HTMLCanvasElement} bgCanvas  background at its native resolution
+ * The rectangle (in background pixels) each showcase piece is cut from.
+ * Shared by the still slicer (cutRect per rect) and the animated slicer
+ * (ffmpeg crop per rect).
+ * @param {number} bgWidth  background native width
  * @param {{slots:Array<{type:string,height?:number}>, avatar:boolean, longImages:boolean}} opts
- * @returns {Array<{file:string, canvas:HTMLCanvasElement, w:number, h:number}>}
+ * @returns {Array<{file:string, sx:number, sy:number, w:number, h:number}>}
  */
-function computeSlices(bgCanvas, opts) {
-	const centre = Math.floor(bgCanvas.width / 2);
+function sliceRects(bgWidth, opts) {
+	const centre = Math.floor(bgWidth / 2);
 	const out = [];
 
 	if (opts.avatar) {
 		out.push({
 			file: 'Avatar',
+			sx: centre + AVATAR_DX,
+			sy: AVATAR_TOP,
 			w: AVATAR_SIZE,
 			h: AVATAR_SIZE,
-			canvas: cutRect(
-				bgCanvas,
-				centre + AVATAR_DX,
-				AVATAR_TOP,
-				AVATAR_SIZE,
-				AVATAR_SIZE
-			),
 		});
 	}
 
@@ -176,14 +174,29 @@ function computeSlices(bgCanvas, opts) {
 		t.cols.forEach((col) => {
 			out.push({
 				file: `${prefix}${t.file}${col.suffix}`,
+				sx: centre + col.dx,
+				sy: top,
 				w: col.w,
 				h,
-				canvas: cutRect(bgCanvas, centre + col.dx, top, col.w, h),
 			});
 		});
 	});
 
 	return out;
+}
+
+/**
+ * @param {HTMLCanvasElement} bgCanvas  background at its native resolution
+ * @param {object} opts  see sliceRects
+ * @returns {Array<{file:string, canvas:HTMLCanvasElement, w:number, h:number}>}
+ */
+function computeSlices(bgCanvas, opts) {
+	return sliceRects(bgCanvas.width, opts).map((r) => ({
+		file: r.file,
+		w: r.w,
+		h: r.h,
+		canvas: cutRect(bgCanvas, r.sx, r.sy, r.w, r.h),
+	}));
 }
 
 // --- live preview ------------------------------------------------------
@@ -336,6 +349,7 @@ module.exports = {
 	SHOWCASE_TYPES,
 	TYPE_KEYS,
 	computeSlices,
+	sliceRects,
 	stackTops,
 	renderPreview,
 	addPieceToZip,

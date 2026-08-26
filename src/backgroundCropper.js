@@ -17,9 +17,20 @@ const {
 	withExtension,
 } = require('./exportLimit');
 const { encodeGifUnderLimit, decodeGifFrames } = require('./gifExport');
-const { hexifyToBase64 } = require('./hexify');
+const { hexifyToBase64, hexifyBytesToBase64 } = require('./hexify');
 const uploadGuideText = require('./uploadGuideText');
 const backgroundSlicer = require('./backgroundSlicer');
+const animatedSlicer = require('./animatedSlicer');
+
+function isAnimatedSource() {
+	const f = inputImage.file;
+	return (
+		!!f &&
+		(f.type === 'image/gif' ||
+			f.type === 'video/webm' ||
+			f.type === 'video/mp4')
+	);
+}
 
 const SLICE_README = `These images are slices of one profile background. Uploaded to the
 matching showcase, each one fills the space that showcase covers, so the
@@ -36,7 +47,10 @@ The number prefix is the showcase's position in your profile, top to bottom.
 Set the Background and Avatar first, then upload each showcase piece with the
 console commands in the upload guide:
 https://james-ccg.github.io/cropper/faq/#upload-guide
-Every piece is already hexified, so it renders at full size.
+
+Still pieces are already hexified so they render at full size. Animated
+pieces (.webm / .mp4 / .gif) are uploaded to a Video / Workshop showcase as
+video - no hexify needed.
 
 by xdjames - https://steamcommunity.com/id/james_ccg/
 `;
@@ -239,6 +253,41 @@ function nativeSourceCanvas() {
 	return src;
 }
 
+function animatedOpts() {
+	const fmt = document.querySelector('input[name="bgAnimFormat"]:checked');
+	const fps = parseInt(
+		(document.getElementById('bgAnimFps') || {}).value || '0',
+		10
+	);
+	const q = parseInt(
+		(document.getElementById('bgAnimQuality') || {}).value || '0',
+		10
+	);
+	return {
+		format: fmt ? fmt.value : 'webm',
+		fps: fps > 0 ? fps : 0,
+		quality: q > 0 ? q : 0,
+	};
+}
+
+// Show the animated-output controls (format / fps / quality) only when the
+// loaded source is actually animated, and surface the one-time
+// cross-origin-isolation notice if the tab isn't isolated yet.
+function refreshAnimatedControls() {
+	const box = document.getElementById('bgAnimControls');
+	if (!box) return;
+	const animated = isAnimatedSource();
+	box.style.display = animated && bgMode === 'slice' ? '' : 'none';
+
+	const notice = document.getElementById('bgAnimIsolationNotice');
+	if (notice) {
+		notice.style.display =
+			animated && bgMode === 'slice' && !animatedSlicer.isIsolated()
+				? ''
+				: 'none';
+	}
+}
+
 function setBgMode(mode) {
 	bgMode = mode === 'slice' ? 'slice' : 'resize';
 	const slicing = bgMode === 'slice';
@@ -255,13 +304,71 @@ function setBgMode(mode) {
 	document.getElementById('bgModeResize').checked = !slicing;
 	document.getElementById('bgModeSlice').checked = slicing;
 
+	refreshAnimatedControls();
 	refreshSlicePreview();
+}
+
+// A .webm / .mp4 background can't load into an <img>. Pull its dimensions and
+// first frame off a <video> instead; the first frame stands in for the still
+// preview and the slice-rect preview, while the actual animated slicing runs
+// ffmpeg over the original file.
+function loadVideoBackground(file) {
+	inputImage.setStatusMsg('Loading video, please wait...');
+	const url = URL.createObjectURL(file);
+	const v = document.createElement('video');
+	v.muted = true;
+	v.playsInline = true;
+	v.preload = 'auto';
+	v.onerror = function () {
+		URL.revokeObjectURL(url);
+		inputImage.setStatusMsg("Couldn't read that video.");
+	};
+	v.onloadeddata = function () {
+		// Steam renders an animated background's <video> at a fixed
+		// width: 1920px (profilev2.css), so that - not the source's own
+		// resolution - is the coordinate space the showcase slices are cut in.
+		const dispW = ANIMATED_DISPLAY_WIDTH;
+		const dispH = Math.max(
+			1,
+			Math.round((v.videoHeight * dispW) / v.videoWidth)
+		);
+		inputImage.width = dispW;
+		inputImage.height = dispH;
+
+		const frame = document.createElement('canvas');
+		frame.width = dispW;
+		frame.height = dispH;
+		frame
+			.getContext('2d')
+			.drawImage(v, 0, 0, v.videoWidth, v.videoHeight, 0, 0, dispW, dispH);
+
+		backgroundShowcase.canvas = new CustomCanvas(dispW, dispH);
+		backgroundShowcase.canvas.canvas
+			.getContext('2d')
+			.drawImage(frame, 0, 0);
+
+		backgroundShowcase.img.src = frame.toDataURL('image/jpeg', 0.85);
+		rightPanel.originalSize.innerText = `${v.videoWidth} x ${v.videoHeight}`;
+		document.getElementById('backgroundSize').innerText =
+			v.videoWidth === dispW
+				? `${dispW} x ${dispH} (animated)`
+				: `${dispW} x ${dispH} (animated, from ${v.videoWidth} x ${v.videoHeight})`;
+		inputImage.setStatusMsg('Done');
+		refreshAnimatedControls();
+		refreshSlicePreview();
+		URL.revokeObjectURL(url);
+	};
+	v.src = url;
 }
 
 const backgroundShowcase = {
 	img: document.getElementById('backgroundImg'),
 	canvas: null,
 	loadImage: function () {
+		if (inputImage.file && inputImage.file.type.indexOf('video/') === 0) {
+			loadVideoBackground(inputImage.file);
+			return;
+		}
 		inputImage.img.onload = function () {
 			const img = inputImage.img;
 			inputImage.width = img.width;
@@ -296,6 +403,7 @@ const backgroundShowcase = {
 				? `${size.width} x ${size.height} (from ${img.width} x ${img.height})`
 				: `${size.width} x ${size.height}`;
 			inputImage.setStatusMsg('Done');
+			refreshAnimatedControls();
 			refreshSlicePreview();
 		};
 
@@ -348,21 +456,37 @@ async function exportSlices() {
 		alert('Add a showcase (or the avatar) to slice for.');
 		return;
 	}
-	if (inputImage.file.type === 'image/gif') {
-		alert(
-			'Slicing animated backgrounds is coming soon - for now, switch to "Resize whole background" for GIFs, or use a still image.'
-		);
-		return;
-	}
-
-	inputImage.setStatusMsg('Slicing background, please wait...');
-	const src = nativeSourceCanvas();
-	const pieces = backgroundSlicer.computeSlices(src, opts);
 
 	const zip = new JSZip();
 	zip.file('readme.txt', SLICE_README);
 	const link = backgroundSlicer.layoutLink(inputImage.sourceUrl || '', opts);
 	if (link) zip.file('layout.txt', link + '\n');
+
+	try {
+		if (isAnimatedSource()) {
+			await exportAnimatedSlices(zip, opts);
+		} else {
+			await exportStillSlices(zip, opts);
+		}
+	} catch (e) {
+		inputImage.setStatusMsg(e && e.message ? e.message : 'Slicing failed.');
+		return;
+	}
+
+	inputImage.setStatusMsg('Creating zip file, please wait...');
+	zip.generateAsync({ type: 'blob' }).then(function (content) {
+		download(
+			content,
+			`${inputImage.file.name}_slices_${new Date().getTime()}.zip`
+		);
+		inputImage.setStatusMsg('Done');
+	});
+}
+
+async function exportStillSlices(zip, opts) {
+	inputImage.setStatusMsg('Slicing background, please wait...');
+	const src = nativeSourceCanvas();
+	const pieces = backgroundSlicer.computeSlices(src, opts);
 
 	const sourceType =
 		inputImage.file.type === 'image/apng' ? 'image/png' : inputImage.file.type;
@@ -385,14 +509,35 @@ async function exportSlices() {
 		const fmt = piece.file === 'Avatar' ? null : opts.format;
 		await backgroundSlicer.addPieceToZip(zip, piece, sourceType, fmt);
 	}
+}
 
-	inputImage.setStatusMsg('Creating zip file, please wait...');
-	zip.generateAsync({ type: 'blob' }).then(function (content) {
-		download(
-			content,
-			`${inputImage.file.name}_slices_${new Date().getTime()}.zip`
-		);
-		inputImage.setStatusMsg('Done');
+async function exportAnimatedSlices(zip, opts) {
+	const aOpts = animatedOpts();
+	const rects = backgroundSlicer.sliceRects(inputImage.width, opts);
+
+	// The whole animated background, byte-for-byte, so the uploaded set matches.
+	// A GIF gets the trailing-byte nudge; a video container is left alone.
+	const bgExt = (inputImage.file.name.split('.').pop() || 'webm').toLowerCase();
+	const bgBytes = new Uint8Array(await inputImage.file.arrayBuffer());
+	zip.file(
+		`Background.${bgExt}`,
+		hexifyBytesToBase64(bgBytes, inputImage.file.type),
+		{ base64: true }
+	);
+
+	const results = await animatedSlicer.sliceAnimated({
+		file: inputImage.file,
+		videoW: inputImage.width,
+		videoH: inputImage.height,
+		rects,
+		opts: aOpts,
+		onStatus: (s) => inputImage.setStatusMsg(s),
+		onProgress: (f) =>
+			inputImage.setStatusMsg(`Slicing... ${(f * 100).toFixed(0)}%`),
+	});
+
+	results.forEach((r) => {
+		zip.file(r.file, hexifyBytesToBase64(r.bytes, r.type), { base64: true });
 	});
 }
 
@@ -520,6 +665,31 @@ if (bgSliceAdd) {
 		bgStack.push({ type: 'featured', height: 0 });
 		renderStack();
 		refreshSlicePreview();
+	});
+}
+
+// One-time "enable animated slicing" - registers the coi service worker and
+// reloads so the tab becomes cross-origin isolated. After the reload the
+// notice hides itself (isIsolated() is true).
+const bgAnimEnable = document.getElementById('bgAnimEnable');
+if (bgAnimEnable) {
+	bgAnimEnable.addEventListener('click', async () => {
+		if (animatedSlicer.isIsolated()) {
+			refreshAnimatedControls();
+			return;
+		}
+		bgAnimEnable.disabled = true;
+		bgAnimEnable.textContent = 'Enabling...';
+		try {
+			if (navigator.serviceWorker) {
+				await navigator.serviceWorker.register('./coi-serviceworker.min.js');
+			}
+			window.location.reload();
+		} catch (e) {
+			bgAnimEnable.disabled = false;
+			bgAnimEnable.textContent = 'Enable animated slicing';
+			inputImage.setStatusMsg("Couldn't enable animated slicing: " + e.message);
+		}
 	});
 }
 

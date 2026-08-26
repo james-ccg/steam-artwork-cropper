@@ -752,3 +752,47 @@ button.download {
 	gap: 4px;
 	cursor: pointer;
 }
+.bgSliceFormatRow {
+	flex-wrap: wrap;
+}
+
+#bgAnimControls {
+	margin-top: 4px;
+	padding-top: 8px;
+	border-top: 1px solid #2a3f4d;
+}
+.bgAnimNotice {
+	background: #241f14;
+	border: 1px solid #4d422a;
+	border-radius: 4px;
+	padding: 8px 10px;
+	margin: 4px 0 8px;
+	font-size: 12px;
+	color: #d9c9a6;
+	line-height: 1.5;
+}
+.bgAnimNotice .bgSliceAddBtn {
+	margin-top: 6px;
+	margin-bottom: 0;
+}
+.bgAnimNumRow {
+	display: flex;
+	gap: 14px;
+	font-size: 12px;
+	color: #c6d4df;
+	flex-wrap: wrap;
+}
+.bgAnimNumRow label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.bgAnimNumRow input {
+	width: 46px;
+	background: #12181d;
+	color: #c6d4df;
+	border: 1px solid #33454f;
+	border-radius: 3px;
+	padding: 2px 3px;
+	font-size: 12px;
+}

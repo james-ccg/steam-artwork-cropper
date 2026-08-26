@@ -306,6 +306,17 @@ function loadNewFile(file) {
 	if (!file) return;
 	inputImage.file = file;
 	tabInfo.reset();
+
+	// A video only makes sense as an animated profile background - route it to
+	// the Background Cropper regardless of which tab happens to be open.
+	// setMode('cropper') clicks into the background area, and because the demo
+	// loader is a no-op once a user file is set, that runs the load for us.
+	if (file.type && file.type.indexOf('video/') === 0) {
+		require('./profilePreview').setMode('cropper');
+		rightPanel.backgroundInfo.show();
+		return;
+	}
+
 	if (tabInfo.currentTab == '#featured') {
 		featuredShowcaseLoadImage();
 		rightPanel.featuredInfo.show();
