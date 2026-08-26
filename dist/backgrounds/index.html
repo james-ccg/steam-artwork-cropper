@@ -533,6 +533,31 @@
 		function posterUrl(bg) { return bg.a ? POSTER + bg.app + '/' + bg.p : MARKET + bg.m; }
 		function movieUrl(bg) { return MOVIE + bg.app + '/' + bg.v; }
 
+		// Points Shop reward defids for the animated entries - the direct
+		// "redeem for points" link is store.steampowered.com/points/shop/app/
+		// <appid>/reward/<defid>. Static entries are Community Market items
+		// (buy with wallet funds), linked as a market search by name.
+		var DEFIDS = {
+			'the-carnival': 434927, 'spark-tower': 2357868, 'the-last-gauntlet': 2357869,
+			'infected-town-livonia': 2867465, 'heli-crash': 2867466, 'streets-of-new-york': 4009026,
+			'going-rogue': 4009031, 'sakura-background-profile': 3845998, 'your-room': 4063930,
+			'floating-hearts': 3882894, 'heart-cascade': 3882895, 'haze': 3895164,
+			'pixel-rain': 3024314, 'taffyscroll': 4062661, 'tungether-forever': 4073349,
+			'night-animated': 4065047, 'day-animated': 4065048,
+			'pulsing-rites-of-the-jungle': 2747339, 'whispers-of-the-sacred-stream': 2747342,
+			'stream-in-the-forest': 3682076
+		};
+		function buyUrl(bg) {
+			if (bg.a) {
+				var d = DEFIDS[bg.slug];
+				return d
+					? 'https://store.steampowered.com/points/shop/app/' + bg.app + '/reward/' + d
+					: 'https://store.steampowered.com/points/shop/app/' + bg.app;
+			}
+			return 'https://steamcommunity.com/market/search?q=' + encodeURIComponent(bg.n) +
+				'&category_753_item_class%5B0%5D=tag_item_class_3';
+		}
+
 		// Progressive enhancement: pause a card's video once it scrolls well
 		// out of view (and resume it when it comes back), so a wall of animated
 		// backgrounds isn't all decoding at once. If IntersectionObserver never
@@ -817,15 +842,12 @@
 			srcLink.style.color = 'var(--accent)';
 			srcLink.target = '_blank';
 			srcLink.rel = 'noopener';
-			if (bg.a) {
-				srcLink.href = 'https://store.steampowered.com/points/shop/c/backgrounds';
-				srcLink.textContent = 'Steam Points Shop →';
-			} else {
-				srcLink.href = 'https://steamcommunity.com/market/search?category_753_item_class%5B0%5D=tag_item_class_3';
-				srcLink.textContent = 'Steam Community Market →';
-			}
+			srcLink.href = buyUrl(bg);
+			srcLink.textContent = bg.a
+				? 'Redeem in the Steam Points Shop →'
+				: 'Find on the Steam Community Market →';
 			src.appendChild(srcLink);
-			if (bg.a) src.appendChild(document.createTextNode(' · app ' + bg.app));
+			if (bg.a) src.appendChild(document.createTextNode(' 2,000 pts'));
 
 			document.getElementById('detailDesc').textContent =
 				'A ' + (bg.a ? 'looping animated' : 'static') + ' Steam profile background in the ' + bg.cat +
@@ -841,6 +863,15 @@
 				window.location.href = '../?bg=' + encodeURIComponent(posterUrl(bg));
 			});
 			actions.appendChild(crop);
+
+			var buy = document.createElement('a');
+			buy.className = 'btn ghost';
+			buy.href = buyUrl(bg);
+			buy.target = '_blank';
+			buy.rel = 'noopener';
+			buy.textContent = bg.a ? 'Get it on Steam (2,000 pts) ↗' : 'Buy on the Steam Market ↗';
+			actions.appendChild(buy);
+
 			var copy = document.createElement('button');
 			copy.className = 'btn ghost';
 			copy.textContent = 'Copy image link';
