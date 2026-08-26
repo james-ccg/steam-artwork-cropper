@@ -45,25 +45,30 @@ function refresh() {
 	}
 }
 
-// The "Choose format:" toggle is shown in both modes now. The Background
-// option only makes sense in Background Cropper mode, so its button is hidden
-// in Artwork Creator mode. #backgroundTab is a real icon button in
-// .formatToggle; it's clicked programmatically here so switching modes reuses
-// the same tab/changeTab machinery as the other three formats, without this
-// module having to import the format modules (which already import it).
+// The "Choose format:" toggle lists the three showcases (Featured, Artwork,
+// Workshop). The profile Background is not a format - it's the other mode -
+// so in Background Cropper mode the whole chooser (label + buttons) is hidden
+// and there's nothing to pick. #backgroundTab is a hidden, non-interactive
+// element kept only as the hook this clicks programmatically, so routing into
+// the background crop area still reuses the same tab/changeTab machinery as
+// the other three formats without importing the format modules.
 //
-// The two nav links are mode toggles: "Background Cropper" always lands on
-// the Background format, and (mirroring that) "Artwork Creator" resets to the
-// Artwork format whenever it's actually switching modes - so leaving
+// The two nav links are mode toggles: "Background Cropper" routes to the
+// background crop area, and (mirroring that) "Artwork Creator" resets to the
+// Artwork showcase whenever it's actually switching modes - so leaving
 // Background Cropper never strands you on a format you'd picked inside it.
 function updateFormatVisibility(switchingModes) {
 	const backgroundTab = document.getElementById('backgroundTab');
 	if (!backgroundTab) return;
+	const formatLabel = document.getElementById('formatToggleLabel');
+	const formatRow = document.querySelector('.formatToggleRow');
 	if (mode === 'cropper') {
-		backgroundTab.style.removeProperty('display');
+		if (formatLabel) formatLabel.style.setProperty('display', 'none');
+		if (formatRow) formatRow.style.setProperty('display', 'none');
 		backgroundTab.click();
 	} else {
-		backgroundTab.style.setProperty('display', 'none');
+		if (formatLabel) formatLabel.style.removeProperty('display');
+		if (formatRow) formatRow.style.removeProperty('display');
 		if (switchingModes || tabInfo.currentTab === '#background') {
 			const artworkTab = document.getElementById('artworkTab');
 			if (artworkTab) artworkTab.click();
