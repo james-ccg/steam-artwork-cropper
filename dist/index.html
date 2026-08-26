@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=3">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -27,8 +27,8 @@
                 </div>
 
                 <div class="supernav_container">
-                    <a class="menuitem supernav" href="#textOverlayPanel">ARTWORK CREATOR</a>
-                    <a class="menuitem supernav" href="#formatToggleLabel">BACKGROUND CROPPER</a>
+                    <a class="menuitem supernav" href="#textOverlayPanel" id="artworkCreatorNav">ARTWORK CREATOR</a>
+                    <a class="menuitem supernav" href="#formatToggleLabel" id="backgroundCropperNav">BACKGROUND CROPPER</a>
                     <a class="menuitem supernav" target="_blank" href="https://james-ccg.github.io/cropper/backgrounds/">Backgrounds</a>
                     <a class="menuitem supernav" target="_blank" href="https://james-ccg.github.io/cropper/guide/">Upload Guide</a>
                     <a class="menuitem supernav" target="_blank" href="https://steamcommunity.com/id/James_ccg">James</a>
@@ -104,55 +104,48 @@
                                 <div class="profile_summary noexpand">
                                     <!-- *********************** Input Area *********************** -->
 
-                                    <h3 style="margin-bottom: 10px; color: #c6d4df">Select image:</h3>
-                                    <input type="file" name="" id="selectedImage" accept="image/*">
-                                    <p style="color: #c6d4df; margin: 10px 0 4px; font-size: 13px">or paste a direct image link (Steam's background CDN blocks this - save that one and upload it above instead):</p>
-                                    <div class="urlLoadRow">
-                                        <input type="text" id="bgUrlInput" placeholder="https://...">
-                                        <button type="button" id="loadBgUrlBtn">Load</button>
-                                    </div>
-
-                                    <p id="formatToggleLabel" class="formatToggleLabel">Choose format:</p>
-                                    <div class="formatToggle">
-                                        <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
-                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-                                        </button>
-                                        <button type="button" class="formatBtn active" id="artworkTab" title="Artwork Showcase" aria-label="Artwork" aria-pressed="true">
-                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M12 3v18"></path></svg>
-                                        </button>
-                                        <button type="button" class="formatBtn" id="workshopTab" title="Workshop Showcase (Background Cropper)" aria-label="Workshop" aria-pressed="false">
-                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7.5 3v18"></path><path d="M12 3v18"></path><path d="M16.5 3v18"></path></svg>
-                                        </button>
-                                        <button type="button" class="formatBtn" id="avatarTab" title="Avatar / PFP" aria-label="Avatar" aria-pressed="false">
-                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path></svg>
-                                        </button>
-                                    </div>
-
-                                    <a class="needBackgroundPromo" href="./backgrounds/" target="_blank">
-                                        <img class="needBackgroundPromoThumb" src="./steam/imgs/nero.jpg" alt="" />
-                                        <span class="needBackgroundPromoBody">
-                                            <span class="needBackgroundPromoTitle">Need a background?</span>
-                                            <span class="needBackgroundPromoBlurb">Paste a Steam background URL above, or browse the gallery.</span>
-                                            <span class="needBackgroundPromoCta">Browse the gallery &rarr;</span>
-                                        </span>
-                                    </a>
-
-                                    <div id="textOverlayPanel">
-                                        <p class="overlayPanelTitle">Artwork Creator - text &amp; border layers, baked into every export, auto-hexified like everything else</p>
-                                        <p class="overlaySectionLabel">Tools</p>
-                                        <div class="overlayToolbar">
-                                            <button type="button" id="addTextLayerBtn">+ Text</button>
-                                            <button type="button" id="addBorderLayerBtn">+ Border</button>
+                                    <div class="imageSourceGrid">
+                                        <div class="imageSourceCol">
+                                            <h3 class="imageSourceLabel">Select image:</h3>
+                                            <input type="file" name="" id="selectedImage" accept="image/*">
                                         </div>
-                                        <p class="overlaySectionLabel">Layers</p>
-                                        <div id="overlayLayersList" class="overlayLayersList"></div>
-                                        <p class="overlaySectionLabel">Properties</p>
-                                        <div id="overlayProps" class="overlayProps"></div>
+                                        <div class="imageSourceCol">
+                                            <h3 class="imageSourceLabel">or paste a direct image link:</h3>
+                                            <div class="urlLoadRow">
+                                                <input type="text" id="bgUrlInput" placeholder="https://...">
+                                                <button type="button" id="loadBgUrlBtn">Load</button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <p style="color: yellow; font-weight: bold; margin-top: 10px">
+                                    <p style="color: yellow; font-weight: bold; margin: 10px 0">
                                         Status: <span id="statusMsg">Idle</span>
                                     </p>
+
+                                    <!-- Creator-mode-only: picks which showcase shape the uploaded artwork is
+                                         cropped into. Background Cropper mode has exactly one output (the
+                                         background itself, at Steam's native resolution) so it gets its own
+                                         area lower down instead of a place in this toggle. -->
+                                    <p id="formatToggleLabel" class="formatToggleLabel">Choose format:</p>
+                                    <div class="formatToggleRow">
+                                        <div class="formatToggle">
+                                            <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
+                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                                            </button>
+                                            <button type="button" class="formatBtn active" id="artworkTab" title="Artwork Showcase" aria-label="Artwork" aria-pressed="true">
+                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M12 3v18"></path></svg>
+                                            </button>
+                                            <button type="button" class="formatBtn" id="workshopTab" title="Workshop Showcase" aria-label="Workshop" aria-pressed="false">
+                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7.5 3v18"></path><path d="M12 3v18"></path><path d="M16.5 3v18"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Background Cropper's own format tab - never shown as an icon (there's
+                                         nothing to pick between), just clicked programmatically by
+                                         profilePreview.js so it reuses the same tab/changeTab machinery as
+                                         the other three. -->
+                                    <button type="button" id="backgroundTab" style="display: none" aria-hidden="true"></button>
                                 </div>
                             </div>
                         </div>
@@ -161,7 +154,20 @@
             </div>
             <div class="profile_content has_profile_background" style="min-height: 800px">
                 <div class="profile_content_inner">
-                    <div class="profile_rightcol" style="color: yellow">
+                    <div class="profile_rightcol">
+                        <div id="textOverlayPanel">
+                            <p class="overlayPanelTitle">Artwork Creator - text &amp; border layers, baked into every export, auto-hexified like everything else</p>
+                            <p class="overlaySectionLabel">Tools</p>
+                            <div class="overlayToolbar">
+                                <button type="button" id="addTextLayerBtn">+ Text</button>
+                                <button type="button" id="addBorderLayerBtn">+ Border</button>
+                            </div>
+                            <p class="overlaySectionLabel">Layers</p>
+                            <div id="overlayLayersList" class="overlayLayersList"></div>
+                            <p class="overlaySectionLabel">Properties</p>
+                            <div id="overlayProps" class="overlayProps"></div>
+                        </div>
+
                         <h1>Resolutions:</h1>
                         <br />
                         <h2>Original picture</h2>
@@ -176,10 +182,19 @@
                                 Featured Showcase is a single continuous image - any height
                                 works, it's just resized to 630px wide.
                             </p>
-                            <button class="download" id="downloadFeatured">
-                                Download image
-                            </button>
-                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
+                            <button class="download" id="downloadFeatured" style="display: none"></button>
+                        </div>
+
+                        <div id="backgroundInfo" style="display: none">
+                            <h2>Background picture</h2>
+                            <h2 id="backgroundSize">-</h2>
+                            <br />
+                            <p class="reminder">
+                                Steam shows profile backgrounds at their native size and height -
+                                nothing gets cropped here, it's only scaled down if wider than
+                                1920px (Steam's max), so it matches once it's uploaded.
+                            </p>
+                            <button class="download" id="downloadBackground" style="display: none"></button>
                         </div>
 
                         <div id="artworkInfo" style="display: none">
@@ -209,10 +224,7 @@
                                 relies on the Steam profile style.
                             </p>
 
-                            <button class="download" id="downloadArtwork">
-                                Download images
-                            </button>
-                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
+                            <button class="download" id="downloadArtwork" style="display: none"></button>
                         </div>
 
                         <div id="worshopInfo" style="display: none">
@@ -245,25 +257,11 @@
                                 <input type="checkbox" id="gifSloppyTransparent2" />
                                 <label for="gifSloppyTransparent2">Disable gif transparency</label>
                             </p>
-                            <button class="download" id="downloadWorkshop">
-                                Download images
-                            </button>
-                            <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
+                            <button class="download" id="downloadWorkshop" style="display: none"></button>
                         </div>
 
-                        <div id="avatarInfo" style="display: none">
-                            <h2>Avatar picture</h2>
-                            <h2 id="avatarSize">-</h2>
-                            <br />
-                            <p class="reminder">
-                                Steam avatars are a plain 184x184 square - a non-square image
-                                is center-cropped first. Upload it as-is through Steam's normal
-                                avatar changer; no hexify trick needed here.
-                            </p>
-                            <button class="download" id="downloadAvatar">
-                                Download image
-                            </button>
-                        </div>
+                        <button class="download" id="exportBtn" title="Export the currently selected format">Export</button>
+                        <p class="hexifyNote">Every file is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
 
                         <br>
                         <p style="color: yellow">
@@ -283,6 +281,26 @@
                                     <div class="screenshot_showcase_primary showcase_slot">
                                         <div class="screenshot_showcase_screenshot" style="width: 630px; max-width: 630px">
                                             <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="featuredImg" />
+                                        </div>
+                                        <div class="screenshot_showcase_itemname"></div>
+                                    </div>
+                                    <div style="clear: both"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Background Cropper area - Steam profile backgrounds aren't a
+                         showcase widget, so this is just a plain 1920x1080 preview
+                         rather than a mock of any specific Steam page element. -->
+                    <div class="profile_customization_area" id="backgroundArea" style="display: none">
+                        <div class="profile_customization myart">
+                            <div class="profile_customization_header">Profile Background</div>
+                            <div class="profile_customization_block">
+                                <div class="screenshot_showcase">
+                                    <div class="screenshot_showcase_primary showcase_slot">
+                                        <div class="screenshot_showcase_screenshot" style="width: 630px; max-width: 630px">
+                                            <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="backgroundImg" />
                                         </div>
                                         <div class="screenshot_showcase_itemname"></div>
                                     </div>
@@ -369,24 +387,6 @@
                                         <div class="label">Submissions</div>
                                     </a>
                                     <div style="clear: left"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Avatar / PFP area -->
-                    <div class="profile_customization_area" id="avatarArea" style="display: none">
-                        <div class="profile_customization myart">
-                            <div class="profile_customization_header">Avatar / PFP</div>
-                            <div class="profile_customization_block">
-                                <div class="screenshot_showcase">
-                                    <div class="screenshot_showcase_primary showcase_slot">
-                                        <div class="screenshot_showcase_screenshot" style="width: 184px; max-width: 184px">
-                                            <img width="100%" style="max-width: 184px" src="./steam/imgs/1.jpg" id="avatarImg" />
-                                        </div>
-                                        <div class="screenshot_showcase_itemname"></div>
-                                    </div>
-                                    <div style="clear: both"></div>
                                 </div>
                             </div>
                         </div>

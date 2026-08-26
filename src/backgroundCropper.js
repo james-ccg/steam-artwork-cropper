@@ -22,14 +22,25 @@ const { encodeGifUnderLimit } = require('./gifExport');
 const { hexifyToBase64 } = require('./hexify');
 const uploadGuideText = require('./uploadGuideText');
 
-// Steam's Featured Showcase is a single continuous image, unlike the regular
-// Artwork Showcase (which splits into a wide + narrow pair) or the Workshop
-// Showcase (five slices) - it just needs to be exactly this wide, at any
-// height, so there's no iterative measuring to do here.
-const FEATURED_WIDTH = 630;
+// Steam profile backgrounds are shown behind the page at their native size,
+// pinned to center/top (see profilev2.css's `background-position: center
+// top` and the `background-size: auto` breakpoint on .has_profile_background)
+// - Steam doesn't force-crop them to any particular height, it just displays
+// however tall the upload is. 1920px is the documented max native width
+// though, so a wider upload gets scaled down to that (preserving its full
+// height, proportionally) instead of losing content off the sides or bottom
+// the way a fixed-aspect crop would. Anything already 1920px or narrower is
+// left completely alone.
+const BACKGROUND_MAX_WIDTH = 1920;
 
-const featuredShowcase = {
-	img: document.getElementById('featuredImg'),
+function computeOutputSize(imgWidth, imgHeight) {
+	if (imgWidth <= BACKGROUND_MAX_WIDTH) return { width: imgWidth, height: imgHeight };
+	const scale = BACKGROUND_MAX_WIDTH / imgWidth;
+	return { width: BACKGROUND_MAX_WIDTH, height: Math.max(1, Math.round(imgHeight * scale)) };
+}
+
+const backgroundShowcase = {
+	img: document.getElementById('backgroundImg'),
 	canvas: null,
 	loadImage: function () {
 		inputImage.img.onload = function () {
@@ -37,9 +48,9 @@ const featuredShowcase = {
 			inputImage.width = img.width;
 			inputImage.height = img.height;
 
-			const height = Math.max(1, Math.round((img.height * FEATURED_WIDTH) / img.width));
-			featuredShowcase.canvas = new CustomCanvas(FEATURED_WIDTH, height);
-			featuredShowcase.canvas.drawImage(
+			const size = computeOutputSize(img.width, img.height);
+			backgroundShowcase.canvas = new CustomCanvas(size.width, size.height);
+			backgroundShowcase.canvas.drawImage(
 				img,
 				0,
 				0,
@@ -47,16 +58,16 @@ const featuredShowcase = {
 				img.height,
 				0,
 				0,
-				FEATURED_WIDTH,
-				height
+				size.width,
+				size.height
 			);
 
-			featuredShowcase.img.src = featuredShowcase.canvas.toDataURL(
+			backgroundShowcase.img.src = backgroundShowcase.canvas.toDataURL(
 				inputImage.file.type,
 				1
 			);
 			rightPanel.originalSize.innerText = `${img.width} x ${img.height}`;
-			document.getElementById('featuredSize').innerText = `${FEATURED_WIDTH} x ${height}`;
+			document.getElementById('backgroundSize').innerText = `${size.width} x ${size.height}`;
 			inputImage.setStatusMsg('Done');
 		};
 
@@ -80,7 +91,7 @@ const featuredShowcase = {
 			fileReader.onload = async function () {
 				let gifData = gifuct.parseGIF(fileReader.result);
 				let gifs = gifuct.decompressFrames(gifData, true);
-				await featured_createGif(zip, gifs);
+				await background_createGif(zip, gifs);
 			};
 			fileReader.readAsArrayBuffer(inputImage.file);
 		} else {
@@ -90,7 +101,7 @@ const featuredShowcase = {
 };
 
 async function addRasterToZip(zip) {
-	const canvas = textOverlay.applyToCanvas(featuredShowcase.canvas.canvas);
+	const canvas = textOverlay.applyToCanvas(backgroundShowcase.canvas.canvas);
 	const requestedType =
 		inputImage.file.type == 'image/apng' ? 'image/png' : inputImage.file.type;
 	const blob = await canvasToBlob(
@@ -99,7 +110,7 @@ async function addRasterToZip(zip) {
 		requestedType == 'image/png' ? undefined : 1
 	);
 	const isPng = blob.type == 'image/png';
-	const filename = `featured_${inputImage.file.name}`;
+	const filename = `background_${inputImage.file.name}`;
 
 	if (blob.size <= MAX_EXPORT_BYTES) {
 		zip.file(withExtension(filename, blob.type), await hexifyToBase64(blob), {
@@ -121,7 +132,9 @@ async function addRasterToZip(zip) {
 	await finishZip(zip);
 }
 
-async function featured_createGif(zip, gifs) {
+async function background_createGif(zip, gifs) {
+	const size = computeOutputSize(gifs[0].dims.width, gifs[0].dims.height);
+
 	const createFrameBuilder = () => {
 		let background = new CustomCanvas(gifs[0].dims.width, gifs[0].dims.height);
 		background.imageData(gifs[0].patch);
@@ -131,10 +144,7 @@ async function featured_createGif(zip, gifs) {
 			temp.imageData(gifs[i].patch);
 			background.addCanvas(temp.canvas, gifs[i].dims.left, gifs[i].dims.top);
 
-			let frame = new CustomCanvas(
-				featuredShowcase.canvas.canvas.width,
-				featuredShowcase.canvas.canvas.height
-			);
+			let frame = new CustomCanvas(size.width, size.height);
 			frame.drawImage(
 				background.canvas,
 				0,
@@ -143,8 +153,8 @@ async function featured_createGif(zip, gifs) {
 				background.canvas.height,
 				0,
 				0,
-				frame.canvas.width,
-				frame.canvas.height
+				size.width,
+				size.height
 			);
 
 			textOverlay.draw(
@@ -167,7 +177,7 @@ async function featured_createGif(zip, gifs) {
 			inputImage.setStatusMsg(`Rendering gif - ${(e * 100).toFixed(0)}%`),
 	});
 
-	const gifName = `featured_${inputImage.file.name}`;
+	const gifName = `background_${inputImage.file.name}`;
 	zip.file(gifName, await hexifyToBase64(blob), { base64: true });
 	await finishZip(zip);
 }
@@ -176,18 +186,18 @@ async function finishZip(zip) {
 	if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 	inputImage.setStatusMsg('Creating zip file, please wait...');
 	zip.generateAsync({ type: 'blob' }).then(function (content) {
-		download(content, `${inputImage.file.name}_featured_${new Date().getTime()}.zip`);
+		download(content, `${inputImage.file.name}_background_${new Date().getTime()}.zip`);
 		inputImage.setStatusMsg('Done');
 	});
 }
 
 document
-	.getElementById('downloadFeatured')
-	.addEventListener('click', featuredShowcase.downloadImage);
+	.getElementById('downloadBackground')
+	.addEventListener('click', backgroundShowcase.downloadImage);
 document
-	.getElementById('featuredTab')
+	.getElementById('backgroundTab')
 	.addEventListener('click', () =>
-		changeTab('featured', () => demoDefaults.loadDefaultFeatured(featuredShowcase.loadImage))
+		changeTab('background', () => demoDefaults.loadDefaultBackground(backgroundShowcase.loadImage))
 	);
 
-module.exports = featuredShowcase.loadImage;
+module.exports = backgroundShowcase.loadImage;

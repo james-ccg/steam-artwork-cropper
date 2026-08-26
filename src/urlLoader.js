@@ -16,6 +16,7 @@ function setupUrlLoader(loadNewFile) {
 		const url = input.value.trim();
 		if (!url) return;
 		button.disabled = true;
+		inputImage.markUserProvidedImage();
 		inputImage.setStatusMsg('Loading image from URL...');
 		try {
 			const file = await fetchImageAsFile(url);

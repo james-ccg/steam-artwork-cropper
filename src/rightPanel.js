@@ -28,12 +28,12 @@ const rightPanel = {
             document.getElementById("worshopInfo").style.setProperty('display', 'none');
         }
     },
-    avatarInfo: {
+    backgroundInfo: {
         show: function () {
-            document.getElementById("avatarInfo").style.removeProperty('display');
+            document.getElementById("backgroundInfo").style.removeProperty('display');
         },
         hide: function () {
-            document.getElementById("avatarInfo").style.setProperty('display', 'none');
+            document.getElementById("backgroundInfo").style.setProperty('display', 'none');
         }
     }
 }

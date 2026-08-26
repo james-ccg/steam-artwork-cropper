@@ -18,6 +18,8 @@ const { encodeGifUnderLimit } = require('./gifExport');
 const { hexifyBytes, hexifyToBase64 } = require('./hexify');
 const textOverlay = require('./textOverlay');
 const demoDefaults = require('./demoDefaults');
+const profilePreview = require('./profilePreview');
+const { addAvatarToZip } = require('./avatarCropper');
 
 // Filenames that are still over Steam's 5MB limit after best-effort
 // compression, collected across a single downloadImages() run so the final
@@ -322,6 +324,7 @@ function ws_cropImages(zip, canvasEl, sliceNum, isImageSmall) {
 		if (sliceNum != 5) {
 			ws_cropImages(zip, canvasEl, sliceNum + 1, isImageSmall);
 		} else {
+			if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 			inputImage.setStatusMsg('Creating zip file, please wait...');
 			zip.generateAsync({
 				type: 'blob'
@@ -484,7 +487,7 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 	if (blob.size > MAX_EXPORT_BYTES) oversizedWarnings.push(gifName);
 
 	let patcher = new FileReader();
-	patcher.onload = function() {
+	patcher.onload = async function() {
 		let bytes = new Uint8Array(patcher.result);
 
 		zip.file(gifName, window.btoa(hexifyBytes(bytes)), {
@@ -494,6 +497,7 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 		if (currentSlice != 5) {
 			ws_cropGifs(zip, gifs, currentSlice + 1, isImageSmall);
 		} else {
+			if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 			inputImage.setStatusMsg('Creating zip file, please wait...');
 			zip.generateAsync({
 				type: 'blob'

@@ -4,10 +4,15 @@
 // crop because it *is* a crop, done by the same code a real upload uses.
 const inputImage = require('./inputImage');
 
-let userHasProvidedImage = false;
-
+// The "has the user actually provided an image" flag itself lives on
+// inputImage (see inputImage.js) so setStatusMsg can check it without this
+// module and inputImage.js requiring each other. These two just delegate.
 function markUserProvidedImage() {
-	userHasProvidedImage = true;
+	inputImage.markUserProvidedImage();
+}
+
+function hasUserProvidedImage() {
+	return inputImage.userProvidedImage;
 }
 
 async function fetchAsFile(url) {
@@ -20,7 +25,7 @@ async function fetchAsFile(url) {
 // into inputImage.file before calling loadImageFn - once they have, this is
 // a no-op and loadImageFn just runs against whatever they provided instead.
 async function loadDefault(url, loadImageFn) {
-	if (!userHasProvidedImage) {
+	if (!hasUserProvidedImage()) {
 		inputImage.file = await fetchAsFile(url);
 	}
 	loadImageFn();
@@ -28,8 +33,9 @@ async function loadDefault(url, loadImageFn) {
 
 module.exports = {
 	markUserProvidedImage,
+	hasUserProvidedImage,
 	loadDefaultFeatured: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
 	loadDefaultArtwork: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
 	loadDefaultWorkshop: (loadImageFn) => loadDefault('./steam/imgs/nero.jpg', loadImageFn),
-	loadDefaultAvatar: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
+	loadDefaultBackground: (loadImageFn) => loadDefault('./steam/imgs/1.jpg', loadImageFn),
 };

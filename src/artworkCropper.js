@@ -10,8 +10,10 @@ const inputImage = require('./inputImage');
 const { getComputedValueFor } = require('./functionsExport');
 const workshopShowcaseLoadImage = require('./workshopCropper');
 const featuredShowcaseLoadImage = require('./featuredCropper');
-const avatarShowcaseLoadImage = require('./avatarCropper');
+const backgroundShowcaseLoadImage = require('./backgroundCropper');
+const { addAvatarToZip } = require('./avatarCropper');
 const demoDefaults = require('./demoDefaults');
+const profilePreview = require('./profilePreview');
 const {
 	MAX_EXPORT_BYTES,
 	canvasToBlob,
@@ -150,6 +152,7 @@ const artworkShowcase = {
 				inputImage.file.type,
 				`2_${inputImage.file.name}`
 			);
+			if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 
 			inputImage.setStatusMsg('Creating zip file, please wait...');
 			zip.generateAsync({
@@ -288,6 +291,7 @@ async function as_createGifs(zip, gifs, currentGif) {
 	if (currentGif != 2) {
 		as_createGifs(zip, gifs, currentGif + 1);
 	} else {
+		if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 		inputImage.setStatusMsg('Creating zip file, please wait...');
 		zip.generateAsync({
 			type: 'blob',
@@ -318,10 +322,10 @@ function loadNewFile(file) {
 		workshopShowcaseLoadImage();
 		rightPanel.workshopInfo.show();
 		tabInfo.loaded.workshop = true;
-	} else if (tabInfo.currentTab == '#avatar') {
-		avatarShowcaseLoadImage();
-		rightPanel.avatarInfo.show();
-		tabInfo.loaded.avatar = true;
+	} else if (tabInfo.currentTab == '#background') {
+		backgroundShowcaseLoadImage();
+		rightPanel.backgroundInfo.show();
+		tabInfo.loaded.background = true;
 	} else {
 		// #artwork
 		artworkShowcase.loadImage();
