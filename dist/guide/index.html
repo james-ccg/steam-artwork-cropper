@@ -253,14 +253,15 @@
 
 		footer.wrap {
 			border-top: 1px solid var(--border);
-			padding: 28px 0;
+			padding: 26px 0;
 			color: var(--text-dim);
-			font-size: 0.85rem;
+			font-size: 0.82rem;
 			display: flex;
-			justify-content: space-between;
-			flex-wrap: wrap;
+			flex-direction: column;
 			gap: 10px;
 		}
+		footer .disclaimer { line-height: 1.6; max-width: 780px; }
+		footer .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 		footer.wrap a:hover { color: var(--accent); }
 	</style>
 </head>
@@ -470,8 +471,14 @@
 	</main>
 
 	<footer class="wrap">
-		<span>&copy; <span id="year"></span> James (xdjames)</span>
-		<a href="https://github.com/james-ccg" target="_blank" rel="noopener">github.com/james-ccg</a>
+		<p class="disclaimer">
+			Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of Valve Corporation.
+			All other trademarks are property of their respective owners.
+		</p>
+		<div class="foot-row">
+			<span>&copy; <span id="year"></span> James (xdjames)</span>
+			<a href="https://james-ccg.github.io/">james-ccg.github.io</a>
+		</div>
 	</footer>
 
 	<div class="toast" id="toast">Copied!</div>

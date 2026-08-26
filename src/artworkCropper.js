@@ -11,9 +11,7 @@ const { getComputedValueFor } = require('./functionsExport');
 const workshopShowcaseLoadImage = require('./workshopCropper');
 const featuredShowcaseLoadImage = require('./featuredCropper');
 const backgroundShowcaseLoadImage = require('./backgroundCropper');
-const { addAvatarToZip } = require('./avatarCropper');
 const demoDefaults = require('./demoDefaults');
-const profilePreview = require('./profilePreview');
 const {
 	MAX_EXPORT_BYTES,
 	canvasToBlob,
@@ -66,17 +64,20 @@ const artworkShowcase = {
 		artworkShowcase.bigBoxGif.src = '';
 		artworkShowcase.smallBoxGif.src = '';
 		artworkShowcase.smallTest = inputImage.height;
-		artworkShowcase.measureIterations = 0;
 
-		// Get measures for the images on the Artwork showcase
-		artworkShowcase.steamHeight = Math.floor(
-			(inputImage.height * 613) / inputImage.width
+		// Starting split of the source width: the primary showcase slot is
+		// 613px across = 508 big + 3 gap + 102 small. solveArtworkSplit()
+		// refines these so the two rendered slices come out the same height.
+		artworkShowcase.steamBigWidth = Math.max(
+			1,
+			Math.floor((inputImage.width * 508) / 613)
 		);
-		artworkShowcase.steamBigWidth = Math.floor(
-			(inputImage.height * 508) / artworkShowcase.steamHeight
-		);
-		artworkShowcase.steamSmallWidth = Math.floor(
-			(inputImage.height * 102) / artworkShowcase.steamHeight
+		artworkShowcase.steamSmallWidth = Math.max(
+			1,
+			Math.min(
+				inputImage.width - artworkShowcase.steamBigWidth,
+				Math.floor((inputImage.width * 102) / 613)
+			)
 		);
 
 		// Create canvas objects
@@ -95,11 +96,8 @@ const artworkShowcase = {
 			inputImage.width = img.width;
 			inputImage.height = img.height;
 			artworkShowcase.reset();
-
-			// Kick off the measurement loop. Both solid preview canvases are
-			// (re)painted and pushed into their <img> elements here; testSize()
-			// only runs once they have actually decoded and laid out.
-			renderMeasurementCanvases(true, true);
+			solveArtworkSplit();
+			finishArtworkMeasurement();
 		};
 
 		if (inputImage.file != null) inputImage.loadFile();
@@ -144,7 +142,6 @@ const artworkShowcase = {
 				inputImage.file.type,
 				`2_${inputImage.file.name}`
 			);
-			if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 
 			inputImage.setStatusMsg('Creating zip file, please wait...');
 			zip.generateAsync({
@@ -284,7 +281,6 @@ async function as_createGifs(zip, gifs, currentGif) {
 	if (currentGif != 2) {
 		as_createGifs(zip, gifs, currentGif + 1);
 	} else {
-		if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 		inputImage.setStatusMsg('Creating zip file, please wait...');
 		zip.generateAsync({
 			type: 'blob',
@@ -340,120 +336,57 @@ demoDefaults.loadDefaultArtwork(artworkShowcase.loadImage).then(function () {
 	tabInfo.loaded.artwork = true;
 });
 
-// Re-paints the solid measurement canvases into the two preview <img>
-// elements and re-runs testSize() - but only once the images that actually
-// changed have decoded and laid out. The old loop drove itself off
-// bigImg.onload alone and read smallImg's rendered height immediately, so on
-// a cold page load (fonts + demo images still downloading, layout not
-// settled) smallImg could still be reporting a stale height for several
-// iterations. That let the search walk steamSmallWidth down to the <1 rail,
-// and the resulting sub-pixel-wide small canvas, stretched into the
-// showcase's 100px slot, rendered ~76000px tall and blew out the whole page.
-function renderMeasurementCanvases(updateBig, updateSmall) {
-	let pending = 0;
-	const step = function () {
-		if (--pending > 0) return;
-		artworkShowcase.bigImg.onload = null;
-		artworkShowcase.smallImg.onload = null;
-		testSize();
-	};
+// Both showcase preview <img>s render at a fixed on-page width regardless of
+// their source: the big one is pinned to 506px by its own max-width, the
+// small one fills a 100px slot. So each slice's rendered height is just
+// sourceHeight * displayWidth / sliceWidth - there's no need to rasterise a
+// solid canvas, push it into an <img>, wait for it to decode and then read
+// getComputedStyle() back. That async DOM round-trip was the source of two
+// separate first-load bugs: a runaway that stretched the page to ~76000px,
+// then (after the first fix) a hang when a slice width reached 0 and
+// canvas.toDataURL() returned "data:," (which fires onerror, not onload).
+const BIG_PREVIEW_WIDTH = 506;
+const SMALL_PREVIEW_WIDTH = 100;
 
-	if (updateBig) {
-		pending++;
-		artworkShowcase.bigCanvas.setWidth(artworkShowcase.steamBigWidth);
-		artworkShowcase.bigCanvas.fillSolid(
-			artworkShowcase.steamBigWidth,
-			inputImage.height
-		);
-		artworkShowcase.bigImg.onload = step;
-		artworkShowcase.bigImg.src = artworkShowcase.bigCanvas.toDataURL();
-	}
-	if (updateSmall) {
-		pending++;
-		artworkShowcase.smallCanvas.setWidth(artworkShowcase.steamSmallWidth);
-		artworkShowcase.smallCanvas.fillSolid(
-			artworkShowcase.steamSmallWidth,
-			inputImage.height
-		);
-		artworkShowcase.smallImg.onload = step;
-		artworkShowcase.smallImg.src = artworkShowcase.smallCanvas.toDataURL();
-	}
-	if (pending === 0) testSize();
-}
+function solveArtworkSplit() {
+	const W = inputImage.width;
+	const H = inputImage.height;
 
-function testSize() {
-	// Get values for the images shown on the Steam Artwork showcase
-	// and check if they need to be adjusted
-	let bigImgComputed = getComputedValueFor(artworkShowcase.bigImg, 'height');
-	let smallImgComputed = getComputedValueFor(
-		artworkShowcase.smallImg,
-		'height'
-	);
+	let bw = artworkShowcase.steamBigWidth;
+	let sw = artworkShowcase.steamSmallWidth;
 
-	// Both zero means the showcase was hidden (another tab was opened) while
-	// this measurement was still running - the solid preview canvases always
-	// have a real height when visible. Stop cleanly instead of "converging"
-	// on 0 === 0 and then drawing from a not-yet-loaded image; the artworkTab
-	// click handler re-runs loadImage() when the panel is shown again if the
-	// resolution readout is still blank.
-	if (bigImgComputed === 0 && smallImgComputed === 0) {
-		artworkShowcase.bigImg.onload = null;
-		artworkShowcase.smallImg.onload = null;
-		return;
+	const bigH = (w) => Math.round((H * BIG_PREVIEW_WIDTH) / Math.max(1, w));
+	const smallH = (w) => Math.round((H * SMALL_PREVIEW_WIDTH) / Math.max(1, w));
+
+	// Same +/-1 search the old DOM loop ran, just on the closed-form heights:
+	// grow the big slice / shrink the small one whenever the big renders
+	// taller, otherwise shrink the big slice, until the two match. Bounded so
+	// a source that can't be evenly split (very wide/short) can't spin.
+	for (let i = 0; i < 400; i++) {
+		const diff = bigH(bw) - smallH(sw);
+		if (diff === 0) break;
+		if (diff > 0) {
+			if (sw <= 1 || bw >= W - 1) break;
+			bw += 1;
+			sw -= 1;
+		} else {
+			if (bw <= 1) break;
+			bw -= 1;
+		}
 	}
 
-	artworkShowcase.measureIterations =
-		(artworkShowcase.measureIterations || 0) + 1;
-
-	// The +/-1px search assumes the big preview's rendered height keeps
-	// tracking steamBigWidth. Once steamBigWidth passes that <img>'s own 506px
-	// max-width that stops being true, so the search can walk steamSmallWidth
-	// down toward (or past) zero without ever converging - and a sub-1px-wide
-	// small canvas, stretched into the showcase's ~100px slot, renders
-	// thousands of px tall. If we hit either rail (or just spend too long
-	// bouncing between two neighbouring widths), stop and derive
-	// steamSmallWidth straight from steamBigWidth using the two slots'
-	// display-width ratio (100 / 506), so both previews still come out the
-	// same height. Resync both <canvas> elements before finishing, or drawing
-	// *from* a stale-width one later throws "canvas ... width of 0".
-	if (
-		artworkShowcase.steamSmallWidth < 1 ||
-		artworkShowcase.steamBigWidth > 700 ||
-		artworkShowcase.measureIterations > 400
-	) {
-		artworkShowcase.steamBigWidth = Math.min(
-			artworkShowcase.steamBigWidth,
-			inputImage.width
-		);
-		artworkShowcase.steamSmallWidth = Math.max(
-			1,
-			Math.min(
-				inputImage.width - 1,
-				Math.round((artworkShowcase.steamBigWidth * 100) / 506)
-			)
-		);
-		artworkShowcase.bigCanvas.setWidth(artworkShowcase.steamBigWidth);
-		artworkShowcase.smallCanvas.setWidth(artworkShowcase.steamSmallWidth);
-		finishArtworkMeasurement();
-		return;
+	// Landed against a rail - fall back to the two slots' display-width ratio
+	// so both previews still come out the same height.
+	if (sw < 1) {
+		sw = Math.round((bw * SMALL_PREVIEW_WIDTH) / BIG_PREVIEW_WIDTH);
 	}
+	bw = Math.max(1, Math.min(W, bw));
+	sw = Math.max(1, Math.min(W - 1, sw));
 
-	if (bigImgComputed === smallImgComputed) {
-		finishArtworkMeasurement();
-		return;
-	}
-
-	// Because the left bigger picture is easier to adjust and less janky to
-	// work with, nudge the small one down a step whenever the big one is
-	// taller, then walk the big width until their rounded heights match.
-	if (bigImgComputed > smallImgComputed) {
-		artworkShowcase.steamBigWidth += 1;
-		artworkShowcase.steamSmallWidth -= 1;
-		renderMeasurementCanvases(true, true);
-	} else {
-		artworkShowcase.steamBigWidth -= 1;
-		renderMeasurementCanvases(true, false);
-	}
+	artworkShowcase.steamBigWidth = bw;
+	artworkShowcase.steamSmallWidth = sw;
+	artworkShowcase.bigCanvas.setWidth(bw);
+	artworkShowcase.smallCanvas.setWidth(sw);
 }
 
 function finishArtworkMeasurement() {
@@ -510,10 +443,16 @@ function finishArtworkMeasurement() {
 	rightPanel.leftOffset.innerText = `${artworkShowcase.leftOffset}`;
 
 	if (inputImage.file.type == 'image/gif') {
-		// Display two gifs as preview within resized divs
-		let frameHeight = getComputedStyle(
-			document.getElementById('bigImgA')
-		).height;
+		// Display two gifs as preview within resized divs. The big preview
+		// renders at a fixed 506px wide, so its on-page height is just the
+		// source height scaled by 506 / steamBigWidth - computing it directly
+		// avoids reading a getComputedStyle() height back off an <img> whose
+		// src was reassigned a couple of lines up and hasn't decoded yet.
+		let frameHeight =
+			Math.round(
+				(inputImage.height * BIG_PREVIEW_WIDTH) /
+					artworkShowcase.steamBigWidth
+			) + 'px';
 
 		artworkShowcase.smallBoxGif.src = inputImage.img.src;
 		artworkShowcase.bigBoxGif.src = inputImage.img.src;
@@ -532,7 +471,9 @@ function rightSide() {
 	let rightSizeComputed =
 		getComputedValueFor(document.getElementById('rightSide'), 'height') -
 		12;
-	if (bigImgComputed < rightSizeComputed) {
+	// Floor smallTest at 1: a 0-height canvas gives toDataURL() "data:,",
+	// which fires onerror not onload and would stall this reflow loop.
+	if (bigImgComputed < rightSizeComputed && artworkShowcase.smallTest > 1) {
 		artworkShowcase.smallTest--;
 		artworkShowcase.smallCanvas.setHeight(artworkShowcase.smallTest);
 		artworkShowcase.smallCanvas.fillSolid(

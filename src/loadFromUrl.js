@@ -17,6 +17,10 @@ const KNOWN_CORS_BLOCKED_HOSTS = [
 	'cdn.cloudflare.steamstatic.com',
 	'community.akamai.steamstatic.com',
 	'steamcdn-a.akamaihd.net',
+	'community.fastly.steamstatic.com',
+	'shared.fastly.steamstatic.com',
+	'shared.cloudflare.steamstatic.com',
+	'shared.akamai.steamstatic.com',
 ];
 
 async function fetchImageAsFile(url) {

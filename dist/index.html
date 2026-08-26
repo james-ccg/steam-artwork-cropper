@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=3">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=4">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -122,13 +122,16 @@
                                         Status: <span id="statusMsg">Idle</span>
                                     </p>
 
-                                    <!-- Creator-mode-only: picks which showcase shape the uploaded artwork is
-                                         cropped into. Background Cropper mode has exactly one output (the
-                                         background itself, at Steam's native resolution) so it gets its own
-                                         area lower down instead of a place in this toggle. -->
+                                    <!-- Picks which shape the uploaded image is cropped into. In Artwork
+                                         Creator mode the Background button is hidden (profilePreview.js);
+                                         in Background Cropper mode all four show and Background is the
+                                         default. -->
                                     <p id="formatToggleLabel" class="formatToggleLabel">Choose format:</p>
                                     <div class="formatToggleRow">
                                         <div class="formatToggle">
+                                            <button type="button" class="formatBtn" id="backgroundTab" title="Profile Background" aria-label="Background" aria-pressed="false" style="display: none">
+                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+                                            </button>
                                             <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
                                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
                                             </button>
@@ -140,12 +143,6 @@
                                             </button>
                                         </div>
                                     </div>
-
-                                    <!-- Background Cropper's own format tab - never shown as an icon (there's
-                                         nothing to pick between), just clicked programmatically by
-                                         profilePreview.js so it reuses the same tab/changeTab machinery as
-                                         the other three. -->
-                                    <button type="button" id="backgroundTab" style="display: none" aria-hidden="true"></button>
                                 </div>
                             </div>
                         </div>
@@ -264,8 +261,9 @@
                         <p class="hexifyNote">Every exported image is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./guide/" target="_blank">See the upload guide</a>.</p>
 
                         <br>
-                        <p style="color: yellow">
-                            <a href="https://github.com/james-ccg/steam-artwork-cropper" target="_blank" style="font-weight: bold; text-decoration: underline">Github</a>
+                        <p class="siteDisclaimer">
+                            Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of
+                            Valve Corporation. All other trademarks are property of their respective owners.
                         </p>
                         <br />
                     </div>

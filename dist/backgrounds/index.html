@@ -4,7 +4,7 @@
 	<meta charset="UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<meta name="description" content="Find a Steam profile background on Steam's own Points Shop and Market, then crop it to spec with the Steam Artwork & Workshop Cropper." />
+	<meta name="description" content="Browse a sample of Steam profile backgrounds - animated and static - by category and colour, then crop one to spec with the Steam Artwork & Workshop Cropper." />
 	<meta name="theme-color" content="#171a21" />
 	<title>Steam Backgrounds - James (xdjames)</title>
 	<link rel="shortcut icon" href="../steam/imgs/crop-logo.png" type="image/png" />
@@ -30,11 +30,11 @@
 			line-height: 1.55;
 		}
 		a { color: inherit; text-decoration: none; }
-		.wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+		.wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 		header {
 			position: sticky;
 			top: 0;
-			z-index: 10;
+			z-index: 20;
 			background: rgba(15, 17, 21, 0.85);
 			backdrop-filter: blur(8px);
 			border-bottom: 1px solid var(--border);
@@ -60,7 +60,7 @@
 			font-size: 1.1rem;
 			cursor: pointer;
 		}
-		@media (max-width: 640px) {
+		@media (max-width: 700px) {
 			.nav-links {
 				position: absolute;
 				top: 64px;
@@ -77,7 +77,7 @@
 			.nav-toggle { display: block; }
 			footer.wrap { flex-direction: column; text-align: center; }
 		}
-		.hero { padding: 56px 0 36px; text-align: center; }
+		.hero { padding: 52px 0 30px; text-align: center; }
 		.eyebrow {
 			color: var(--accent);
 			font-weight: 600;
@@ -88,31 +88,98 @@
 			margin-bottom: 14px;
 		}
 		h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); margin: 0 0 14px; }
-		.hero p { color: var(--text-dim); max-width: 640px; margin: 0 auto; font-size: 1rem; }
+		.hero p { color: var(--text-dim); max-width: 660px; margin: 0 auto; font-size: 1rem; }
 		.hero a { color: var(--accent); text-decoration: underline; }
-		section { padding: 44px 0; border-top: 1px solid var(--border); }
+		section { padding: 40px 0; border-top: 1px solid var(--border); }
 		h2 { font-size: 1.4rem; margin: 0 0 6px; }
-		.lede { color: var(--text-dim); margin: 0 0 28px; }
-		.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
-		.step { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-		.step-num {
-			display: inline-flex; align-items: center; justify-content: center;
-			width: 26px; height: 26px; border-radius: 50%;
-			background: var(--accent); color: #0d1015; font-weight: 700; font-size: 0.82rem;
-			margin-bottom: 10px;
+		.lede { color: var(--text-dim); margin: 0 0 24px; }
+
+		/* Recommended collections */
+		.rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+		.rec-card {
+			position: relative;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			overflow: hidden;
+			cursor: pointer;
+			background: #0d1015;
+			aspect-ratio: 16 / 7;
+			display: flex;
+			align-items: flex-end;
+			transition: border-color 0.15s ease, transform 0.15s ease;
 		}
-		.step h3 { margin: 0 0 6px; font-size: 0.98rem; }
-		.step p { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
-		.note {
-			margin-top: 24px; padding: 14px 16px;
-			border: 1px dashed var(--border); border-radius: 8px;
-			color: var(--text-dim); font-size: 0.86rem; line-height: 1.6;
+		.rec-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+		.rec-card .rec-bg {
+			position: absolute; inset: 0;
+			background-size: cover; background-position: center;
+			opacity: 0.5;
 		}
-		.note strong { color: var(--text); }
+		.rec-card::after {
+			content: ''; position: absolute; inset: 0;
+			background: linear-gradient(180deg, rgba(13,16,21,0.1) 0%, rgba(13,16,21,0.92) 100%);
+		}
+		.rec-card .rec-label {
+			position: relative; z-index: 1; padding: 14px 16px;
+		}
+		.rec-card .rec-label strong { display: block; font-size: 1rem; }
+		.rec-card .rec-label span { color: var(--text-dim); font-size: 0.82rem; }
+
+		/* Filters */
+		.filters { display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+		.filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+		.filter-row .filter-title {
+			font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+			color: var(--text-dim); margin-right: 4px; min-width: 74px;
+		}
+		.filters input[type="search"] {
+			flex: 1; min-width: 200px; background: #0d1015; border: 1px solid var(--border);
+			color: var(--text); padding: 9px 14px; border-radius: 8px; font-size: 0.9rem; font-family: inherit;
+		}
+		.filters input[type="search"]:focus { outline: none; border-color: var(--accent); }
+		.chip {
+			background: #0d1015; border: 1px solid var(--border); color: var(--text-dim);
+			padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; cursor: pointer;
+			display: inline-flex; align-items: center; gap: 7px; font-family: inherit;
+		}
+		.chip:hover { border-color: var(--accent-strong); color: var(--text); }
+		.chip.active { background: var(--accent); color: #0d1015; border-color: var(--accent); font-weight: 600; }
+		.swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); flex-shrink: 0; }
+
+		.results-meta { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 16px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+		.clear-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.85rem; font-family: inherit; }
+		.clear-btn:hover { text-decoration: underline; }
+
+		.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+		.bg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+		.bg-card .thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #0d1015; overflow: hidden; }
+		.bg-card .thumb img, .bg-card .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+		.bg-card .anim-badge {
+			position: absolute; top: 8px; right: 8px; background: rgba(13,16,21,0.82);
+			border: 1px solid var(--accent); color: var(--accent); font-size: 0.62rem; font-weight: 700;
+			padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 4px;
+		}
+		.bg-card .anim-badge::before { content: '\25B6'; font-size: 0.55rem; }
+		.bg-card .info { padding: 11px 13px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+		.bg-card .title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.bg-card .meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--text-dim); }
+		.bg-card .meta-row .cat { text-transform: capitalize; }
+		.bg-card .dots { display: flex; gap: 3px; }
+		.bg-card .dots .swatch { width: 9px; height: 9px; }
+		.bg-card .actions { display: flex; gap: 8px; margin-top: auto; }
+		.bg-card button {
+			flex: 1; background: #0d1015; border: 1px solid var(--border); color: var(--text);
+			padding: 7px 8px; border-radius: 7px; font-size: 0.75rem; cursor: pointer; font-family: inherit;
+		}
+		.bg-card button:hover { border-color: var(--accent); color: var(--accent); }
+		.bg-card button.primary { background: var(--accent); border-color: var(--accent); color: #0d1015; font-weight: 600; }
+		.bg-card button.primary:hover { color: #0d1015; opacity: 0.9; }
+		.sample-note { color: var(--text-dim); font-size: 0.85rem; margin-top: 20px; }
+		#bgEmpty { display: none; }
+
 		.link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
 		.link-card {
 			background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-			padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 6px;
+			padding: 18px; display: flex; flex-direction: column; gap: 6px;
 			transition: border-color 0.15s ease, transform 0.15s ease;
 		}
 		.link-card:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -121,66 +188,41 @@
 		.link-card p { margin: 0; color: var(--text-dim); font-size: 0.85rem; flex-grow: 1; }
 		.link-card span.go { color: var(--accent); font-size: 0.85rem; font-weight: 600; }
 
-		.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
-		.filters input[type="search"] {
-			flex: 1; min-width: 180px; background: #0d1015; border: 1px solid var(--border);
-			color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; font-family: inherit;
+		.note {
+			margin-top: 22px; padding: 14px 16px;
+			border: 1px dashed var(--border); border-radius: 8px;
+			color: var(--text-dim); font-size: 0.86rem; line-height: 1.6;
 		}
-		.chip {
-			background: #0d1015; border: 1px solid var(--border); color: var(--text-dim);
-			padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; cursor: pointer;
-		}
-		.chip.active { background: var(--accent); color: #0d1015; border-color: var(--accent); font-weight: 600; }
-		.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
-		.bg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-		.bg-card .thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #0d1015; overflow: hidden; }
-		.bg-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-		.bg-card .anim-badge {
-			position: absolute; top: 6px; right: 6px; background: rgba(13,16,21,0.8);
-			border: 1px solid var(--accent); color: var(--accent); font-size: 0.65rem; font-weight: 700;
-			padding: 2px 6px; border-radius: 999px; letter-spacing: 0.03em;
-		}
-		.bg-card .info { padding: 10px 12px; }
-		.bg-card .title { font-size: 0.88rem; font-weight: 600; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-		.bg-card .game { font-size: 0.76rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 8px; }
-		.bg-card .actions { display: flex; gap: 8px; }
-		.bg-card button {
-			flex: 1; background: #0d1015; border: 1px solid var(--border); color: var(--text);
-			padding: 6px 8px; border-radius: 6px; font-size: 0.76rem; cursor: pointer; font-family: inherit;
-		}
-		.bg-card button:hover { border-color: var(--accent); color: var(--accent); }
-		.bg-card button.primary { background: var(--accent); border-color: var(--accent); color: #0d1015; font-weight: 600; }
-		.bg-card button.primary:hover { color: #0d1015; opacity: 0.9; }
-		.sample-note { color: var(--text-dim); font-size: 0.85rem; margin-top: 20px; }
+		.note strong { color: var(--text); }
 
 		.cta-band {
-			margin-top: 8px; padding: 26px; border-radius: 8px; text-align: center;
+			margin-top: 8px; padding: 26px; border-radius: 10px; text-align: center;
 			background: linear-gradient(160deg, var(--surface) 0%, var(--surface-hover) 100%);
 			border: 1px solid var(--accent);
 		}
 		.cta-band h2 { margin-bottom: 6px; }
 		.cta-band p { color: var(--text-dim); margin: 0 0 18px; }
 		.btn {
-			display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 700;
-			font-size: 0.9rem; text-decoration: none; background: var(--accent); color: #0d1015;
+			display: inline-block; padding: 10px 20px; border-radius: 8px; font-weight: 700;
+			font-size: 0.9rem; background: var(--accent); color: #0d1015;
 		}
 		.toast {
 			position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
-			background: var(--accent); color: #0d1015; padding: 10px 18px; border-radius: 6px;
-			font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+			background: var(--accent); color: #0d1015; padding: 10px 18px; border-radius: 8px;
+			font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 50;
 		}
 		.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 		footer.wrap {
 			border-top: 1px solid var(--border);
-			padding: 28px 0;
+			padding: 26px 0;
 			color: var(--text-dim);
-			font-size: 0.85rem;
+			font-size: 0.82rem;
 			display: flex;
-			justify-content: space-between;
-			flex-wrap: wrap;
+			flex-direction: column;
 			gap: 10px;
 		}
-		footer.wrap a:hover { color: var(--accent); }
+		footer .disclaimer { line-height: 1.6; max-width: 780px; }
+		footer .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 	</style>
 </head>
 <body>
@@ -203,54 +245,66 @@
 		<section class="hero">
 			<div class="wrap">
 				<span class="eyebrow">Steam profile backgrounds</span>
-				<h1>Find a background on Steam,<br />crop it here.</h1>
+				<h1>Browse backgrounds,<br />crop one here.</h1>
 				<p>
-					There's no scraped database behind this page - Steam already runs the real, up-to-date
-					one. This links straight to it, shows a small real sample below, and hands off to the
-					<a href="../">Cropper</a> to slice whatever you land on into Featured, Artwork, and
-					Workshop Showcase pieces - auto-hexified so long Workshop artwork actually renders.
+					A hand-picked sample of Steam profile backgrounds - animated ones play right in the grid -
+					sorted by category and colour. Steam runs the real, full catalogue; this links straight to it
+					and hands whatever you pick to the <a href="../">Cropper</a>.
 				</p>
 			</div>
 		</section>
 
-		<section id="how">
+		<section id="recommended">
 			<div class="wrap">
-				<h2>How it works</h2>
-				<p class="lede">Three steps from "I like this background" to a ready-to-upload showcase set.</p>
-				<div class="steps">
-					<div class="step">
-						<span class="step-num">1</span>
-						<h3>Find a background</h3>
-						<p>Browse the Points Shop, Market, or your own inventory below - or search the sample gallery further down.</p>
+				<h2>Recommended</h2>
+				<p class="lede">Jump to a curated slice of the sample below.</p>
+				<div class="rec-grid" id="recGrid"></div>
+			</div>
+		</section>
+
+		<section id="gallery">
+			<div class="wrap">
+				<h2>Sample gallery</h2>
+				<p class="lede">Filter by type, category, or colour. Every entry is a real Steam Points Shop background.</p>
+
+				<div class="filters">
+					<div class="filter-row">
+						<input type="search" id="bgSearch" placeholder="Search by name or category...">
 					</div>
-					<div class="step">
-						<span class="step-num">2</span>
-						<h3>Get the image</h3>
-						<p>Copy the image link (right-click &rarr; Copy image address), or save it. Steam's background CDN blocks other sites from loading its images directly, so save-and-upload is the reliable path.</p>
+					<div class="filter-row" id="typeRow">
+						<span class="filter-title">Type</span>
+						<button class="chip active" data-type="all">All</button>
+						<button class="chip" data-type="animated">Animated</button>
+						<button class="chip" data-type="static">Static</button>
 					</div>
-					<div class="step">
-						<span class="step-num">3</span>
-						<h3>Crop and export</h3>
-						<p>Open the <a href="../" style="color: var(--accent);">Cropper</a>, upload or paste the image, hit Export, and get a named, hexified, Steam-ready .zip.</p>
+					<div class="filter-row" id="catRow">
+						<span class="filter-title">Category</span>
+					</div>
+					<div class="filter-row" id="colorRow">
+						<span class="filter-title">Colour</span>
 					</div>
 				</div>
-				<div class="note">
-					<strong>Direct image link from elsewhere (Imgur, Discord, etc.)?</strong> The Cropper's
-					"paste a URL" box can skip the save-and-upload step entirely for those hosts - just not
-					Steam's own background CDN, for the CORS reason above.
+
+				<div class="results-meta">
+					<span id="resultsCount"></span>
+					<button class="clear-btn" id="clearFilters" style="display:none;">Clear filters</button>
 				</div>
+
+				<div class="bg-grid" id="bgGrid"></div>
+				<p class="sample-note" id="bgEmpty">No matches - try a different search or clear the filters.</p>
+				<p class="sample-note">This is a hand-picked sample, not the full catalogue - use the links below to search everything Steam has.</p>
 			</div>
 		</section>
 
 		<section id="browse">
 			<div class="wrap">
-				<h2>Browse on Steam</h2>
-				<p class="lede">The real, always-current catalog - this just points you at it.</p>
+				<h2>Browse the full catalogue on Steam</h2>
+				<p class="lede">The real, always-current collection - this just points you at it.</p>
 				<div class="link-grid">
 					<a class="link-card" href="https://store.steampowered.com/points/shop/c/backgrounds" target="_blank" rel="noopener">
 						<span class="link-tag">Free with points</span>
 						<h3>Points Shop - Backgrounds</h3>
-						<p>Steam's curated, rotating collection, redeemable with Steam Points.</p>
+						<p>Steam's curated, rotating collection, redeemable with Steam Points - animated and static.</p>
 						<span class="go">Browse &rarr;</span>
 					</a>
 					<a class="link-card" href="https://steamcommunity.com/market/search?category_753_item_class%5B0%5D=tag_item_class_3" target="_blank" rel="noopener">
@@ -266,22 +320,12 @@
 						<span class="go">Open inventory &rarr;</span>
 					</a>
 				</div>
-			</div>
-		</section>
-
-		<section id="gallery">
-			<div class="wrap">
-				<h2>Sample gallery</h2>
-				<p class="lede">A small set of real backgrounds pulled from Steam's catalog, to search and preview without leaving this page.</p>
-				<div class="filters">
-					<input type="search" id="bgSearch" placeholder="Search by name or game...">
-					<button class="chip active" data-filter="all">All</button>
-					<button class="chip" data-filter="animated">Animated</button>
-					<button class="chip" data-filter="static">Static</button>
+				<div class="note">
+					<strong>Getting the image:</strong> Steam's background CDN blocks other sites from reading its
+					files directly, so "Open in Cropper" can't fetch these automatically - right-click the preview
+					&rarr; <em>Save image as</em>, then use the Cropper's file picker. A direct link from another host
+					(Imgur, Discord, &hellip;) can be pasted straight into the Cropper.
 				</div>
-				<div class="bg-grid" id="bgGrid"></div>
-				<p class="sample-note" id="bgEmpty" style="display: none;">No matches - try a different search, or browse the full catalog above.</p>
-				<p class="sample-note">This is a hand-picked sample, not the full catalog - use the links above to search everything Steam has.</p>
 			</div>
 		</section>
 
@@ -289,7 +333,7 @@
 			<div class="wrap">
 				<div class="cta-band">
 					<h2>Ready to crop?</h2>
-					<p>Drop the image you saved into the Cropper and get a Steam-ready showcase set in seconds.</p>
+					<p>Drop the image you saved into the Cropper and get a Steam-ready set in seconds.</p>
 					<a class="btn" href="../">Open the Cropper</a>
 				</div>
 			</div>
@@ -297,8 +341,14 @@
 	</main>
 
 	<footer class="wrap">
-		<span>&copy; <span id="year"></span> James (xdjames)</span>
-		<a href="https://github.com/james-ccg" target="_blank" rel="noopener">github.com/james-ccg</a>
+		<p class="disclaimer">
+			Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of Valve Corporation.
+			All other trademarks are property of their respective owners.
+		</p>
+		<div class="foot-row">
+			<span>&copy; <span id="year"></span> James (xdjames)</span>
+			<a href="https://james-ccg.github.io/">james-ccg.github.io</a>
+		</div>
 	</footer>
 
 	<div class="toast" id="toast">Copied!</div>
@@ -313,49 +363,74 @@
 			navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 		});
 
-		// A small, real sample - not a scraped catalog. Every entry below is a
-		// genuine Steam Community Market / Points Shop background (name, game,
-		// and image URL as Steam itself serves them). Displaying them as plain
-		// <img> tags is unaffected by Steam's CORS policy (that only blocks
-		// canvas/fetch access, not visual rendering) - the Cropper's own "paste
-		// a URL" box explains why pasting these specific links won't work there.
+		// A hand-picked sample of real Steam Points Shop profile backgrounds.
+		// Animated entries carry a `webm` movie hash and play in-grid via a
+		// muted looping <video>; the `.jpg` poster is the same asset Steam
+		// shows as a still. Category and colour tags are assigned by hand for
+		// filtering - Steam itself doesn't expose them on these items.
+		var POSTER = 'https://community.cloudflare.steamstatic.com/economy/profilebackground/items/';
+		var MOVIE = 'https://shared.cloudflare.steamstatic.com/community_assets/images/items/';
+		var MARKET = 'https://community.cloudflare.steamstatic.com/economy/image/';
+
 		var BACKGROUNDS = [
-			{ title: 'Theme I', game: 'Dead Space™ 3', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVFkgh0Mm3KOOZjrQKnD_TP_-4pdFvWNs-agjMSy_HEG2cNxPo0fJoPp-eqiMW_uKv8/622x349' },
-			{ title: 'Guarded', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKBvw57QNjjkoHmnjYPMnrRKnBp2r5rdpcR_XRseCh2JO2_3hSjMNxapJHZYLI8LyoHA/622x349' },
-			{ title: 'Camo', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKWq8761RhihYBzn2EbMztFPSapz7_r9sBH_Ta5OOm3ZC38CAEiMd0apJde4JRkHCStA/622x349' },
-			{ title: 'Holding Pattern', game: 'Counter-Strike 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKAvxtvgQyjEwFnyyNPpjiTvSa8Tv-ro0EH_Pb5LWmiJ-wrSdTipBzaJJHZYKzk_i0Ig/622x349' },
-			{ title: 'Blue Abyss', game: 'Summer Sale 2026', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oQM03xoEyX_abMnjRqebpz79_NxWHvTft-LyiJG08HhSisF9PokUdNXp-eqiEATNe_4/622x349' },
-			{ title: 'Theme III', game: 'Dead Space™ 3', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVE0ixwAm3rZbp_pFaGUo2r_qI4GFPaM4OKgjMHgqXkAhc19btgZJ4Hp-eqiKKSJzjo/622x349' },
-			{ title: 'Sit Back and Relax', game: 'The Steam Awards - 2022', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwCWVKg-oQA23hYFnynfOcriRaLE_W-rqNRRHvHbtuHwgJ-x_3MDicQnOoVIItzp-eqir89fKKg/622x349' },
-			{ title: 'Coral Wave', game: 'Summer Sale 2026', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oVhjiRYEm3vZOZnpFaORpDr6-dkGFqHRsbfwiJTi_HdViMQja94bJdXp-eqis_NF8RQ/622x349' },
-			{ title: 'Funeral flowers', game: 'VERGE:Lost chapter', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdQSSV6ohuQJh301XzXyFY8_iQPOT8Gj4-dsDE6Tb4uKjgJ_hrCRahZQkO4xOJ8ut4_2PbonrgA/622x349' },
-			{ title: 'Baptism', game: 'BioShock Infinite', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMOfQOVTKs5vFdm3EhSnimLPMXqR6jA_Tr4qdwHF6PZ4LSnjJ7g8SdQhJMgPYoDf5Wg9dzjJGg/622x349' },
-			{ title: 'Dunes', game: 'Kenshi', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdgedVaohu1Nigx9VmHuFY8nuQaia9Tv9rdVVF_fY4Lej3cPl-HFQ2cV1PNoZccut4_1r8I1WoQ/622x349' },
-			{ title: 'Dota Ancients', game: 'Dota 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKW643vVJl3ksHmCmFPJm5QaGaoG75_4kBH_TQ4OikjJHh-HkDhMInapJde4LYL0QKOg/622x349' },
-			{ title: 'Dragon', game: 'Dota 2', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKAK096Flgjh0Bk3nfaMu4QaST9T___dpdFaGOt-mm3cTh8CIE2cYgO5Jde4KzeiS0sg/622x349' },
-			{ title: 'Chaos', game: 'Jurassic World Evolution', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAcQyWVqohvlQx3xcFyiuFO569QfCVoWn7rdpWQKfdtOH8icay-nQAisJzZ4xPIcut4_1ZN6xt-Q/622x349' },
-			{ title: 'RE4 Cover Art', game: 'Resident Evil 4 (2005)', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcACSU6ohuwA2gkwCkyzYb8vtRaPH92mv_9UAFaPduOX3gZCwrnNahZRwbI0eJMut4_2JCMcW-g/622x349' },
-			{ title: 'Zelenogorsk', game: 'DayZ', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwWUU6oh7AVk2R0BySvaO5q_R6KR9T74rt8EQqPctLem3JK3_HdS2MAjb4xMI8ut4_35vpSWoQ/622x349' },
-			{ title: 'New base', game: 'Space Engineers', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcQCdVqohtgQ1jxhQmX2JbM_pR6GT8jn4qtgHRabft-TxgcK38XVS2JZ0bd0VcMut4_1MGHmfXQ/622x349' },
-			{ title: 'Minimal 2', game: 'Miniballist', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAdwyQW6ohv1Uzi08CnH2Ob826TqPA8W_4qY5QEaTbubL3jsK9_CBVjsV2b4xJIsut4_3ekf5-5g/622x349' },
-			{ title: 'Rose Petals', game: 'Wallpaper Engine', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdgWcVaoh61Vg3xsFzSmPOJ3oEfOT8Gqq_4hUQ6HetbXzi5K1_XlXi8whbY4aJ8ut4_1Uul53hw/622x349' },
-			{ title: 'Sunset Cruise', game: 'Forza Horizon 5', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHcAGUUKw-oQJhiU9WzymFPsXsEfCR_D_-_NRSH_3QtOmgj5O1_3VTjpYnPNgddtDp-eqiGfmh1os/622x349' },
-			{ title: 'Lost Heaven', game: 'Mafia: Definitive Edition', animated: false, img: 'https://community.cloudflare.steamstatic.com/economy/image/a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' },
-			{ title: 'Eastern Game Fest 2026 - Profile Background', game: 'Eastern Game Fest 2026', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/4561430/8dd3c38eae646ecc8b19bdaecd84fe7f5a47cff4.jpg' },
-			{ title: 'Spark Tower', game: 'Mina the Hollower', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1875580/6bae4bc3e98a451703d9d05a39bb0482010899a6.jpg' },
-			{ title: 'Black Hole', game: 'App 1263950', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1263950/da538bac62ee5e233cd82bb75b0d3c47ba0cdc03.jpg' },
-			{ title: 'Keep Away', game: 'Spring Sale 2026', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/4374420/7b237237dc6e059f4933b237080641e7bcb2bf1b.jpg' },
-			{ title: 'ONCE HUMAN - Background', game: 'Once Human', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/2139460/0803912d8a7dd5a6db695680a75c9acec56b162c.jpg' },
-			{ title: 'Believers of Dusk', game: 'Chicken Hill', animated: true, img: 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/1422650/0aa615dfc281c237805cb9c50299c0969f2e0147.jpg' }
+			// ---- Animated (real webm) ----
+			{ n: 'The Carnival', cat: 'fantasy', colors: ['purple', 'blue'], a: 1, app: 1361210, p: '49c51e0b5405bb5a7639f7d30bcabf6c7703aeca.jpg', v: '2f742eed40747794336f0f258af22ff8e1279bf5.webm' },
+			{ n: 'Spark Tower', cat: 'pixel art', colors: ['blue', 'green'], a: 1, app: 1875580, p: '6bae4bc3e98a451703d9d05a39bb0482010899a6.jpg', v: 'ab6e85a0ca5404b60120ab437e2dbe2c7da62223.webm' },
+			{ n: 'The Last Gauntlet', cat: 'pixel art', colors: ['black', 'blue'], a: 1, app: 1875580, p: '773a32cb73e64cc8237cdd988433e6d5c2512393.jpg', v: 'f17252e946e78bb1c5ac6134a91b1d65e78fd16b.webm' },
+			{ n: 'Infected Town Livonia', cat: 'military', colors: ['orange', 'black'], a: 1, app: 221100, p: '07704beeb2e0d9ec151381e762408579176e6074.jpg', v: '09b2416bc1771c35d93802d2222d18c8a9b27f10.webm' },
+			{ n: 'Heli Crash', cat: 'military', colors: ['orange', 'black'], a: 1, app: 221100, p: '2a2a8c3816fcfacb719230055fa2e0cb416d9004.jpg', v: '0ce253a4af323d79c055f317e461b45f26142091.webm' },
+			{ n: 'Streets of New York', cat: 'architecture', colors: ['blue', 'black'], a: 1, app: 3749720, p: '1b3a57614277f6c2d683b81e629ceab09c58cfb4.jpg', v: '95d0aafa887d0faf1b9f255b4317bdaca4f698b6.webm' },
+			{ n: 'Going Rogue', cat: 'architecture', colors: ['blue'], a: 1, app: 3749720, p: 'b823d47f5d9a194b655fa5b546d3f85f09e9740c.jpg', v: '15d03070f195e4c2bab2ef0c58654915a888a1a6.webm' },
+			{ n: 'Sakura Background Profile', cat: 'anime', colors: ['pink'], a: 1, app: 1190970, p: 'ae38f3c64ffef927b086510bbc2e4913c246c6ab.jpg', v: '058894d6ff88823f4fd38895065a9027d9d5b0e2.webm' },
+			{ n: 'Your Room', cat: 'anime', colors: ['blue'], a: 1, app: 4643090, p: '04ab5d1a698193448c17c905d6a45e4eac539099.jpg', v: '04657c1ae9aed95972b91d3ab6f0f3f27d9278dd.webm' },
+			{ n: 'Floating Hearts', cat: 'minimal', colors: ['pink', 'red'], a: 1, app: 3426430, p: '2c99d103f6cdfb2ac4209b658f6a17d1802c3bab.jpg', v: 'f530a11b3c50e9a978d469bb23761495a5a65b61.webm' },
+			{ n: 'Heart Cascade', cat: 'minimal', colors: ['pink', 'red'], a: 1, app: 3426430, p: '26f8357ab7161bf6c48988172eae8025f8c06c6c.jpg', v: 'f7313740608f8ba42c88504f65c8a3235727078a.webm' },
+			{ n: 'Haze', cat: 'abstract', colors: ['purple', 'blue'], a: 1, app: 3534790, p: 'bdf8e3e12eaaf9fb959ff450e5b319414b5ae3a0.jpg', v: '57068d3a456ac6d8e2d214a38a7a458aec754de8.webm' },
+			{ n: 'PIXEL RAIN', cat: 'pixel art', colors: ['blue', 'black'], a: 1, app: 1679010, p: '3e0db96cc35925e4ef7a4b41d37223d3cdee7d02.jpg', v: '416ddd2dbc61ada962bf3a8789fe5deb8d21a3fd.webm' },
+			{ n: 'TaffyScroll', cat: 'cartoon', colors: ['pink', 'purple'], a: 1, app: 3186040, p: '5cc14218eba1571bf1a9d2d4962efbb9f876578f.jpg', v: '6388b891e459765531be4e36ddae89e4a7a71e1d.webm' },
+			{ n: 'Tungether Forever', cat: 'cartoon', colors: ['blue', 'green'], a: 1, app: 4855760, p: '263377900f778643c34c78f17bb243e21e905a8a.jpg', v: '485b7c692468fe123594df579e63d022b07e98e5.webm' },
+			{ n: 'Night (Animated)', cat: 'nature', colors: ['blue', 'black'], a: 1, app: 3371260, p: 'ad5accd15345d8eac222018bb5f9cd378fbbc551.jpg', v: 'ed451e6c8ca40a9d60fe7b1676e519fcf72b968e.webm' },
+			{ n: 'Day (Animated)', cat: 'nature', colors: ['blue', 'green'], a: 1, app: 3371260, p: '5ba83b96fd44e245c381a53a54d1409685aa0efc.jpg', v: '48df27638c7b43306677bcb8b19b123c036307f0.webm' },
+			{ n: 'Pulsing Rites of the Jungle', cat: 'fantasy', colors: ['green'], a: 1, app: 4533800, p: '451ddaff96ca3abbeee6903dbcf583b1f3ddedd7.jpg', v: '1d32eb44c2a81fa06cb8dbb288ed86fb1aa9b1eb.webm' },
+			{ n: 'Whispers of the Sacred Stream', cat: 'nature', colors: ['green', 'blue'], a: 1, app: 4533800, p: '078a133ffdb1ea553457ac3f1d95cdcb5b5254a2.jpg', v: '0bd2b9c56be2596483a938a43d2d4d1ca4dc08f2.webm' },
+			{ n: 'Stream in the Forest', cat: 'nature', colors: ['green'], a: 1, app: 1575510, p: 'd7928a725a7d770cb2246f35366370c330db4f10.jpg', v: '9e6216f4f59de6a325f9d96f80e45817bc43a05b.webm' },
+
+			// ---- Static (Community Market economy images) ----
+			{ n: 'Theme I', cat: 'space', colors: ['black', 'blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVFkgh0Mm3KOOZjrQKnD_TP_-4pdFvWNs-agjMSy_HEG2cNxPo0fJoPp-eqiMW_uKv8/622x349' },
+			{ n: 'Theme III', cat: 'space', colors: ['black', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVE0ixwAm3rZbp_pFaGUo2r_qI4GFPaM4OKgjMHgqXkAhc19btgZJ4Hp-eqiKKSJzjo/622x349' },
+			{ n: 'Guarded', cat: 'military', colors: ['black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKBvw57QNjjkoHmnjYPMnrRKnBp2r5rdpcR_XRseCh2JO2_3hSjMNxapJHZYLI8LyoHA/622x349' },
+			{ n: 'Camo', cat: 'military', colors: ['green', 'black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKWq8761RhihYBzn2EbMztFPSapz7_r9sBH_Ta5OOm3ZC38CAEiMd0apJde4JRkHCStA/622x349' },
+			{ n: 'Holding Pattern', cat: 'military', colors: ['black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKAvxtvgQyjEwFnyyNPpjiTvSa8Tv-ro0EH_Pb5LWmiJ-wrSdTipBzaJJHZYKzk_i0Ig/622x349' },
+			{ n: 'Blue Abyss', cat: 'abstract', colors: ['blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oQM03xoEyX_abMnjRqebpz79_NxWHvTft-LyiJG08HhSisF9PokUdNXp-eqiEATNe_4/622x349' },
+			{ n: 'Coral Wave', cat: 'abstract', colors: ['blue', 'green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oVhjiRYEm3vZOZnpFaORpDr6-dkGFqHRsbfwiJTi_HdViMQja94bJdXp-eqis_NF8RQ/622x349' },
+			{ n: 'Sit Back and Relax', cat: 'minimal', colors: ['orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwCWVKg-oQA23hYFnynfOcriRaLE_W-rqNRRHvHbtuHwgJ-x_3MDicQnOoVIItzp-eqir89fKKg/622x349' },
+			{ n: 'Baptism', cat: 'architecture', colors: ['blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMOfQOVTKs5vFdm3EhSnimLPMXqR6jA_Tr4qdwHF6PZ4LSnjJ7g8SdQhJMgPYoDf5Wg9dzjJGg/622x349' },
+			{ n: 'Dunes', cat: 'nature', colors: ['yellow', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdgedVaohu1Nigx9VmHuFY8nuQaia9Tv9rdVVF_fY4Lej3cPl-HFQ2cV1PNoZccut4_1r8I1WoQ/622x349' },
+			{ n: 'Dota Ancients', cat: 'fantasy', colors: ['green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKW643vVJl3ksHmCmFPJm5QaGaoG75_4kBH_TQ4OikjJHh-HkDhMInapJde4LYL0QKOg/622x349' },
+			{ n: 'Dragon', cat: 'fantasy', colors: ['orange', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKAK096Flgjh0Bk3nfaMu4QaST9T___dpdFaGOt-mm3cTh8CIE2cYgO5Jde4KzeiS0sg/622x349' },
+			{ n: 'Chaos', cat: 'nature', colors: ['green', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAcQyWVqohvlQx3xcFyiuFO569QfCVoWn7rdpWQKfdtOH8icay-nQAisJzZ4xPIcut4_1ZN6xt-Q/622x349' },
+			{ n: 'RE4 Cover Art', cat: 'horror', colors: ['black', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcACSU6ohuwA2gkwCkyzYb8vtRaPH92mv_9UAFaPduOX3gZCwrnNahZRwbI0eJMut4_2JCMcW-g/622x349' },
+			{ n: 'Zelenogorsk', cat: 'military', colors: ['green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwWUU6oh7AVk2R0BySvaO5q_R6KR9T74rt8EQqPctLem3JK3_HdS2MAjb4xMI8ut4_35vpSWoQ/622x349' },
+			{ n: 'New Base', cat: 'space', colors: ['black', 'blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcQCdVqohtgQ1jxhQmX2JbM_pR6GT8jn4qtgHRabft-TxgcK38XVS2JZ0bd0VcMut4_1MGHmfXQ/622x349' },
+			{ n: 'Rose Petals', cat: 'minimal', colors: ['pink', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdgWcVaoh61Vg3xsFzSmPOJ3oEfOT8Gqq_4hUQ6HetbXzi5K1_XlXi8whbY4aJ8ut4_1Uul53hw/622x349' },
+			{ n: 'Sunset Cruise', cat: 'racing', colors: ['orange', 'yellow'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHcAGUUKw-oQJhiU9WzymFPsXsEfCR_D_-_NRSH_3QtOmgj5O1_3VTjpYnPNgddtDp-eqiGfmh1os/622x349' },
+			{ n: 'Lost Heaven', cat: 'architecture', colors: ['black', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' }
 		];
 
 		var grid = document.getElementById('bgGrid');
 		var empty = document.getElementById('bgEmpty');
 		var searchInput = document.getElementById('bgSearch');
-		var chips = document.querySelectorAll('.chip');
-		var activeFilter = 'all';
+		var resultsCount = document.getElementById('resultsCount');
+		var clearBtn = document.getElementById('clearFilters');
 		var toast = document.getElementById('toast');
 		var toastTimer = null;
+
+		var state = { type: 'all', cat: null, color: null, q: '' };
+
+		var COLOR_HEX = {
+			red: '#e74c3c', orange: '#e67e22', yellow: '#f1c40f', green: '#2ecc71',
+			blue: '#3498db', purple: '#9b59b6', pink: '#ff79c6', black: '#4a4a4a', white: '#dfe4ea'
+		};
 
 		function showToast(msg) {
 			toast.textContent = msg;
@@ -363,7 +438,6 @@
 			clearTimeout(toastTimer);
 			toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 1600);
 		}
-
 		function copyLink(url) {
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 				navigator.clipboard.writeText(url).then(function () { showToast('Link copied'); }, function () { window.prompt('Copy this link:', url); });
@@ -371,77 +445,227 @@
 				window.prompt('Copy this link:', url);
 			}
 		}
+		function posterUrl(bg) { return bg.a ? POSTER + bg.app + '/' + bg.p : MARKET + bg.m; }
+		function movieUrl(bg) { return MOVIE + bg.app + '/' + bg.v; }
+
+		// Progressive enhancement: pause a card's video once it scrolls well
+		// out of view (and resume it when it comes back), so a wall of animated
+		// backgrounds isn't all decoding at once. If IntersectionObserver never
+		// fires, every video just keeps playing - which is the safe default.
+		var videoObserver = ('IntersectionObserver' in window)
+			? new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					var v = entry.target;
+					if (entry.isIntersecting) {
+						var p = v.play();
+						if (p && p.catch) p.catch(function () {});
+					} else {
+						v.pause();
+					}
+				});
+			}, { rootMargin: '400px 0px' })
+			: { observe: function () {}, unobserve: function () {} };
+
+		// ---- build category + colour chip rows from the data ----
+		var catRow = document.getElementById('catRow');
+		var colorRow = document.getElementById('colorRow');
+		var cats = {}, colors = {};
+		BACKGROUNDS.forEach(function (bg) {
+			cats[bg.cat] = (cats[bg.cat] || 0) + 1;
+			bg.colors.forEach(function (c) { colors[c] = (colors[c] || 0) + 1; });
+		});
+		Object.keys(cats).sort().forEach(function (c) {
+			var b = document.createElement('button');
+			b.className = 'chip';
+			b.textContent = c.charAt(0).toUpperCase() + c.slice(1) + ' ' + '(' + cats[c] + ')';
+			b.style.textTransform = 'capitalize';
+			b.addEventListener('click', function () {
+				state.cat = state.cat === c ? null : c;
+				render();
+			});
+			b.dataset.cat = c;
+			catRow.appendChild(b);
+		});
+		var COLOR_ORDER = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'black', 'white'];
+		COLOR_ORDER.filter(function (c) { return colors[c]; }).forEach(function (c) {
+			var b = document.createElement('button');
+			b.className = 'chip';
+			b.dataset.color = c;
+			var sw = document.createElement('span');
+			sw.className = 'swatch';
+			sw.style.background = COLOR_HEX[c];
+			b.appendChild(sw);
+			b.appendChild(document.createTextNode(c.charAt(0).toUpperCase() + c.slice(1)));
+			b.addEventListener('click', function () {
+				state.color = state.color === c ? null : c;
+				render();
+			});
+			colorRow.appendChild(b);
+		});
+
+		// ---- type row ----
+		document.querySelectorAll('#typeRow .chip').forEach(function (chip) {
+			chip.addEventListener('click', function () {
+				state.type = chip.dataset.type;
+				render();
+			});
+		});
+
+		// ---- recommended collections ----
+		var RECS = [
+			{ label: 'Animated', sub: 'Backgrounds that move', apply: function () { return { type: 'animated' }; } },
+			{ label: 'Military & Survival', sub: 'Grit and smoke', apply: function () { return { cat: 'military' }; } },
+			{ label: 'Anime & Cartoon', sub: 'Bright and stylised', apply: function () { return { cat: 'anime' }; } },
+			{ label: 'Deep Space', sub: 'Stars and nebulae', apply: function () { return { cat: 'space' }; } }
+		];
+		var recGrid = document.getElementById('recGrid');
+		RECS.forEach(function (rec) {
+			var match = BACKGROUNDS.find(function (bg) {
+				var f = rec.apply();
+				if (f.type === 'animated') return bg.a;
+				if (f.cat) return bg.cat === f.cat;
+				return false;
+			});
+			var card = document.createElement('div');
+			card.className = 'rec-card';
+			var bgLayer = document.createElement('div');
+			bgLayer.className = 'rec-bg';
+			if (match) bgLayer.style.backgroundImage = 'url(' + posterUrl(match) + ')';
+			var label = document.createElement('div');
+			label.className = 'rec-label';
+			label.innerHTML = '<strong>' + rec.label + '</strong><span>' + rec.sub + '</span>';
+			card.appendChild(bgLayer);
+			card.appendChild(label);
+			card.addEventListener('click', function () {
+				var f = rec.apply();
+				state.type = f.type || 'all';
+				state.cat = f.cat || null;
+				state.color = null;
+				state.q = '';
+				searchInput.value = '';
+				render();
+				document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+			});
+			recGrid.appendChild(card);
+		});
+
+		function syncChips() {
+			document.querySelectorAll('#typeRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.type === state.type); });
+			document.querySelectorAll('#catRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.cat === state.cat); });
+			document.querySelectorAll('#colorRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.color === state.color); });
+			var anyFilter = state.type !== 'all' || state.cat || state.color || state.q;
+			clearBtn.style.display = anyFilter ? '' : 'none';
+		}
+
+		function makeCard(bg) {
+			var card = document.createElement('div');
+			card.className = 'bg-card';
+
+			var thumb = document.createElement('div');
+			thumb.className = 'thumb';
+
+			if (bg.a) {
+				var video = document.createElement('video');
+				video.src = movieUrl(bg);
+				video.poster = posterUrl(bg);
+				video.muted = true;
+				video.loop = true;
+				video.autoplay = true;
+				video.playsInline = true;
+				video.setAttribute('preload', 'metadata');
+				video.addEventListener('error', function () {
+					// Fall back to the still poster if the movie can't load.
+					var img = document.createElement('img');
+					img.src = posterUrl(bg);
+					img.alt = bg.n;
+					img.loading = 'lazy';
+					if (video.parentNode) video.parentNode.replaceChild(img, video);
+				});
+				videoObserver.observe(video);
+				thumb.appendChild(video);
+				var badge = document.createElement('span');
+				badge.className = 'anim-badge';
+				badge.textContent = 'ANIMATED';
+				thumb.appendChild(badge);
+			} else {
+				var img = document.createElement('img');
+				img.src = posterUrl(bg);
+				img.alt = bg.n;
+				img.loading = 'lazy';
+				thumb.appendChild(img);
+			}
+
+			var info = document.createElement('div');
+			info.className = 'info';
+
+			var title = document.createElement('p');
+			title.className = 'title';
+			title.textContent = bg.n;
+
+			var metaRow = document.createElement('div');
+			metaRow.className = 'meta-row';
+			var cat = document.createElement('span');
+			cat.className = 'cat';
+			cat.textContent = bg.cat;
+			var dots = document.createElement('span');
+			dots.className = 'dots';
+			bg.colors.forEach(function (c) {
+				var s = document.createElement('span');
+				s.className = 'swatch';
+				s.style.background = COLOR_HEX[c] || '#666';
+				s.title = c;
+				dots.appendChild(s);
+			});
+			metaRow.appendChild(cat);
+			metaRow.appendChild(dots);
+
+			var actions = document.createElement('div');
+			actions.className = 'actions';
+			var cropBtn = document.createElement('button');
+			cropBtn.className = 'primary';
+			cropBtn.textContent = 'Open in Cropper';
+			cropBtn.addEventListener('click', function () {
+				window.location.href = '../?bg=' + encodeURIComponent(posterUrl(bg));
+			});
+			var copyBtn = document.createElement('button');
+			copyBtn.textContent = bg.a ? 'Copy .webm' : 'Copy link';
+			copyBtn.addEventListener('click', function () { copyLink(bg.a ? movieUrl(bg) : posterUrl(bg)); });
+			actions.appendChild(cropBtn);
+			actions.appendChild(copyBtn);
+
+			info.appendChild(title);
+			info.appendChild(metaRow);
+			info.appendChild(actions);
+			card.appendChild(thumb);
+			card.appendChild(info);
+			return card;
+		}
 
 		function render() {
-			var q = searchInput.value.trim().toLowerCase();
+			state.q = searchInput.value.trim().toLowerCase();
 			var items = BACKGROUNDS.filter(function (bg) {
-				if (activeFilter === 'animated' && !bg.animated) return false;
-				if (activeFilter === 'static' && bg.animated) return false;
-				if (q && bg.title.toLowerCase().indexOf(q) === -1 && bg.game.toLowerCase().indexOf(q) === -1) return false;
+				if (state.type === 'animated' && !bg.a) return false;
+				if (state.type === 'static' && bg.a) return false;
+				if (state.cat && bg.cat !== state.cat) return false;
+				if (state.color && bg.colors.indexOf(state.color) === -1) return false;
+				if (state.q && bg.n.toLowerCase().indexOf(state.q) === -1 && bg.cat.indexOf(state.q) === -1) return false;
 				return true;
 			});
 
+			grid.querySelectorAll('video').forEach(function (v) { videoObserver.unobserve(v); v.pause(); });
 			grid.innerHTML = '';
-			items.forEach(function (bg) {
-				var card = document.createElement('div');
-				card.className = 'bg-card';
-
-				var thumb = document.createElement('div');
-				thumb.className = 'thumb';
-				var img = document.createElement('img');
-				img.src = bg.img;
-				img.alt = bg.title;
-				img.loading = 'lazy';
-				thumb.appendChild(img);
-				if (bg.animated) {
-					var badge = document.createElement('span');
-					badge.className = 'anim-badge';
-					badge.textContent = 'ANIMATED';
-					thumb.appendChild(badge);
-				}
-
-				var info = document.createElement('div');
-				info.className = 'info';
-				var title = document.createElement('div');
-				title.className = 'title';
-				title.textContent = bg.title;
-				var game = document.createElement('div');
-				game.className = 'game';
-				game.textContent = bg.game;
-
-				var actions = document.createElement('div');
-				actions.className = 'actions';
-				var copyBtn = document.createElement('button');
-				copyBtn.textContent = 'Copy link';
-				copyBtn.addEventListener('click', function () { copyLink(bg.img); });
-				var cropBtn = document.createElement('button');
-				cropBtn.className = 'primary';
-				cropBtn.textContent = 'Open in Cropper';
-				cropBtn.addEventListener('click', function () {
-					window.location.href = '../?bg=' + encodeURIComponent(bg.img);
-				});
-				actions.appendChild(copyBtn);
-				actions.appendChild(cropBtn);
-
-				info.appendChild(title);
-				info.appendChild(game);
-				info.appendChild(actions);
-				card.appendChild(thumb);
-				card.appendChild(info);
-				grid.appendChild(card);
-			});
-
-			empty.style.display = items.length === 0 ? '' : 'none';
+			items.forEach(function (bg) { grid.appendChild(makeCard(bg)); });
+			empty.style.display = items.length === 0 ? 'block' : 'none';
+			resultsCount.textContent = items.length + (items.length === 1 ? ' background' : ' backgrounds')
+				+ ' of ' + BACKGROUNDS.length;
+			syncChips();
 		}
 
 		searchInput.addEventListener('input', render);
-		chips.forEach(function (chip) {
-			chip.addEventListener('click', function () {
-				chips.forEach(function (c) { c.classList.remove('active'); });
-				chip.classList.add('active');
-				activeFilter = chip.dataset.filter;
-				render();
-			});
+		clearBtn.addEventListener('click', function () {
+			state = { type: 'all', cat: null, color: null, q: '' };
+			searchInput.value = '';
+			render();
 		});
 
 		render();

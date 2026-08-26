@@ -9,8 +9,6 @@ const changeTab = require('./changeTab');
 const inputImage = require('./inputImage');
 const textOverlay = require('./textOverlay');
 const demoDefaults = require('./demoDefaults');
-const profilePreview = require('./profilePreview');
-const { addAvatarToZip } = require('./avatarCropper');
 const {
 	MAX_EXPORT_BYTES,
 	canvasToBlob,
@@ -174,7 +172,6 @@ async function featured_createGif(zip, gifs) {
 }
 
 async function finishZip(zip) {
-	if (profilePreview.getMode() === 'cropper') await addAvatarToZip(zip);
 	inputImage.setStatusMsg('Creating zip file, please wait...');
 	zip.generateAsync({ type: 'blob' }).then(function (content) {
 		download(content, `${inputImage.file.name}_featured_${new Date().getTime()}.zip`);
