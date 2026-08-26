@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-const gifuct = require('gifuct-js');
 const JSZip = require('jszip');
 const download = require('downloadjs');
 
@@ -14,7 +13,7 @@ const {
 	compressCanvasToJpegUnderLimit,
 	withExtension,
 } = require('./exportLimit');
-const { encodeGifUnderLimit } = require('./gifExport');
+const { encodeGifUnderLimit, decodeGifFrames } = require('./gifExport');
 const { hexifyBytes, hexifyToBase64 } = require('./hexify');
 const textOverlay = require('./textOverlay');
 const demoDefaults = require('./demoDefaults');
@@ -267,8 +266,13 @@ const workshopShowcase = {
 		} else {
 			let fileReader = new FileReader();
 			fileReader.onload = function() {
-				let gifData = gifuct.parseGIF(fileReader.result);
-				let gifs = gifuct.decompressFrames(gifData, true);
+				let gifs;
+				try {
+					gifs = decodeGifFrames(fileReader.result);
+				} catch (e) {
+					inputImage.setStatusMsg(e.message);
+					return;
+				}
 				ws_cropGifs(
 					zip, // Send JSZip object for zipping the gifs
 					gifs, // Send the frames used for cropping

@@ -1,5 +1,27 @@
 const GIF = require('gif.js');
+const gifuct = require('gifuct-js');
 const { MAX_EXPORT_BYTES } = require('./exportLimit');
+
+// Parses an uploaded GIF's ArrayBuffer into decoded frames. gifuct throws on
+// a truncated/corrupt file and can also hand back an empty array for a GIF it
+// technically parsed but couldn't decompress - both used to surface as an
+// unhandled "cannot read properties of undefined (reading 'dims')" a few
+// calls later, leaving the status line stuck on "Cropping...". Callers catch
+// the Error this throws and show its message instead.
+function decodeGifFrames(arrayBuffer) {
+	let frames;
+	try {
+		frames = gifuct.decompressFrames(gifuct.parseGIF(arrayBuffer), true);
+	} catch (e) {
+		throw new Error(
+			"Couldn't read that GIF - it may be corrupt or use a feature this tool can't decode. Try re-saving it."
+		);
+	}
+	if (!Array.isArray(frames) || frames.length === 0 || !frames[0].dims) {
+		throw new Error("Couldn't read any frames from that GIF.");
+	}
+	return frames;
+}
 
 /**
  * Encodes an animated GIF from a sequence of composited frames, automatically
@@ -86,4 +108,4 @@ function encodeGifUnderLimit({
 	})();
 }
 
-module.exports = { encodeGifUnderLimit };
+module.exports = { encodeGifUnderLimit, decodeGifFrames };

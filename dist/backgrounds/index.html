@@ -143,7 +143,10 @@
 		}
 		.chip:hover { border-color: var(--accent-strong); color: var(--text); }
 		.chip.active { background: var(--accent); color: #0d1015; border-color: var(--accent); font-weight: 600; }
-		.swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); flex-shrink: 0; }
+		.chip.disabled { opacity: 0.32; cursor: default; pointer-events: none; }
+		.chip .chip-count { color: var(--text-dim); font-size: 0.74rem; }
+		.chip.active .chip-count { color: rgba(13,16,21,0.6); }
+		.swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); flex-shrink: 0; background-size: cover; }
 
 		.results-meta { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 16px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 		.clear-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.85rem; font-family: inherit; }
@@ -469,26 +472,28 @@
 			{ n: 'Whispers of the Sacred Stream', cat: 'nature', colors: ['green', 'blue'], a: 1, app: 4533800, p: '078a133ffdb1ea553457ac3f1d95cdcb5b5254a2.jpg', v: '0bd2b9c56be2596483a938a43d2d4d1ca4dc08f2.webm' },
 			{ n: 'Stream in the Forest', cat: 'nature', colors: ['green'], a: 1, app: 1575510, p: 'd7928a725a7d770cb2246f35366370c330db4f10.jpg', v: '9e6216f4f59de6a325f9d96f80e45817bc43a05b.webm' },
 
-			// ---- Static (Community Market economy images) ----
-			{ n: 'Theme I', cat: 'space', colors: ['black', 'blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVFkgh0Mm3KOOZjrQKnD_TP_-4pdFvWNs-agjMSy_HEG2cNxPo0fJoPp-eqiMW_uKv8/622x349' },
-			{ n: 'Theme III', cat: 'space', colors: ['black', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVE0ixwAm3rZbp_pFaGUo2r_qI4GFPaM4OKgjMHgqXkAhc19btgZJ4Hp-eqiKKSJzjo/622x349' },
-			{ n: 'Guarded', cat: 'military', colors: ['black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKBvw57QNjjkoHmnjYPMnrRKnBp2r5rdpcR_XRseCh2JO2_3hSjMNxapJHZYLI8LyoHA/622x349' },
-			{ n: 'Camo', cat: 'military', colors: ['green', 'black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKWq8761RhihYBzn2EbMztFPSapz7_r9sBH_Ta5OOm3ZC38CAEiMd0apJde4JRkHCStA/622x349' },
-			{ n: 'Holding Pattern', cat: 'military', colors: ['black'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKAvxtvgQyjEwFnyyNPpjiTvSa8Tv-ro0EH_Pb5LWmiJ-wrSdTipBzaJJHZYKzk_i0Ig/622x349' },
-			{ n: 'Blue Abyss', cat: 'abstract', colors: ['blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oQM03xoEyX_abMnjRqebpz79_NxWHvTft-LyiJG08HhSisF9PokUdNXp-eqiEATNe_4/622x349' },
-			{ n: 'Coral Wave', cat: 'abstract', colors: ['blue', 'green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oVhjiRYEm3vZOZnpFaORpDr6-dkGFqHRsbfwiJTi_HdViMQja94bJdXp-eqis_NF8RQ/622x349' },
-			{ n: 'Sit Back and Relax', cat: 'minimal', colors: ['orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwCWVKg-oQA23hYFnynfOcriRaLE_W-rqNRRHvHbtuHwgJ-x_3MDicQnOoVIItzp-eqir89fKKg/622x349' },
-			{ n: 'Baptism', cat: 'architecture', colors: ['blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMOfQOVTKs5vFdm3EhSnimLPMXqR6jA_Tr4qdwHF6PZ4LSnjJ7g8SdQhJMgPYoDf5Wg9dzjJGg/622x349' },
-			{ n: 'Dunes', cat: 'nature', colors: ['yellow', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdgedVaohu1Nigx9VmHuFY8nuQaia9Tv9rdVVF_fY4Lej3cPl-HFQ2cV1PNoZccut4_1r8I1WoQ/622x349' },
-			{ n: 'Dota Ancients', cat: 'fantasy', colors: ['green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKW643vVJl3ksHmCmFPJm5QaGaoG75_4kBH_TQ4OikjJHh-HkDhMInapJde4LYL0QKOg/622x349' },
-			{ n: 'Dragon', cat: 'fantasy', colors: ['orange', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKAK096Flgjh0Bk3nfaMu4QaST9T___dpdFaGOt-mm3cTh8CIE2cYgO5Jde4KzeiS0sg/622x349' },
-			{ n: 'Chaos', cat: 'nature', colors: ['green', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAcQyWVqohvlQx3xcFyiuFO569QfCVoWn7rdpWQKfdtOH8icay-nQAisJzZ4xPIcut4_1ZN6xt-Q/622x349' },
-			{ n: 'RE4 Cover Art', cat: 'horror', colors: ['black', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcACSU6ohuwA2gkwCkyzYb8vtRaPH92mv_9UAFaPduOX3gZCwrnNahZRwbI0eJMut4_2JCMcW-g/622x349' },
-			{ n: 'Zelenogorsk', cat: 'military', colors: ['green'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwWUU6oh7AVk2R0BySvaO5q_R6KR9T74rt8EQqPctLem3JK3_HdS2MAjb4xMI8ut4_35vpSWoQ/622x349' },
-			{ n: 'New Base', cat: 'space', colors: ['black', 'blue'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcQCdVqohtgQ1jxhQmX2JbM_pR6GT8jn4qtgHRabft-TxgcK38XVS2JZ0bd0VcMut4_1MGHmfXQ/622x349' },
-			{ n: 'Rose Petals', cat: 'minimal', colors: ['pink', 'red'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdgWcVaoh61Vg3xsFzSmPOJ3oEfOT8Gqq_4hUQ6HetbXzi5K1_XlXi8whbY4aJ8ut4_1Uul53hw/622x349' },
-			{ n: 'Sunset Cruise', cat: 'racing', colors: ['orange', 'yellow'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHcAGUUKw-oQJhiU9WzymFPsXsEfCR_D_-_NRSH_3QtOmgj5O1_3VTjpYnPNgddtDp-eqiGfmh1os/622x349' },
-			{ n: 'Lost Heaven', cat: 'architecture', colors: ['black', 'orange'], a: 0, m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' }
+			// ---- Static (Community Market items - h is the market_hash_name,
+			// used for a direct listing link; m is the economy image + size) ----
+			{ n: 'Theme I', cat: 'space', colors: ['black', 'blue'], a: 0, h: '1238060-Theme I', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVFkgh0Mm3KOOZjrQKnD_TP_-4pdFvWNs-agjMSy_HEG2cNxPo0fJoPp-eqiMW_uKv8/622x349' },
+			{ n: 'Theme III', cat: 'space', colors: ['black', 'orange'], a: 0, h: '1238060-Theme III', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdwedU6w-oVE0ixwAm3rZbp_pFaGUo2r_qI4GFPaM4OKgjMHgqXkAhc19btgZJ4Hp-eqiKKSJzjo/622x349' },
+			{ n: 'Guarded', cat: 'military', colors: ['black'], a: 0, h: '730-Guarded', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKBvw57QNjjkoHmnjYPMnrRKnBp2r5rdpcR_XRseCh2JO2_3hSjMNxapJHZYLI8LyoHA/622x349' },
+			{ n: 'Camo', cat: 'military', colors: ['green', 'black'], a: 0, h: '730-Camo', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKWq8761RhihYBzn2EbMztFPSapz7_r9sBH_Ta5OOm3ZC38CAEiMd0apJde4JRkHCStA/622x349' },
+			{ n: 'Holding Pattern', cat: 'military', colors: ['black'], a: 0, h: '730-Holding Pattern', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMBdgSKAvxtvgQyjEwFnyyNPpjiTvSa8Tv-ro0EH_Pb5LWmiJ-wrSdTipBzaJJHZYKzk_i0Ig/622x349' },
+			{ n: 'Blue Abyss', cat: 'abstract', colors: ['blue'], a: 0, h: '4761370-Blue Abyss', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oQM03xoEyX_abMnjRqebpz79_NxWHvTft-LyiJG08HhSisF9PokUdNXp-eqiEATNe_4/622x349' },
+			{ n: 'Coral Wave', cat: 'abstract', colors: ['blue', 'green'], a: 0, h: '4761370-Coral Wave', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCcgKUUK0-oVhjiRYEm3vZOZnpFaORpDr6-dkGFqHRsbfwiJTi_HdViMQja94bJdXp-eqis_NF8RQ/622x349' },
+			{ n: 'Sit Back and Relax', cat: 'minimal', colors: ['orange'], a: 0, h: '2243720-Sit Back and Relax (Profile Background)', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwCWVKg-oQA23hYFnynfOcriRaLE_W-rqNRRHvHbtuHwgJ-x_3MDicQnOoVIItzp-eqir89fKKg/622x349' },
+			{ n: 'Baptism', cat: 'architecture', colors: ['blue'], a: 0, h: '8870-Baptism', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMOfQOVTKs5vFdm3EhSnimLPMXqR6jA_Tr4qdwHF6PZ4LSnjJ7g8SdQhJMgPYoDf5Wg9dzjJGg/622x349' },
+			{ n: 'Dota Ancients', cat: 'fantasy', colors: ['green'], a: 0, h: '570-Dota Ancients', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKW643vVJl3ksHmCmFPJm5QaGaoG75_4kBH_TQ4OikjJHh-HkDhMInapJde4LYL0QKOg/622x349' },
+			{ n: 'Dragon', cat: 'fantasy', colors: ['orange', 'red'], a: 0, h: '570-Dragon', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMDcgSKAK096Flgjh0Bk3nfaMu4QaST9T___dpdFaGOt-mm3cTh8CIE2cYgO5Jde4KzeiS0sg/622x349' },
+			{ n: 'RE4 Cover Art', cat: 'horror', colors: ['black', 'red'], a: 0, h: '254700-RE4 Cover Art', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcACSU6ohuwA2gkwCkyzYb8vtRaPH92mv_9UAFaPduOX3gZCwrnNahZRwbI0eJMut4_2JCMcW-g/622x349' },
+			{ n: 'Zelenogorsk', cat: 'military', colors: ['green'], a: 0, h: '221100-Zelenogorsk', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEdwWUU6oh7AVk2R0BySvaO5q_R6KR9T74rt8EQqPctLem3JK3_HdS2MAjb4xMI8ut4_35vpSWoQ/622x349' },
+			{ n: 'New Base', cat: 'space', colors: ['black', 'blue'], a: 0, h: '244850-New base', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMEcQCdVqohtgQ1jxhQmX2JbM_pR6GT8jn4qtgHRabft-TxgcK38XVS2JZ0bd0VcMut4_1MGHmfXQ/622x349' },
+			{ n: 'Rose Petals', cat: 'minimal', colors: ['pink', 'red'], a: 0, h: '431960-Rose Petals', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCdgWcVaoh61Vg3xsFzSmPOJ3oEfOT8Gqq_4hUQ6HetbXzi5K1_XlXi8whbY4aJ8ut4_1Uul53hw/622x349' },
+			{ n: 'Sunset Cruise', cat: 'racing', colors: ['orange', 'yellow'], a: 0, h: '1551360-Sunset Cruise', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHcAGUUKw-oQJhiU9WzymFPsXsEfCR_D_-_NRSH_3QtOmgj5O1_3VTjpYnPNgddtDp-eqiGfmh1os/622x349' },
+			{ n: 'Lost Heaven', cat: 'architecture', colors: ['black', 'orange'], a: 0, h: '1030840-Lost Heaven', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMHdQeVW64-oQJuj00EyinaOcnvE6CRoG__-o8ARffetemn3JCx_CcDhMR2a90aI4Pp-eqia7I_LEc/622x349' },
+			{ n: 'Alone', cat: 'minimal', colors: ['bw', 'black'], a: 0, h: '48000-Alone', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCfQSVU7VqvwNnjx4Mz3iKbcS_EqPB8T78-Y1SFPbYtrT32sWy-XRbicVxb4lLO4-39ISiSj1M/622x349' },
+			{ n: 'Hollow', cat: 'minimal', colors: ['bw', 'black'], a: 0, h: '48000-Hollow', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMCfQSVU7Vstgdujx8Ezy_eOMm9QaiT9Gmt-o5THvfesOXyicOz8SNWjZN2bNkYO4-39N41s_g5/622x349' },
+			{ n: 'Sketch 1', cat: 'abstract', colors: ['bw'], a: 0, h: '602920-Sketch 1 (Profile Background)', m: 'a0b44yVZG6xneuQqGEgxNyzAxlmouy8Ipo0bUlJjRDfF9dQS1eD3AHU-t8xnioHyGdqSZpgsmMIM6FMAdQacUaoh7wNni08BmyvZb8y6RPXBo23x_tgHF_3RsbSh2sO28CdRiZB2Z4hIccut4_1nBUQ1ng/622x349' }
 		];
 
 		function slugify(s) {
@@ -514,8 +519,14 @@
 
 		var COLOR_HEX = {
 			red: '#e74c3c', orange: '#e67e22', yellow: '#f1c40f', green: '#2ecc71',
-			blue: '#3498db', purple: '#9b59b6', pink: '#ff79c6', black: '#4a4a4a', white: '#dfe4ea'
+			blue: '#3498db', purple: '#9b59b6', pink: '#ff79c6',
+			bw: 'linear-gradient(135deg, #17181c 0 50%, #e8e9ec 50% 100%)',
+			black: '#4a4a4a', white: '#dfe4ea'
 		};
+		var COLOR_LABELS = { bw: 'Black & White' };
+		function colourLabel(c) {
+			return COLOR_LABELS[c] || c.charAt(0).toUpperCase() + c.slice(1);
+		}
 
 		function showToast(msg) {
 			toast.textContent = msg;
@@ -554,8 +565,12 @@
 					? 'https://store.steampowered.com/points/shop/app/' + bg.app + '/reward/' + d
 					: 'https://store.steampowered.com/points/shop/app/' + bg.app;
 			}
-			return 'https://steamcommunity.com/market/search?q=' + encodeURIComponent(bg.n) +
-				'&category_753_item_class%5B0%5D=tag_item_class_3';
+			// Static entries carry their market_hash_name, so link straight to
+			// the listing; fall back to a name search if one is ever missing.
+			return bg.h
+				? 'https://steamcommunity.com/market/listings/753/' + encodeURIComponent(bg.h)
+				: 'https://steamcommunity.com/market/search?q=' + encodeURIComponent(bg.n) +
+					'&category_753_item_class%5B0%5D=tag_item_class_3';
 		}
 
 		// Progressive enhancement: pause a card's video once it scrolls well
@@ -587,16 +602,17 @@
 		Object.keys(cats).sort().forEach(function (c) {
 			var b = document.createElement('button');
 			b.className = 'chip';
-			b.textContent = c.charAt(0).toUpperCase() + c.slice(1) + ' ' + '(' + cats[c] + ')';
-			b.style.textTransform = 'capitalize';
+			b.dataset.cat = c;
+			b.innerHTML = '<span class="chip-label" style="text-transform:capitalize">' + c +
+				'</span> <span class="chip-count"></span>';
 			b.addEventListener('click', function () {
+				if (b.classList.contains('disabled')) return;
 				state.cat = state.cat === c ? null : c;
 				render();
 			});
-			b.dataset.cat = c;
 			catRow.appendChild(b);
 		});
-		var COLOR_ORDER = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'black', 'white'];
+		var COLOR_ORDER = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'bw', 'black', 'white'];
 		COLOR_ORDER.filter(function (c) { return colors[c]; }).forEach(function (c) {
 			var b = document.createElement('button');
 			b.className = 'chip';
@@ -605,8 +621,9 @@
 			sw.className = 'swatch';
 			sw.style.background = COLOR_HEX[c];
 			b.appendChild(sw);
-			b.appendChild(document.createTextNode(c.charAt(0).toUpperCase() + c.slice(1)));
+			b.appendChild(document.createTextNode(colourLabel(c)));
 			b.addEventListener('click', function () {
+				if (b.classList.contains('disabled')) return;
 				state.color = state.color === c ? null : c;
 				render();
 			});
@@ -659,10 +676,39 @@
 			recGrid.appendChild(card);
 		});
 
+		// How many backgrounds match the current filters with one facet swapped
+		// out - used both for the live category counts and to grey out a chip
+		// that would give an empty grid (so Military + Blue can't be picked
+		// into a dead end).
+		function countWith(over) {
+			return BACKGROUNDS.filter(function (bg) {
+				var type = 'type' in over ? over.type : state.type;
+				var cat = 'cat' in over ? over.cat : state.cat;
+				var color = 'color' in over ? over.color : state.color;
+				if (type === 'animated' && !bg.a) return false;
+				if (type === 'static' && bg.a) return false;
+				if (cat && bg.cat !== cat) return false;
+				if (color && bg.colors.indexOf(color) === -1) return false;
+				if (state.q && bg.n.toLowerCase().indexOf(state.q) === -1 && bg.cat.indexOf(state.q) === -1) return false;
+				return true;
+			}).length;
+		}
+
 		function syncChips() {
 			document.querySelectorAll('#typeRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.type === state.type); });
-			document.querySelectorAll('#catRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.cat === state.cat); });
-			document.querySelectorAll('#colorRow .chip').forEach(function (c) { c.classList.toggle('active', c.dataset.color === state.color); });
+			document.querySelectorAll('#catRow .chip').forEach(function (c) {
+				var isActive = c.dataset.cat === state.cat;
+				var n = countWith({ cat: c.dataset.cat });
+				c.querySelector('.chip-count').textContent = '(' + n + ')';
+				c.classList.toggle('active', isActive);
+				c.classList.toggle('disabled', n === 0 && !isActive);
+			});
+			document.querySelectorAll('#colorRow .chip').forEach(function (c) {
+				var isActive = c.dataset.color === state.color;
+				var n = countWith({ color: c.dataset.color });
+				c.classList.toggle('active', isActive);
+				c.classList.toggle('disabled', n === 0 && !isActive);
+			});
 			var anyFilter = state.type !== 'all' || state.cat || state.color || state.q;
 			clearBtn.style.display = anyFilter ? '' : 'none';
 		}
@@ -786,7 +832,7 @@
 
 		// ---- per-item detail view (own URL: backgrounds/?item=<slug>) ----
 		function colourNames(bg) {
-			return bg.colors.map(function (c) { return c.charAt(0).toUpperCase() + c.slice(1); }).join(', ');
+			return bg.colors.map(colourLabel).join(', ');
 		}
 
 		function showDetail(bg) {
@@ -845,7 +891,7 @@
 			srcLink.href = buyUrl(bg);
 			srcLink.textContent = bg.a
 				? 'Redeem in the Steam Points Shop →'
-				: 'Find on the Steam Community Market →';
+				: 'Buy on the Steam Community Market →';
 			src.appendChild(srcLink);
 			if (bg.a) src.appendChild(document.createTextNode(' 2,000 pts'));
 
