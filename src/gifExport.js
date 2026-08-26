@@ -33,6 +33,16 @@ function encodeGifUnderLimit({
 	maxBytes = MAX_EXPORT_BYTES,
 	maxStride = 10,
 }) {
+	// Building every frame (compositing GIF deltas onto a running canvas, then
+	// cropping/resizing into the showcase slice) runs on the main thread and,
+	// for a source with hundreds of frames, can take long enough that the tab
+	// looks frozen and the browser may offer to kill it - gif.js's own
+	// 'progress' event only covers the encoding phase *after* every frame is
+	// already built, so it can't report anything during that stretch. Building
+	// in small batches with a setTimeout(0) between them yields back to the
+	// browser regularly (keeping it responsive) and gives a progress figure
+	// that covers the whole attempt, not just the back half of it.
+	const FRAME_BATCH_SIZE = 20;
 	const attempt = (stride) =>
 		new Promise((resolve) => {
 			const buildFrame = createFrameBuilder();
@@ -44,19 +54,25 @@ function encodeGifUnderLimit({
 			});
 
 			gifjs.on('finished', resolve);
-			if (onProgress) gifjs.on('progress', onProgress);
+			if (onProgress) gifjs.on('progress', (e) => onProgress(0.5 + e * 0.5));
 
 			let accumulatedDelay = 0;
-			for (let i = 0; i < frameCount; i++) {
-				const canvas = buildFrame(i);
-				accumulatedDelay += frameDelay(i);
-				if (i % stride === 0 || i === frameCount - 1) {
-					gifjs.addFrame(canvas, { delay: accumulatedDelay });
-					accumulatedDelay = 0;
+			let i = 0;
+			function buildNextBatch() {
+				const batchEnd = Math.min(i + FRAME_BATCH_SIZE, frameCount);
+				for (; i < batchEnd; i++) {
+					const canvas = buildFrame(i);
+					accumulatedDelay += frameDelay(i);
+					if (i % stride === 0 || i === frameCount - 1) {
+						gifjs.addFrame(canvas, { delay: accumulatedDelay });
+						accumulatedDelay = 0;
+					}
 				}
+				if (onProgress) onProgress((i / frameCount) * 0.5);
+				if (i < frameCount) setTimeout(buildNextBatch, 0);
+				else gifjs.render();
 			}
-
-			gifjs.render();
+			buildNextBatch();
 		});
 
 	return (async () => {

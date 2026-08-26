@@ -1,5 +1,6 @@
 const inputImage = require('./inputImage');
 const { fetchImageAsFile } = require('./loadFromUrl');
+const profilePreview = require('./profilePreview');
 
 // Wires the "paste a background URL" box next to the file picker so people
 // can crop a Steam background straight from its image link instead of
@@ -34,10 +35,14 @@ function setupUrlLoader(loadNewFile) {
 	});
 
 	// ?bg=<url> lets the Backgrounds page link straight into a ready-to-crop
-	// image instead of making people copy/paste the link themselves.
+	// image instead of making people copy/paste the link themselves. Anyone
+	// arriving that way came from the Backgrounds gallery to crop a profile
+	// background, so land them in Background Cropper mode rather than the
+	// default Artwork Creator mode.
 	const bg = new URLSearchParams(window.location.search).get('bg');
 	if (bg) {
 		input.value = bg;
+		if (profilePreview.getMode() !== 'cropper') profilePreview.setMode('cropper');
 		load();
 	}
 }

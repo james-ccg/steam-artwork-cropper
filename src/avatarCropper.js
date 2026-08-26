@@ -1,5 +1,6 @@
 const CustomCanvas = require('./CustomCanvas');
 const inputImage = require('./inputImage');
+const { hexifyToBase64 } = require('./hexify');
 const {
 	MAX_EXPORT_BYTES,
 	canvasToBlob,
@@ -9,8 +10,12 @@ const {
 } = require('./exportLimit');
 
 // Steam avatars are a plain square, 184x184 - unlike the showcase formats,
-// avatars upload through Steam's normal avatar changer, so there's no long-
-// image rendering quirk to work around here and no hexify step needed.
+// avatars upload through Steam's normal avatar changer, so the trailing-byte
+// hexify trick isn't strictly needed to make them render at full size. It's
+// still applied here for consistency (every other file in the zip is
+// hexified, and the bundled readme.txt tells people so) and because it's
+// harmless - decoders read the pixel data long before the trailer, and
+// Steam re-encodes the avatar on upload anyway.
 //
 // Avatar isn't its own pickable format (Background Cropper bundles it into
 // every export automatically instead; Artwork Creator doesn't produce it at
@@ -47,11 +52,15 @@ async function addAvatarToZip(zip) {
 	const filename = `avatar_${inputImage.file.name}`;
 
 	if (blob.size <= MAX_EXPORT_BYTES) {
-		zip.file(withExtension(filename, blob.type), blob);
+		zip.file(withExtension(filename, blob.type), await hexifyToBase64(blob), {
+			base64: true,
+		});
 	} else {
 		const source = isPng ? flattenToOpaque(canvas, '#000000') : canvas;
 		const jpegBlob = await compressCanvasToJpegUnderLimit(source);
-		zip.file(filename.replace(/\.\w+$/, '.jpg'), jpegBlob);
+		zip.file(filename.replace(/\.\w+$/, '.jpg'), await hexifyToBase64(jpegBlob), {
+			base64: true,
+		});
 	}
 }
 

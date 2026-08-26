@@ -34,8 +34,8 @@ function doneMessage() {
 }
 
 const workshopShowcase = {
-	previewBox: $('#preview-box'), // Used for giving a preview of the slider area
-	dragContainer: $('#drag-container'), // Huh... can't remember what this is for xD
+	previewBox: $('#preview-box'), // Clipping box around the slice preview area
+	dragContainer: $('#drag-container'), // Positioned wrapper the slider is dragged within
 	dragElem: $('#drag-elem'), // Selector for the orange slider element
 	imgPreview: $('#img-preview'), // The <img> element where the image is shown
 	smallImageWarning: $('.warning'), // Warning element if the image is too small for workshop showcase
@@ -475,7 +475,8 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 	const blob = await encodeGifUnderLimit({
 		frameCount: gifs.length,
 		createFrameBuilder,
-		frameDelay: (i) => (gifs[i].delay ? gifs[i].delay : gifs[1].delay),
+		frameDelay: (i) =>
+			gifs[i].delay || (gifs[1] && gifs[1].delay) || gifs[0].delay || 100,
 		transparentColor,
 		onProgress: (e) =>
 			inputImage.setStatusMsg(

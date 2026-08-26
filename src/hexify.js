@@ -6,14 +6,26 @@
 // sees, so oversized showcase artwork displays as intended instead of being
 // silently downscaled. This used to only run on PNG/GIF output; every export
 // now goes through it regardless of format.
+// Converts bytes to a binary string in fixed-size chunks via the native bulk
+// String.fromCharCode(...chunk) instead of one function call (and one string
+// concatenation) per byte - for a large export (an animated Workshop GIF
+// slice can run tens of megabytes) the old per-byte loop was the actual
+// bottleneck, not the image/GIF encoding itself. 0x8000 stays comfortably
+// under every engine's argument-count limit for Function.apply.
+const CHUNK_SIZE = 0x8000;
+function bytesToBinaryString(bytes) {
+	let result = '';
+	for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+		result += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK_SIZE));
+	}
+	return result;
+}
+
 function hexifyBytes(bytes) {
 	let end = bytes.length;
 	while (end > 0 && bytes[end - 1] === 0) end--;
 
-	let binary = '';
-	for (let i = 0; i < end - 1; i++) binary += String.fromCharCode(bytes[i]);
-	binary += '\x21';
-	return binary;
+	return bytesToBinaryString(bytes.subarray(0, Math.max(0, end - 1))) + '\x21';
 }
 
 function hexifyToBase64(blob) {

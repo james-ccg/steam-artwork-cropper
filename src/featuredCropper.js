@@ -161,7 +161,8 @@ async function featured_createGif(zip, gifs) {
 	const blob = await encodeGifUnderLimit({
 		frameCount: gifs.length,
 		createFrameBuilder,
-		frameDelay: (i) => (gifs[i].delay ? gifs[i].delay : gifs[1].delay),
+		frameDelay: (i) =>
+			gifs[i].delay || (gifs[1] && gifs[1].delay) || gifs[0].delay || 100,
 		transparentColor: '#000000',
 		onProgress: (e) =>
 			inputImage.setStatusMsg(`Rendering gif - ${(e * 100).toFixed(0)}%`),

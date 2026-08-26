@@ -66,6 +66,7 @@ const artworkShowcase = {
 		artworkShowcase.bigBoxGif.src = '';
 		artworkShowcase.smallBoxGif.src = '';
 		artworkShowcase.smallTest = inputImage.height;
+		artworkShowcase.measureIterations = 0;
 
 		// Get measures for the images on the Artwork showcase
 		artworkShowcase.steamHeight = Math.floor(
@@ -95,19 +96,10 @@ const artworkShowcase = {
 			inputImage.height = img.height;
 			artworkShowcase.reset();
 
-			artworkShowcase.bigCanvas.fillSolid(
-				artworkShowcase.steamBigWidth,
-				inputImage.height
-			);
-			artworkShowcase.smallCanvas.fillSolid(
-				artworkShowcase.steamSmallWidth,
-				inputImage.height
-			);
-			artworkShowcase.bigImg.src = artworkShowcase.bigCanvas.toDataURL();
-			artworkShowcase.smallImg.src =
-				artworkShowcase.smallCanvas.toDataURL();
-
-			artworkShowcase.bigImg.onload = testSize; // acts like a while loop
+			// Kick off the measurement loop. Both solid preview canvases are
+			// (re)painted and pushed into their <img> elements here; testSize()
+			// only runs once they have actually decoded and laid out.
+			renderMeasurementCanvases(true, true);
 		};
 
 		if (inputImage.file != null) inputImage.loadFile();
@@ -274,7 +266,8 @@ async function as_createGifs(zip, gifs, currentGif) {
 	const blob = await encodeGifUnderLimit({
 		frameCount: gifs.length,
 		createFrameBuilder,
-		frameDelay: (i) => (gifs[i].delay ? gifs[i].delay : gifs[1].delay),
+		frameDelay: (i) =>
+			gifs[i].delay || (gifs[1] && gifs[1].delay) || gifs[0].delay || 100,
 		transparentColor,
 		onProgress: (e) =>
 			inputImage.setStatusMsg(
@@ -305,10 +298,9 @@ async function as_createGifs(zip, gifs, currentGif) {
 	}
 }
 
-// Main
-// TODO: FIX THIS (nah man)
 // Shared by both the file picker and the "paste a URL" loader below, so a
-// background loaded from a link is routed exactly like a local upload.
+// background loaded from a link is routed exactly like a local upload -
+// whichever showcase tab is active gets (re)measured against the new image.
 function loadNewFile(file) {
 	demoDefaults.markUserProvidedImage();
 	if (!file) return;
@@ -348,65 +340,119 @@ demoDefaults.loadDefaultArtwork(artworkShowcase.loadImage).then(function () {
 	tabInfo.loaded.artwork = true;
 });
 
+// Re-paints the solid measurement canvases into the two preview <img>
+// elements and re-runs testSize() - but only once the images that actually
+// changed have decoded and laid out. The old loop drove itself off
+// bigImg.onload alone and read smallImg's rendered height immediately, so on
+// a cold page load (fonts + demo images still downloading, layout not
+// settled) smallImg could still be reporting a stale height for several
+// iterations. That let the search walk steamSmallWidth down to the <1 rail,
+// and the resulting sub-pixel-wide small canvas, stretched into the
+// showcase's 100px slot, rendered ~76000px tall and blew out the whole page.
+function renderMeasurementCanvases(updateBig, updateSmall) {
+	let pending = 0;
+	const step = function () {
+		if (--pending > 0) return;
+		artworkShowcase.bigImg.onload = null;
+		artworkShowcase.smallImg.onload = null;
+		testSize();
+	};
+
+	if (updateBig) {
+		pending++;
+		artworkShowcase.bigCanvas.setWidth(artworkShowcase.steamBigWidth);
+		artworkShowcase.bigCanvas.fillSolid(
+			artworkShowcase.steamBigWidth,
+			inputImage.height
+		);
+		artworkShowcase.bigImg.onload = step;
+		artworkShowcase.bigImg.src = artworkShowcase.bigCanvas.toDataURL();
+	}
+	if (updateSmall) {
+		pending++;
+		artworkShowcase.smallCanvas.setWidth(artworkShowcase.steamSmallWidth);
+		artworkShowcase.smallCanvas.fillSolid(
+			artworkShowcase.steamSmallWidth,
+			inputImage.height
+		);
+		artworkShowcase.smallImg.onload = step;
+		artworkShowcase.smallImg.src = artworkShowcase.smallCanvas.toDataURL();
+	}
+	if (pending === 0) testSize();
+}
+
 function testSize() {
 	// Get values for the images shown on the Steam Artwork showcase
 	// and check if they need to be adjusted
-	// let bigImgComputed = Math.round(parseFloat(getComputedStyle(bigImg).height.replace('px', '')));
-	// let smallImgComputed = Math.round(parseFloat(getComputedStyle(smallImg).height.replace('px', '')));
 	let bigImgComputed = getComputedValueFor(artworkShowcase.bigImg, 'height');
 	let smallImgComputed = getComputedValueFor(
 		artworkShowcase.smallImg,
 		'height'
 	);
 
-	// Very narrow/tall source images can push steamBigWidth past the preview
-	// image's own CSS max-width (506px). Past that point its rendered height
-	// stops tracking steamBigWidth 1:1, so the +/-1px search below can never
-	// converge and steamSmallWidth runs away into negative numbers. Bail out
-	// with the last sane width instead of handing a negative-size canvas to
-	// the rest of the pipeline. The search loop below already calls
-	// smallCanvas.setWidth() on every step it takes, but the *last* step
-	// before landing here can leave the real <canvas> element's width at 0
-	// (or clamped negative-to-0 by the DOM) even though steamSmallWidth is
-	// about to be clamped back to 1 - resync the element itself, or anything
-	// that later draws *from* it (not just into it, which toBlob() tolerates
-	// but drawImage() does not) throws "canvas element with a width of 0".
-	if (artworkShowcase.steamSmallWidth < 1 || artworkShowcase.steamBigWidth > 700) {
-		artworkShowcase.steamSmallWidth = Math.max(1, artworkShowcase.steamSmallWidth);
+	// Both zero means the showcase was hidden (another tab was opened) while
+	// this measurement was still running - the solid preview canvases always
+	// have a real height when visible. Stop cleanly instead of "converging"
+	// on 0 === 0 and then drawing from a not-yet-loaded image; the artworkTab
+	// click handler re-runs loadImage() when the panel is shown again if the
+	// resolution readout is still blank.
+	if (bigImgComputed === 0 && smallImgComputed === 0) {
+		artworkShowcase.bigImg.onload = null;
+		artworkShowcase.smallImg.onload = null;
+		return;
+	}
+
+	artworkShowcase.measureIterations =
+		(artworkShowcase.measureIterations || 0) + 1;
+
+	// The +/-1px search assumes the big preview's rendered height keeps
+	// tracking steamBigWidth. Once steamBigWidth passes that <img>'s own 506px
+	// max-width that stops being true, so the search can walk steamSmallWidth
+	// down toward (or past) zero without ever converging - and a sub-1px-wide
+	// small canvas, stretched into the showcase's ~100px slot, renders
+	// thousands of px tall. If we hit either rail (or just spend too long
+	// bouncing between two neighbouring widths), stop and derive
+	// steamSmallWidth straight from steamBigWidth using the two slots'
+	// display-width ratio (100 / 506), so both previews still come out the
+	// same height. Resync both <canvas> elements before finishing, or drawing
+	// *from* a stale-width one later throws "canvas ... width of 0".
+	if (
+		artworkShowcase.steamSmallWidth < 1 ||
+		artworkShowcase.steamBigWidth > 700 ||
+		artworkShowcase.measureIterations > 400
+	) {
+		artworkShowcase.steamBigWidth = Math.min(
+			artworkShowcase.steamBigWidth,
+			inputImage.width
+		);
+		artworkShowcase.steamSmallWidth = Math.max(
+			1,
+			Math.min(
+				inputImage.width - 1,
+				Math.round((artworkShowcase.steamBigWidth * 100) / 506)
+			)
+		);
+		artworkShowcase.bigCanvas.setWidth(artworkShowcase.steamBigWidth);
 		artworkShowcase.smallCanvas.setWidth(artworkShowcase.steamSmallWidth);
 		finishArtworkMeasurement();
 		return;
 	}
 
-	if (bigImgComputed !== smallImgComputed) {
-		// Because the left bigger picture is easier to adjust and less janky to work with,
-		// we're setting the right smaller image to an acceptable size taller than the big one,
-		// then resize the bigger image's width until their rounded heights are the same
-		if (bigImgComputed > smallImgComputed) {
-			artworkShowcase.steamBigWidth += 1;
-			artworkShowcase.steamSmallWidth -= 1;
-
-			artworkShowcase.smallCanvas.setWidth(
-				artworkShowcase.steamSmallWidth
-			);
-			artworkShowcase.smallCanvas.fillSolid(
-				artworkShowcase.steamSmallWidth,
-				inputImage.height
-			);
-			artworkShowcase.smallImg.src =
-				artworkShowcase.smallCanvas.toDataURL();
-		} else {
-			artworkShowcase.steamBigWidth -= 1;
-		}
-		// bigCanvas and smallCanvas are used for measuring the Steam Artwork Showcase
-		artworkShowcase.bigCanvas.setWidth(artworkShowcase.steamBigWidth);
-		artworkShowcase.bigCanvas.fillSolid(
-			artworkShowcase.steamBigWidth,
-			inputImage.height
-		);
-		artworkShowcase.bigImg.src = artworkShowcase.bigCanvas.toDataURL();
-	} else {
+	if (bigImgComputed === smallImgComputed) {
 		finishArtworkMeasurement();
+		return;
+	}
+
+	// Because the left bigger picture is easier to adjust and less janky to
+	// work with, nudge the small one down a step whenever the big one is
+	// taller, then walk the big width until their rounded heights match.
+	if (bigImgComputed > smallImgComputed) {
+		artworkShowcase.steamBigWidth += 1;
+		artworkShowcase.steamSmallWidth -= 1;
+		renderMeasurementCanvases(true, true);
+	} else {
+		artworkShowcase.steamBigWidth -= 1;
+		renderMeasurementCanvases(true, false);
 	}
 }
 
@@ -414,6 +460,7 @@ function finishArtworkMeasurement() {
 	// When it's done testing, display a preview of the original image and show
 	// the resolutions for the pictures on the right side
 	artworkShowcase.bigImg.onload = null;
+	artworkShowcase.smallImg.onload = null;
 	artworkShowcase.leftOffset =
 		inputImage.width - artworkShowcase.steamSmallWidth;
 	inputImage.setStatusMsg('Done');
@@ -570,6 +617,14 @@ document.getElementById('toggleSmall').addEventListener('click', toggleSmall);
 document
 	.getElementById('downloadArtwork')
 	.addEventListener('click', artworkShowcase.downloadImages);
-document
-	.getElementById('artworkTab')
-	.addEventListener('click', () => changeTab('artwork', artworkShowcase.loadImage));
+document.getElementById('artworkTab').addEventListener('click', () => {
+	const wasLoaded = tabInfo.loaded.artwork;
+	changeTab('artwork', artworkShowcase.loadImage);
+	// changeTab only runs loadImage the first time the tab is shown. If that
+	// first run was interrupted (tab switched away before it finished, which
+	// hides the preview and zeroes its measured height), the readout is stuck
+	// on "-" - re-run it now that the preview is visible again.
+	if (wasLoaded && inputImage.file && rightPanel.bigSize.innerText === '-') {
+		artworkShowcase.loadImage();
+	}
+});
