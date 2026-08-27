@@ -204,10 +204,14 @@ async function as_createGifs(zip, gifs, currentGif) {
 		? artworkShowcase.smallTest
 		: inputImage.height;
 	const fixTrail = document.getElementById('gifSloppyFix').checked;
-	const transparentColor = document.getElementById('gifSloppyTransparent')
-		.checked
-		? undefined
-		: '#000000';
+	// Off by default. gif.js maps this colour to GIF's transparent index, so
+	// with black set every pure-black pixel in the artwork is punched out and
+	// the profile background shows through it - which reads as the export
+	// "losing colour". Only worth turning on for art that really is meant to
+	// have transparent regions.
+	const transparentColor = document.getElementById('gifSloppyTransparent').checked
+		? '#000000'
+		: undefined;
 
 	// GIF frames are delta-encoded onto a running "background" canvas, so a
 	// fresh one is needed each time this is (re-)attempted from frame 0.
@@ -339,7 +343,12 @@ function loadNewFile(file) {
 
 inputImage.selectedImage.onchange = function () {
 	inputImage.sourceUrl = null; // a picked file has no shareable URL
-	loadNewFile(inputImage.selectedImage.files[0]);
+	const picked = inputImage.selectedImage.files[0];
+	// The native control's own filename text is hidden along with the input,
+	// so the chosen name is echoed next to the replacement button.
+	const nameEl = document.getElementById('selectedImageName');
+	if (nameEl) nameEl.textContent = picked ? picked.name : 'No file chosen';
+	loadNewFile(picked);
 };
 
 setupUrlLoader(loadNewFile);

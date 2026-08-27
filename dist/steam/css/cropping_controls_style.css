@@ -872,12 +872,15 @@ body,
 /* A new wrapper inside Steam's .profile_summary carrying Steam's own
    .profile_rightcol panel treatment, so the upload controls read the way
    Steam's own header buttons do over a bright background. */
+/* No panel here. A real Steam profile's summary/bio area sits straight on the
+   background art with nothing behind it, so this wrapper paints nothing - it
+   only carries the text colour. Readability comes from Steam's own answer in
+   the header: a text shadow, the same trick .text_shadow uses on the
+   mini-profile, rather than a box Steam does not have. */
 .toolHeaderPanel {
-	background: var(--steam-panel);
-	border-radius: 3px;
-	padding: 10px;
 	margin-top: 2px;
-	color: var(--steam-text);
+	color: var(--steam-bright);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 6px rgba(0, 0, 0, 0.55);
 }
 
 .toolHeaderPanel .imageSourceLabel {
@@ -891,7 +894,7 @@ body,
 .statusLine {
 	margin: 8px 0 0;
 	font-size: 13px;
-	color: var(--steam-dim);
+	color: var(--steam-bright);
 }
 
 .statusLine #statusMsg {
@@ -1149,4 +1152,74 @@ button.download:hover {
 }
 .overlaySectionLabel {
 	color: rgb(235, 235, 235);
+}
+
+/* ---- Replacement file control, Steam's secondary button ---------------- */
+.fileRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+/* Kept in the DOM and focusable, just not drawn - the browser paints its own
+   button here and labels it in the OS language, which CSS cannot reach. */
+#selectedImage {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+.steamBtn,
+#resetSlider {
+	display: inline-block;
+	background: var(--steam-panel-soft);
+	color: #d3d3d3;
+	border: none;
+	border-radius: 2px;
+	padding: 5px 12px;
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	line-height: 1.3;
+	cursor: pointer;
+	text-shadow: none;
+}
+.steamBtn:hover,
+#resetSlider:hover,
+#selectedImage:focus-visible + .steamBtn {
+	background: rgba(0, 0, 0, 0.45);
+	color: #fff;
+}
+.fileName {
+	font-size: 12px;
+	/* The header has no panel behind it any more, so Steam's dim grey has no
+	   dark ground to sit on - use the bright copy colour and let the header's
+	   text-shadow carry it. */
+	color: var(--steam-text);
+}
+
+/* ---- Preview zoom (steam.design parity) -------------------------------- */
+.bgZoomRow {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+.bgZoomBtn {
+	background: var(--steam-panel-soft);
+	color: #d3d3d3;
+	border: none;
+	border-radius: 2px;
+	padding: 4px 10px;
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	cursor: pointer;
+}
+.bgZoomBtn:hover { background: rgba(0, 0, 0, 0.45); color: #fff; }
+.bgZoomBtn.active {
+	background: linear-gradient(rgb(102, 192, 244) 5%, rgb(47, 137, 188) 95%);
+	color: #fff;
 }

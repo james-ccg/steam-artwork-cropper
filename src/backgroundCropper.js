@@ -123,6 +123,7 @@ function refreshSlicePreview() {
 		inputImage.height,
 		sliceOpts()
 	);
+	applyPreviewZoom();
 }
 
 function nativeSourceCanvas() {
@@ -545,6 +546,36 @@ document
 	)
 	.forEach((el) => el.addEventListener('change', refreshSlicePreview));
 
+// Preview zoom (steam.design offers 50/75/100/125%). This scales only how the
+// preview is drawn - the slice canvases and every Steam container keep their
+// native pixel sizes, so nothing about the measurement changes. The wrapper's
+// height is set explicitly because a CSS transform doesn't affect layout, and
+// without it a zoomed-out preview would leave the original gap behind.
+let previewZoom = 1;
+
+function applyPreviewZoom() {
+	const preview = document.getElementById('bgSlicePreview');
+	if (!preview) return;
+	const inner = preview.firstElementChild;
+	preview.style.transformOrigin = 'top left';
+	preview.style.transform = previewZoom === 1 ? '' : `scale(${previewZoom})`;
+	if (inner && previewZoom !== 1) {
+		preview.style.height = inner.getBoundingClientRect().height + 'px';
+	} else {
+		preview.style.removeProperty('height');
+	}
+}
+
+document.querySelectorAll('.bgZoomBtn').forEach((btn) => {
+	btn.addEventListener('click', () => {
+		previewZoom = parseInt(btn.dataset.zoom, 10) / 100;
+		document
+			.querySelectorAll('.bgZoomBtn')
+			.forEach((b) => b.classList.toggle('active', b === btn));
+		applyPreviewZoom();
+	});
+});
+
 // One-time "enable animated slicing" - registers the coi service worker and
 // reloads so the tab becomes cross-origin isolated. After the reload the
 // notice hides itself (isIsolated() is true).
@@ -558,6 +589,15 @@ if (bgAnimEnable) {
 		bgAnimEnable.disabled = true;
 		bgAnimEnable.textContent = 'Enabling...';
 		try {
+			// Remembered so the worker re-registers on later visits - and, just as
+			// importantly, so it does NOT register for anyone who never asks for
+			// animated slicing (it would block the Backgrounds gallery's
+			// thumbnails, which have no CORS headers, for the whole /cropper/ scope).
+			try {
+				localStorage.setItem('coiAnimatedSlicing', '1');
+			} catch (e) {
+				/* private mode - isolation just won't persist */
+			}
 			if (navigator.serviceWorker) {
 				await navigator.serviceWorker.register('./coi-serviceworker.min.js');
 			}

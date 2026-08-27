@@ -14,6 +14,21 @@
         window.coi = {
             coepCredentialless: () => true,
             quiet: true,
+            // Isolation is OPT-IN. It is only needed for the Background
+            // Cropper's animated slicing (SharedArrayBuffer for ffmpeg.wasm),
+            // but the worker claims this whole /cropper/ scope - including
+            // /cropper/backgrounds/, whose Steam-hosted thumbnails send no
+            // Access-Control-Allow-Origin and are blocked outright under
+            // COEP. So it only registers once the user has actually asked for
+            // animated slicing (the "Enable animated slicing" button sets the
+            // flag, then registers and reloads).
+            shouldRegister: () => {
+                try {
+                    return localStorage.getItem('coiAnimatedSlicing') === '1';
+                } catch (e) {
+                    return false;
+                }
+            },
         };
     </script>
     <script src="./coi-serviceworker.min.js"></script>
@@ -27,7 +42,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=13">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=15">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -67,7 +82,10 @@
                             <div class="playerAvatar profile_header_size online" id="avatarHoverTarget">
                                 <div class="playerAvatarAutoSizeInner">
                                     <div class="profile_avatar_frame">
-                                        <img src="./steam/imgs/james_frame.png" />
+                                        <!-- 1.3 MB 120-frame APNG: decorative, and it otherwise holds the
+                                             connection long enough to delay the demo image the tool needs
+                                             for its first crop. -->
+                                        <img src="./steam/imgs/james_frame.png" fetchpriority="low" decoding="async" />
                                     </div>
                                     <img src="./steam/imgs/james_avatar.jpg" />
                                 </div>
@@ -82,7 +100,7 @@
                                             </div>
                                             <div class="miniprofile_playersection text_shadow">
                                                 <div class="playersection_avatar_frame">
-                                                    <img src="./steam/imgs/james_frame.png" />
+                                                    <img src="./steam/imgs/james_frame.png" fetchpriority="low" decoding="async" loading="lazy" />
                                                 </div>
                                                 <div class="playersection_avatar border_color_online">
                                                     <img src="./steam/imgs/james_avatar.jpg" />
@@ -127,7 +145,15 @@
                                     <div class="imageSourceGrid">
                                         <div class="imageSourceCol">
                                             <h3 class="imageSourceLabel">Select image:</h3>
-                                            <input type="file" name="" id="selectedImage" accept="image/*,video/webm,video/mp4">
+                                            <!-- The native control draws its own button, labelled by the
+                                                 browser in the OS language and unreachable by CSS. Keep the
+                                                 input (every module talks to it) but hide it behind a real
+                                                 label styled as Steam's own button. -->
+                                            <div class="fileRow">
+                                                <input type="file" name="" id="selectedImage" accept="image/*,video/webm,video/mp4">
+                                                <label for="selectedImage" class="steamBtn">Choose image</label>
+                                                <span id="selectedImageName" class="fileName">No file chosen</span>
+                                            </div>
                                         </div>
                                         <div class="imageSourceCol">
                                             <h3 class="imageSourceLabel">or paste a direct image link:</h3>
@@ -234,6 +260,17 @@
                                 </p>
                                 <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164)</span></label></p>
 
+                                <!-- Preview zoom, the way steam.design offers it. Purely a visual
+                                     transform on the preview - every Steam container keeps its
+                                     native pixel size, so the pieces stay measured correctly. -->
+                                <p class="bgSliceSubLabel">Preview zoom</p>
+                                <p class="bgZoomRow">
+                                    <button type="button" class="bgZoomBtn" data-zoom="50">50%</button>
+                                    <button type="button" class="bgZoomBtn" data-zoom="75">75%</button>
+                                    <button type="button" class="bgZoomBtn active" data-zoom="100">100%</button>
+                                    <button type="button" class="bgZoomBtn" data-zoom="125">125%</button>
+                                </p>
+
                                 <p class="bgSliceSubLabel">Output format</p>
                                 <p class="bgSliceFormatRow">
                                     <label><input type="radio" name="bgSliceFormat" value="png" checked /> PNG</label>
@@ -294,7 +331,7 @@
                             </p>
                             <p>
                                 <input type="checkbox" id="gifSloppyTransparent" />
-                                <label for="gifSloppyTransparent">Disable gif transparency</label>
+                                <label for="gifSloppyTransparent">Make pure black transparent</label>
                             </p>
 
                             <p class="reminder" style="text-align: justify">
@@ -333,13 +370,13 @@
                             </p>
                             <p>
                                 <input type="checkbox" id="gifSloppyTransparent2" />
-                                <label for="gifSloppyTransparent2">Disable gif transparency</label>
+                                <label for="gifSloppyTransparent2">Make pure black transparent</label>
                             </p>
                             <button class="download" id="downloadWorkshop" style="display: none"></button>
                         </div>
 
                         <button class="download" id="exportBtn" title="Export the currently selected format">Export</button>
-                        <p class="hexifyNote">Every exported image is auto-hexified (last byte rewritten to 0x21) before zipping, so it renders at full size on Steam. Not sure how to upload it? <a href="./faq/#upload-guide" target="_blank">See the upload guide</a>.</p>
+                        <p class="hexifyNote">Every exported image is auto-hexified before zipping - a small per-format byte tweak - so it renders at full size on Steam. Animated .webm / .mp4 pieces need no tweak and are left untouched. Not sure how to upload it? <a href="./faq/#upload-guide" target="_blank">See the upload guide</a>.</p>
 
                         <br>
                         <p class="siteDisclaimer">

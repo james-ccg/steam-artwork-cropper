@@ -70,7 +70,14 @@ function encodeGifUnderLimit({
 			const buildFrame = createFrameBuilder();
 			const gifjs = new GIF({
 				workers: 2,
+				// gif.js quality is "pixels sampled per colour" - 1 is the most
+				// accurate palette it can build.
 				quality: 1,
+				// A GIF frame only holds 256 colours, and NeuQuant on its own
+				// lays them down flat, so gradients and skin tones come out as
+				// visible bands. Error diffusion trades that banding for fine
+				// noise, which survives Steam's showcase scaling far better.
+				dither: 'FloydSteinberg-serpentine',
 				workerScript: 'steam/js/gif.worker.js',
 				transparent: transparentColor,
 			});

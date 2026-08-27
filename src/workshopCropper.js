@@ -399,10 +399,14 @@ async function ws_cropGifs(zip, gifs, currentSlice, isImageSmall) {
 	// Recursive function for cropping gifs
 	const toggleSliderChecked = $('#toggleSlider').is(':checked');
 	const fixTrail = document.getElementById('gifSloppyFix2').checked;
-	const transparentColor = document.getElementById('gifSloppyTransparent2')
-		.checked
-		? undefined
-		: '#000000';
+	// Off by default. gif.js maps this colour to GIF's transparent index, so
+	// with black set every pure-black pixel in the artwork is punched out and
+	// the profile background shows through it - which reads as the export
+	// "losing colour". Only worth turning on for art that really is meant to
+	// have transparent regions.
+	const transparentColor = document.getElementById('gifSloppyTransparent2').checked
+		? '#000000'
+		: undefined;
 	// imgHeight is for it to check if the slider is enabled and to set it's height
 	const imgHeight = !toggleSliderChecked
 		? workshopShowcase.sliderHeight

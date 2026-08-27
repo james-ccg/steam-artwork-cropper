@@ -270,6 +270,28 @@
 		footer .disclaimer { line-height: 1.6; max-width: 780px; }
 		footer .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 	</style>
+	<script>
+		// The Cropper's cross-origin-isolation worker claims the whole /cropper/
+		// scope, which includes this page. Under COEP: credentialless every
+		// thumbnail here is blocked - Steam's image hosts send no
+		// Access-Control-Allow-Origin (checked: community.cloudflare,
+		// community.fastly, community.akamai, steamcommunity-a.akamaihd), so no
+		// host rewrite can fix it. Hand the worker back and reload; the Cropper
+		// re-registers it if the user has opted into animated slicing.
+		(function () {
+			if (!('serviceWorker' in navigator) || !window.crossOriginIsolated) return;
+			navigator.serviceWorker.getRegistrations().then(function (regs) {
+				var coi = regs.filter(function (r) {
+					var sw = r.active || r.installing || r.waiting;
+					return sw && /coi-serviceworker/.test(sw.scriptURL);
+				});
+				if (!coi.length) return;
+				Promise.all(coi.map(function (r) { return r.unregister(); })).then(function () {
+					window.location.reload();
+				});
+			});
+		})();
+	</script>
 </head>
 <body>
 	<header>
@@ -280,7 +302,7 @@
 				<a href="https://james-ccg.github.io/#about">About</a>
 				<a href="https://james-ccg.github.io/#projects">My Projects</a>
 				<a href="../">Cropper</a>
-				<a href="./">Backgrounds</a>
+				<a href="./" class="current">Backgrounds</a>
 				<a href="../faq/">FAQ</a>
 				<a href="https://james-ccg.github.io/#contact">Contact</a>
 			</div>
@@ -731,9 +753,12 @@
 				video.poster = posterUrl(bg);
 				video.muted = true;
 				video.loop = true;
-				video.autoplay = true;
 				video.playsInline = true;
+				// Not autoplay: a full grid is ~20 clips of a few MB each, and
+				// starting them all at once wedges the renderer. galleryPlayback
+				// (below) plays only what is actually on screen.
 				video.setAttribute('preload', 'metadata');
+				video.dataset.lazyPlay = '1';
 				video.addEventListener('error', function () {
 					// Fall back to the still poster if the movie can't load.
 					var img = document.createElement('img');
@@ -979,6 +1004,50 @@
 		}
 
 		route();
+	</script>
+
+	<script>
+		// Play only the clips in view; pause and unload the rest. Without this
+		// the grid holds ~20 simultaneous videos and the tab locks up.
+		(function galleryPlayback() {
+			if (!('IntersectionObserver' in window)) return;
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (e) {
+					var v = e.target;
+					if (e.isIntersecting) {
+						// play() rejects if it is called while the clip still has
+						// no data, and the observer will not fire again for an
+						// element that stays in view - so wait for canplay rather
+						// than firing once and giving up.
+						v.dataset.want = '1';
+						var tryPlay = function () {
+							if (v.dataset.want !== '1') return;
+							var p = v.play();
+							if (p && p.catch) p.catch(function () {});
+						};
+						if (v.readyState >= 2) {
+							tryPlay();
+						} else {
+							v.addEventListener('canplay', tryPlay, { once: true });
+							v.load();
+						}
+					} else {
+						v.dataset.want = '0';
+						if (!v.paused) v.pause();
+					}
+				});
+			}, { rootMargin: '200px 0px' });
+
+			function scan() {
+				document.querySelectorAll('video[data-lazy-play="1"]').forEach(function (v) {
+					if (v.dataset.observed === '1') return;
+					v.dataset.observed = '1';
+					io.observe(v);
+				});
+			}
+			scan();
+			new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+		})();
 	</script>
 </body>
 </html>

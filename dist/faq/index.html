@@ -435,7 +435,7 @@
 							<p>
 								Steam checks the stored dimensions of an image when it displays it and quietly
 								downscales anything it thinks is oversized. Every file this tool exports is already
-								<strong>hexified</strong> (its last byte rewritten) so that check reads a smaller
+								<strong>hexified</strong> (a small per-format byte tweak) so that check reads a smaller
 								size and leaves the image alone. If it still looks shrunk, you most likely uploaded
 								an un-hexified copy, or skipped the console step in the
 								<a href="#upload-guide">upload guide</a>.
@@ -508,8 +508,11 @@
 					all pass through Steam's <em>Guide</em> image editor, which never asks which showcase you
 					mean, so a one-line command answers that before you save.
 					<strong>2&nbsp;-&nbsp;hexify:</strong> Steam downscales images it judges oversized at
-					display time, so the file's last non-zero byte is rewritten to <code>0x21</code> - which
-					changes what Steam's size check reads without touching any byte a decoder needs. The
+					display time, so the tool rewrites a byte the decoder never reads. What that byte is
+					depends on the format: GIF's last byte becomes <code>0x21</code>, JPEG's becomes
+					<code>0xDA</code>, a PNG grows by one byte and takes a crafted block at
+					<code>size&minus;9</code>, and WebP has its RIFF size field bumped. Animated
+					<code>.webm</code> / <code>.mp4</code> output needs none of this and is left as-is. The
 					step-by-step for both is in <a href="#upload-guide">Uploading to Steam</a>.
 				</div>
 

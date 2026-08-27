@@ -2,8 +2,11 @@
 // the steps still work offline / without finding the site again. The full
 // version (with the Guide Showcase section, copy buttons, etc.) lives at
 // dist/faq/index.html under "Uploading to Steam".
-module.exports = `Every image in this zip has already been hexified (its last byte rewritten
-to 0x21) so it renders at full size on Steam's showcases - just upload as-is.
+module.exports = `Every image in this zip has already been hexified - a small per-format
+byte tweak (GIF 0x21, JPEG 0xDA, PNG a crafted trailing block, WebP a RIFF size
+bump) that no decoder reads - so it renders at full size on Steam's showcases.
+Animated .webm / .mp4 pieces need no tweak and are included untouched.
+Just upload as-is.
 
 HOW TO UPLOAD TO STEAM
 Full guide: https://james-ccg.github.io/cropper/faq/#upload-guide

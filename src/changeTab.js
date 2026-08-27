@@ -30,8 +30,17 @@ function changeTab(tabName, callback) {
 
     tabInfo.currentTab = "#" + tabName;
     if (!tabInfo.loaded[tabName]) {
-        callback();
+        // Latch first so a synchronous re-entry can't double-load, but release
+        // the latch if the loader rejects. Without that, a first visit whose
+        // demo fetch failed leaves the tab marked loaded forever and it keeps
+        // showing its placeholder markup with a "-" readout.
         tabInfo.loaded[tabName] = true;
+        const pending = callback();
+        if (pending && typeof pending.catch === "function") {
+            pending.catch(function () {
+                tabInfo.loaded[tabName] = false;
+            });
+        }
     }
 }
 
