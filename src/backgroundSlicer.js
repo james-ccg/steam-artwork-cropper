@@ -24,6 +24,33 @@ const { hexifyBlobByType } = require('./hexify');
 
 const AVATAR = { dx: -461, top: 36, size: 164 };
 
+// A Workshop Showcase is not one image - it is a strip of five item slots.
+// Measured off the Steam markup this page recreates: the strip is 628px wide
+// starting at centre-464, each slot 122.4px with a 4px gap, which is exactly
+// where the Artwork Creator's own Workshop cropper puts its five crop lines
+// (-340.9, -214.5, -89.5, +36.9 - each the 4px gap between two slots).
+const WORKSHOP_SLOT_WIDTH = 122.4;
+const WORKSHOP_SLOT_GAP = 4;
+const WORKSHOP_STRIP_LEFT = -464;
+const WORKSHOP_SLOTS = 5;
+
+function workshopCols() {
+	const cols = [];
+	for (let i = 0; i < WORKSHOP_SLOTS; i++) {
+		const left =
+			WORKSHOP_STRIP_LEFT + i * (WORKSHOP_SLOT_WIDTH + WORKSHOP_SLOT_GAP);
+		const dx = Math.round(left);
+		cols.push({
+			suffix: `_${i + 1}`,
+			dx,
+			// Round both edges rather than the width, so consecutive slots stay
+			// on Steam's fractional 122.4 pitch instead of drifting.
+			w: Math.round(left + WORKSHOP_SLOT_WIDTH) - dx,
+		});
+	}
+	return cols;
+}
+
 // Where each showcase's image area sits on the profile. `top` is calibrated
 // from steam.design's published y:256 for an Artwork/Featured showcase (the
 // first thing in the left column); a Workshop showcase carries a 40px header
@@ -59,7 +86,8 @@ const SHOWCASE_TYPES = {
 		label: 'Workshop Showcase',
 		file: 'Workshop',
 		top: 301,
-		cols: [{ suffix: '', dx: -461, w: 160 }],
+		layout: 'strip',
+		cols: workshopCols(),
 	},
 };
 
@@ -136,6 +164,7 @@ function sliceRects(bgWidth, bgHeight, opts) {
 				file: `${t.file}${col.suffix}`,
 				group: 'showcase',
 				groupLabel: t.label,
+				layout: t.layout || 'panel',
 				sx: centre + col.dx,
 				sy: t.top,
 				w: col.w,
@@ -194,9 +223,26 @@ function fillEl(bgSrc, r) {
 	return fill;
 }
 
+// A Workshop Showcase renders as one row of item slots, so its preview is a
+// strip rather than the primary/right-column pair the other showcases use.
+// The gap between slots is Steam's own 4px, which is background the piece is
+// NOT cut from - showing it keeps the slot boundaries honest.
+function workshopStripMock(bgSrc, rects) {
+	const wrap = el('div', 'screenshot_showcase bgWorkshopStrip');
+	rects.forEach((r) => {
+		const slot = el('div', 'bgWorkshopSlot');
+		slot.appendChild(fillEl(bgSrc, r));
+		wrap.appendChild(slot);
+	});
+	return wrap;
+}
+
 // Steam's own showcase markup (profilev2.css does the rest) - a primary slot
 // and, for an Artwork/Screenshot showcase, the narrow right-hand column.
 function showcaseMock(bgSrc, rects) {
+	if (rects[0] && rects[0].layout === 'strip') {
+		return workshopStripMock(bgSrc, rects);
+	}
 	const wrap = el('div', 'screenshot_showcase');
 
 	const primary = el(

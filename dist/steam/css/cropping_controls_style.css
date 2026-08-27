@@ -1237,3 +1237,14 @@ button.download:hover {
 	margin: 0;
 	white-space: nowrap;
 }
+
+/* ---- Workshop Showcase preview: five slots on Steam's own 4px pitch ---- */
+.bgWorkshopStrip {
+	display: flex;
+	gap: 4px;
+	align-items: flex-start;
+}
+.bgWorkshopSlot {
+	flex: 0 0 auto;
+	line-height: 0;
+}

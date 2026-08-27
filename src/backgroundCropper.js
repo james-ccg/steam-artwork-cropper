@@ -40,7 +40,7 @@ profile reads as a single seamless picture.
   Artwork_Middle   -> the wide image of an Artwork Showcase (Screenshot is
   Artwork_Side          the same); Side is the narrow right column
   Featured         -> a Featured Artwork Showcase
-  Workshop         -> a Workshop Showcase item
+  Workshop_1..5    -> the five slots of a Workshop Showcase, left to right
 
 Set the Background and Avatar first, then upload the showcase piece(s) with
 the console commands in the upload guide:
