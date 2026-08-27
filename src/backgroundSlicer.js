@@ -256,6 +256,35 @@ function resetAvatar() {
 	paintAvatar(null, null);
 }
 
+// The mock's header carries the tool's own controls, so the showcase below it
+// does not land on exactly the background row the slices are cut from (Steam's
+// own layout puts an Artwork Showcase at y=256 when the header is at its
+// minimum height). Nudge the preview by the measured difference so each piece
+// is drawn on the background pixels it was actually cut from - otherwise the
+// composite reads as misaligned even though the exported pieces are correct.
+function alignToBackground(container, rects, bgWidth) {
+	container.style.removeProperty('margin-top');
+	container.style.removeProperty('margin-left');
+	if (!rects.length) return;
+
+	const bgEl = document.querySelector(
+		'.no_header.profile_page.has_profile_background'
+	);
+	const fill = container.querySelector('.bgSliceFill');
+	if (!bgEl || !fill) return;
+
+	// Steam draws a static background at native size, centred and top-pinned,
+	// so background pixel (sx, sy) lands at (centre - bgWidth/2 + sx, top + sy).
+	const bg = bgEl.getBoundingClientRect();
+	const originX = bg.left + bg.width / 2 - Math.floor(bgWidth / 2);
+	const got = fill.getBoundingClientRect();
+
+	const dx = Math.round(originX + rects[0].sx - got.left);
+	const dy = Math.round(bg.top + rects[0].sy - got.top);
+	if (dx) container.style.marginLeft = dx + 'px';
+	if (dy) container.style.marginTop = dy + 'px';
+}
+
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	container.innerHTML = '';
 	const rects = sliceRects(bgWidth, bgHeight, opts);
@@ -277,6 +306,7 @@ function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 
 	if (showcaseRects.length) {
 		container.appendChild(showcaseMock(bgSrc, showcaseRects));
+		alignToBackground(container, showcaseRects, bgWidth);
 		return;
 	}
 

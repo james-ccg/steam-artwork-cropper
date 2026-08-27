@@ -68,7 +68,14 @@
 
     <!-- ####################################AAAAAAA######################## -->
     <div class="responsive_page_template_content">
-        <div class="no_header profile_page has_profile_background full_width_background " style="background-image: url(./steam/imgs/james_background.jpg)">
+        <!-- No `full_width_background`. That class is Steam's opt-in for stretching a
+             background to the window (background-size: 100%), and its specificity beats
+             the `@media (max-width: 1920px) { background-size: auto }` rule right below
+             it in profilev2.css - so with it on, a 1920px background was being squeezed
+             to the column width. Every slice is cut in the background's NATIVE pixel
+             space, so the page has to draw it at native size, centred and top-pinned,
+             which is what a normal Steam profile background does. -->
+        <div class="no_header profile_page has_profile_background" style="background-image: url(./steam/imgs/james_background.jpg)">
             <div class="profile_header_bg">
                 <div class="profile_header_bg_texture">
                     <div class="profile_header">

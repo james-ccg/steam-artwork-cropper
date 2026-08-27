@@ -14,7 +14,7 @@ const ORIGINAL_BACKGROUND = './steam/imgs/james_background.jpg';
 let mode = 'creator';
 
 function headerBgEl() {
-	return document.querySelector('.has_profile_background.full_width_background');
+	return document.querySelector('.no_header.profile_page.has_profile_background');
 }
 
 function applyPreview(bgSrc) {
