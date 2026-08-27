@@ -631,37 +631,13 @@ button.download {
 	cursor: pointer;
 }
 
-/* live "where each piece is cut" preview */
+/* Live preview: the pieces are painted into real Steam showcase slots, so
+   the only styling needed is the window each piece is shown through. */
 #bgSlicePreview {
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	padding: 4px 0 2px;
+	padding: 2px 0;
 }
-.bgSliceRow {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-.bgSliceLabel {
-	font-size: 11px;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: #8fa3b0;
-}
-.bgSliceBoxes {
-	display: flex;
-	align-items: flex-start;
-	gap: 6px;
-}
-.bgSliceBox {
+.bgSliceFill {
 	background-color: #000;
-	border: 1px solid #3a4d5a;
-	border-radius: 3px;
-	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
-}
-.bgSliceBoxAvatar {
-	border-radius: 6px;
 }
 
 .bgSliceSubLabel {
@@ -1030,4 +1006,147 @@ body,
 
 #bgAnimControls {
 	border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ---- The tool's controls, in Steam's own idiom -------------------------
+   Every value below is lifted from a real Steam profile
+   (steamcommunity.com/id/james_ccg) rather than invented for this page:
+
+     panel ground      rgba(0, 0, 0, 0.3)   (.profile_customization)
+     body copy         rgb(150, 150, 150)
+     bright copy       rgb(235, 235, 235)
+     stat value        #fff, 24px, weight 200
+     secondary button  rgba(0, 0, 0, 0.2) / rgb(211, 211, 211), radius 2px
+     primary button    linear-gradient(#a4d007 5%, #536904 95%) / rgb(210,232,133)
+     link              #67c1f5
+
+   Steam stacks .profile_rightcol's rgba(0,0,0,.3) with a second
+   rgba(0,0,0,.3) on each .profile_customization block, which is what keeps
+   profile text readable over any background art. The tool's own panels do
+   exactly the same, so their copy sits on Steam's ground instead of
+   directly on the user's artwork. */
+#featuredInfo,
+#backgroundInfo,
+#artworkInfo,
+#worshopInfo,
+#resolutionsBlock,
+#textOverlayPanel {
+	background: rgba(0, 0, 0, 0.3);
+	padding: 10px;
+	color: rgb(150, 150, 150);
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+}
+
+/* Label / value pairs: the plain <h2> is the label, the one carrying an id
+   is the readout - Steam's own .showcase_stat treatment (light weight,
+   white, large) rather than two identical headings. */
+.profile_rightcol h1 {
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	font-weight: 200;
+	color: #fff;
+	margin: 0 0 6px;
+}
+.profile_rightcol h2 {
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	font-weight: 400;
+	color: rgb(150, 150, 150);
+	margin: 0;
+}
+.profile_rightcol h2[id] {
+	font-size: 24px;
+	font-weight: 200;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+	margin: 0 0 4px;
+}
+
+/* Steam profiles have no orange alert boxes - explanatory copy is just
+   quiet body text. .warning stays loud because it is a real warning. */
+.reminder {
+	/* rgb(235,235,235) is Steam's own copy colour (.profile_header_actions a).
+	   Steam's 150-grey body tone measures only 2.9:1 over bright background
+	   art, and this is the text explaining what the tool does, so it takes the
+	   brighter of Steam's two copy colours - 6.4:1 on the same ground. */
+	color: rgb(235, 235, 235);
+	font-weight: 400;
+	border: none;
+	padding: 0;
+	margin: 6px 0;
+	line-height: 1.5;
+}
+
+#bgSliceControls .dimHint,
+.dimHint {
+	color: rgb(150, 150, 150);
+}
+.bgSliceSubLabel {
+	color: rgb(235, 235, 235);
+	font-size: 12px;
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: 400;
+}
+.bgSliceRadioCol,
+.bgSliceFormatRow,
+#bgSliceControls label,
+.bgResizeLink label {
+	color: rgb(235, 235, 235);
+}
+.bgResizeLink {
+	border-top: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.hexifyNote {
+	color: rgb(150, 150, 150);
+	font-style: normal;
+}
+.hexifyNote a {
+	color: #67c1f5;
+}
+.siteDisclaimer {
+	color: rgb(120, 120, 120);
+}
+
+/* Steam's green call-to-action (.btn_green_white_innerfade). */
+button.download {
+	background: linear-gradient(rgb(164, 208, 7) 5%, rgb(83, 105, 4) 95%);
+	color: rgb(210, 232, 133);
+	border: none;
+	border-radius: 2px;
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 15px;
+	cursor: pointer;
+}
+button.download:hover {
+	background: linear-gradient(rgb(182, 230, 8) 5%, rgb(99, 125, 5) 95%);
+	color: #fff;
+}
+
+/* The native file input is the one piece of raw OS chrome on the page;
+   dress it as Steam's secondary button (.btn_profile_action). */
+#selectedImage::file-selector-button {
+	background: rgba(0, 0, 0, 0.2);
+	color: rgb(211, 211, 211);
+	border: none;
+	border-radius: 2px;
+	padding: 4px 10px;
+	margin-right: 8px;
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	cursor: pointer;
+}
+#selectedImage::file-selector-button:hover {
+	background: rgba(0, 0, 0, 0.35);
+	color: #fff;
+}
+
+/* The overlay panel's caption is copy, not a warning - Steam's bright copy
+   colour, same as every other label in the column. */
+.overlayPanelTitle {
+	color: rgb(235, 235, 235);
+}
+.overlaySectionLabel {
+	color: rgb(235, 235, 235);
 }

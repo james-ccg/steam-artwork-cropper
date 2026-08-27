@@ -110,6 +110,7 @@ function refreshSlicePreview() {
 	if (!container) return;
 	if (bgMode !== 'slice' || !backgroundShowcase.canvas) {
 		container.innerHTML = '';
+		backgroundSlicer.resetAvatar();
 		return;
 	}
 	// Slices are cut from the background at its NATIVE resolution (that's what
@@ -521,11 +522,15 @@ async function finishZip(zip) {
 document
 	.getElementById('downloadBackground')
 	.addEventListener('click', backgroundShowcase.downloadImage);
-document
-	.getElementById('backgroundTab')
-	.addEventListener('click', () =>
-		changeTab('background', () => demoDefaults.loadDefaultBackground(backgroundShowcase.loadImage))
+document.getElementById('backgroundTab').addEventListener('click', () => {
+	changeTab('background', () =>
+		demoDefaults.loadDefaultBackground(backgroundShowcase.loadImage)
 	);
+	// changeTab only runs its loader the first time, so re-entering Background
+	// Cropper would otherwise leave the profile showing its real avatar instead
+	// of the avatar piece. Repaint whatever the current options call for.
+	refreshSlicePreview();
+});
 
 const bgModeResize = document.getElementById('bgModeResize');
 if (bgModeResize) {

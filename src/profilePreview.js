@@ -75,6 +75,9 @@ function updateFormatVisibility(switchingModes) {
 		creatorOnly.forEach((el) => el && el.style.setProperty('display', 'none'));
 		backgroundTab.click();
 	} else {
+		// The slice preview borrows the profile's own avatar to show the
+		// avatar piece in place; leaving Background Cropper hands it back.
+		require('./backgroundSlicer').resetAvatar();
 		creatorOnly.forEach((el) => el && el.style.removeProperty('display'));
 		if (switchingModes || tabInfo.currentTab === '#background') {
 			const artworkTab = document.getElementById('artworkTab');

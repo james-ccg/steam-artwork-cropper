@@ -162,54 +162,127 @@ function computeSlices(bgCanvas, opts) {
 }
 
 // --- live preview ------------------------------------------------------
-// Each box shows the background pixels its piece will be cut from, so the
-// seam is visible (or not) before exporting.
-const PREVIEW_SCALE = 0.6;
-const PREVIEW_MAX_BOX_H = 240;
+// The reference tools (steam.design, Steam Artwork Hub) never show the pieces
+// as a separate stack of boxes beside the profile - they show the profile
+// itself with the pieces already sitting in it, which is the entire point of
+// slicing. So does this: each cut region is painted straight into a real Steam
+// showcase slot at its native size, and the avatar piece is painted onto the
+// mock profile's own avatar. Nothing is ever drawn twice.
+const AVATAR_IMG_SELECTOR = '#avatarHoverTarget .playerAvatarAutoSizeInner img';
+const DEFAULT_AVATAR_SRC = './steam/imgs/james_avatar.jpg';
+
+function el(tag, className) {
+	const node = document.createElement(tag);
+	if (className) node.className = className;
+	return node;
+}
+
+// A slot's contents: the background, unscaled, shifted so the slot window
+// lands exactly on the region that piece is cut from.
+function fillEl(bgSrc, r) {
+	const fill = el('div', 'bgSliceFill');
+	fill.style.width = r.w + 'px';
+	fill.style.height = r.h + 'px';
+	fill.style.backgroundImage = `url("${bgSrc}")`;
+	fill.style.backgroundRepeat = 'no-repeat';
+	fill.style.backgroundPosition = `${-r.sx}px ${-r.sy}px`;
+	return fill;
+}
+
+// Steam's own showcase markup (profilev2.css does the rest) - a primary slot
+// and, for an Artwork/Screenshot showcase, the narrow right-hand column.
+function showcaseMock(bgSrc, rects) {
+	const wrap = el('div', 'screenshot_showcase');
+
+	const primary = el(
+		'div',
+		'screenshot_showcase_primary showcase_slot' +
+			(rects.length > 1 ? '' : ' single')
+	);
+	const shot = el('div', 'screenshot_showcase_screenshot');
+	shot.style.width = rects[0].w + 'px';
+	shot.style.maxWidth = rects[0].w + 'px';
+	shot.appendChild(fillEl(bgSrc, rects[0]));
+	primary.appendChild(shot);
+	primary.appendChild(el('div', 'screenshot_showcase_itemname'));
+	wrap.appendChild(primary);
+
+	if (rects[1]) {
+		const rightcol = el('div', 'screenshot_showcase_rightcol');
+		const small = el(
+			'div',
+			'screenshot_showcase_smallscreenshot showcase_slot'
+		);
+		const smallShot = el('div', 'screenshot_showcase_screenshot');
+		smallShot.appendChild(fillEl(bgSrc, rects[1]));
+		small.appendChild(smallShot);
+		rightcol.appendChild(small);
+		wrap.appendChild(rightcol);
+	}
+
+	const clear = el('div');
+	clear.style.clear = 'both';
+	wrap.appendChild(clear);
+	return wrap;
+}
+
+// Steam shows one avatar, so the avatar piece is previewed on the real one
+// rather than as a second copy. object-fit:none + a negative object-position
+// windows straight onto the region without re-encoding anything.
+function paintAvatar(bgSrc, rect) {
+	const img = document.querySelector(AVATAR_IMG_SELECTOR);
+	if (!img) return;
+	if (!rect || !bgSrc) {
+		img.src = DEFAULT_AVATAR_SRC;
+		img.style.removeProperty('object-fit');
+		img.style.removeProperty('object-position');
+		img.style.removeProperty('width');
+		img.style.removeProperty('height');
+		return;
+	}
+	// Pin the window to the avatar's real 164px box - the element is otherwise
+	// sized by the intrinsic size of whatever is in it, and the background is
+	// 1920 wide, which would show far more than the avatar actually covers.
+	img.src = bgSrc;
+	img.style.objectFit = 'none';
+	img.style.objectPosition = `${-rect.sx}px ${-rect.sy}px`;
+	img.style.width = rect.w + 'px';
+	img.style.height = rect.h + 'px';
+}
+
+function resetAvatar() {
+	paintAvatar(null, null);
+}
 
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	container.innerHTML = '';
-	const s = PREVIEW_SCALE;
-	const byGroup = {};
-	sliceRects(bgWidth, bgHeight, opts).forEach((r) => {
-		(byGroup[r.group] = byGroup[r.group] || []).push(r);
-	});
+	const rects = sliceRects(bgWidth, bgHeight, opts);
+	const showcaseRects = rects.filter((r) => r.group === 'showcase');
+	const avatarRect = rects.filter((r) => r.group === 'avatar')[0];
 
-	function addRow(label, rects) {
-		const rowEl = document.createElement('div');
-		rowEl.className = 'bgSliceRow';
-		const l = document.createElement('span');
-		l.className = 'bgSliceLabel';
-		l.textContent = label;
-		rowEl.appendChild(l);
+	paintAvatar(bgSrc, avatarRect);
 
-		const boxes = document.createElement('div');
-		boxes.className = 'bgSliceBoxes';
-		rects.forEach((r) => {
-			const el = document.createElement('div');
-			el.className =
-				'bgSliceBox' + (r.group === 'avatar' ? ' bgSliceBoxAvatar' : '');
-			el.style.width = r.w * s + 'px';
-			el.style.height = Math.min(PREVIEW_MAX_BOX_H, r.h * s) + 'px';
-			el.style.backgroundImage = `url("${bgSrc}")`;
-			el.style.backgroundRepeat = 'no-repeat';
-			el.style.backgroundSize = `${bgWidth * s}px ${bgHeight * s}px`;
-			el.style.backgroundPosition = `${-r.sx * s}px ${-r.sy * s}px`;
-			boxes.appendChild(el);
-		});
-		rowEl.appendChild(boxes);
-		container.appendChild(rowEl);
+	// The mock's own header names whatever is being previewed in it, the way a
+	// real profile labels the showcase sitting there.
+	const header = document.querySelector(
+		'#backgroundArea .profile_customization_header'
+	);
+	if (header) {
+		header.textContent = showcaseRects.length
+			? showcaseRects[0].groupLabel
+			: 'Profile Background';
 	}
 
-	if (byGroup.avatar) addRow('Avatar', byGroup.avatar);
-	if (byGroup.showcase) addRow(byGroup.showcase[0].groupLabel, byGroup.showcase);
-
-	if (!container.children.length) {
-		const p = document.createElement('p');
-		p.className = 'reminder';
-		p.textContent = 'Pick a showcase (or the avatar) to slice for.';
-		container.appendChild(p);
+	if (showcaseRects.length) {
+		container.appendChild(showcaseMock(bgSrc, showcaseRects));
+		return;
 	}
+
+	const p = el('p', 'reminder');
+	p.textContent = avatarRect
+		? "Only the avatar is being cut - it's previewed on the profile avatar above."
+		: 'Pick a showcase (or the avatar) to slice for.';
+	container.appendChild(p);
 }
 
 async function addPieceToZip(zip, piece, sourceType, format) {
@@ -297,6 +370,7 @@ module.exports = {
 	computeSlices,
 	sliceRects,
 	renderPreview,
+	resetAvatar,
 	addPieceToZip,
 	layoutLink,
 	parseLayoutLink,
