@@ -3,7 +3,6 @@ const JSZip = require('jszip');
 const download = require('downloadjs');
 
 const CustomCanvas = require('./CustomCanvas');
-const rightPanel = require('./rightPanel');
 const changeTab = require('./changeTab');
 const inputImage = require('./inputImage');
 const textOverlay = require('./textOverlay');
@@ -229,7 +228,10 @@ function loadVideoBackground(file) {
 			.drawImage(frame, 0, 0);
 
 		backgroundShowcase.img.src = frame.toDataURL('image/jpeg', 0.85);
-		rightPanel.originalSize.innerText = `${v.videoWidth} x ${v.videoHeight}`;
+		// Deliberately not #originalSize: that readout belongs to the Artwork
+		// Creator, and writing it here left the background's dimensions showing
+		// under "Original picture" after switching back to that mode. The
+		// Background Cropper has its own #backgroundSize line.
 		document.getElementById('backgroundSize').innerText =
 			v.videoWidth === dispW
 				? `${dispW} x ${dispH} (animated)`
@@ -278,7 +280,6 @@ const backgroundShowcase = {
 			// data: string shoved into the <img>.
 			backgroundShowcase.img.src = img.src;
 
-			rightPanel.originalSize.innerText = `${img.width} x ${img.height}`;
 			const resized =
 				size.width !== img.width || size.height !== img.height;
 			document.getElementById('backgroundSize').innerText = resized

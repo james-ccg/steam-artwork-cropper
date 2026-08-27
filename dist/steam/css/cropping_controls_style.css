@@ -1248,3 +1248,13 @@ button.download:hover {
 	flex: 0 0 auto;
 	line-height: 0;
 }
+
+/* ---- Avatar sits on Steam's row 36 ------------------------------------
+   Measured on the real profile: the avatar image starts 36px below the
+   background's top edge (a 200px avatar block 18px down, with the 164px
+   image inset another 18px). This mock's header chain lands it at 34, so
+   the composite showed the avatar piece two rows high. Nudge the block,
+   not its size - it stays 164 square inside a 168px box. */
+#avatarHoverTarget {
+	margin-top: 2px;
+}
