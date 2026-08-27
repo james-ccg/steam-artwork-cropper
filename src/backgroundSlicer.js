@@ -168,7 +168,12 @@ function computeSlices(bgCanvas, opts) {
 // slicing. So does this: each cut region is painted straight into a real Steam
 // showcase slot at its native size, and the avatar piece is painted onto the
 // mock profile's own avatar. Nothing is ever drawn twice.
-const AVATAR_IMG_SELECTOR = '#avatarHoverTarget .playerAvatarAutoSizeInner img';
+// Direct child only. `.playerAvatarAutoSizeInner` holds the animated frame
+// (inside .profile_avatar_frame) *before* the avatar, so a descendant
+// selector matches the frame - which is 224px art drawn at 200px so it can
+// overhang the 164px avatar. Painting that one both put the slice on the
+// wrong layer and resized the frame on every mode switch.
+const AVATAR_IMG_SELECTOR = '#avatarHoverTarget .playerAvatarAutoSizeInner > img';
 const DEFAULT_AVATAR_SRC = './steam/imgs/james_avatar.jpg';
 
 function el(tag, className) {
@@ -236,18 +241,15 @@ function paintAvatar(bgSrc, rect) {
 		img.src = DEFAULT_AVATAR_SRC;
 		img.style.removeProperty('object-fit');
 		img.style.removeProperty('object-position');
-		img.style.removeProperty('width');
-		img.style.removeProperty('height');
 		return;
 	}
-	// Pin the window to the avatar's real 164px box - the element is otherwise
-	// sized by the intrinsic size of whatever is in it, and the background is
-	// 1920 wide, which would show far more than the avatar actually covers.
+	// The avatar box is already exactly 164 square in Steam's own CSS, which is
+	// the piece's size, so object-fit:none windows straight onto the region.
+	// Nothing here touches the element's size - doing so is what made the avatar
+	// jump between modes.
 	img.src = bgSrc;
 	img.style.objectFit = 'none';
 	img.style.objectPosition = `${-rect.sx}px ${-rect.sy}px`;
-	img.style.width = rect.w + 'px';
-	img.style.height = rect.h + 'px';
 }
 
 function resetAvatar() {

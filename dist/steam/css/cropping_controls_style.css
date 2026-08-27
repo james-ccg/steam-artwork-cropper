@@ -1223,3 +1223,17 @@ button.download:hover {
 	background: linear-gradient(rgb(102, 192, 244) 5%, rgb(47, 137, 188) 95%);
 	color: #fff;
 }
+
+/* ---- "Choose format:" sits on the same line as its buttons -------------
+   The label used to be a block above the row, leaving an empty half-line
+   beside it and pushing the whole header taller. It is now the first item of
+   the flex row, and the row is the last thing in the summary, so its trailing
+   margin only adds dead space above the showcase below. */
+.formatToggleRow {
+	margin-bottom: 0;
+	flex-wrap: wrap;
+}
+.formatToggleRow .formatToggleLabel {
+	margin: 0;
+	white-space: nowrap;
+}
