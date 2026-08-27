@@ -85,19 +85,6 @@ function codecArgs(format, quality) {
 				'-row-mt',
 				'1',
 			];
-		case 'webp':
-			return [
-				'-c:v',
-				'libwebp',
-				'-lossless',
-				'0',
-				'-quality',
-				quality ? String(quality) : '82',
-				'-loop',
-				'0',
-			];
-		case 'apng':
-			return ['-f', 'apng', '-plays', '0'];
 		default: // gif - palette is added by the caller
 			return [];
 	}
@@ -171,14 +158,12 @@ async function sliceAnimated({ file, videoW, videoH, rects, opts, onProgress, on
 		const preScaled = inName !== rawName;
 		const progBase = preScaled ? 0.15 : 0;
 
-		const fmt = opts.format;
-		const mime = {
-			mp4: 'video/mp4',
-			webm: 'video/webm',
-			webp: 'image/webp',
-			gif: 'image/gif',
-			apng: 'image/apng',
-		}[fmt] || 'application/octet-stream';
+		const fmt = ['mp4', 'webm', 'gif'].includes(opts.format)
+			? opts.format
+			: 'webm';
+		const mime =
+			{ mp4: 'video/mp4', webm: 'video/webm', gif: 'image/gif' }[fmt] ||
+			'application/octet-stream';
 
 		const out = [];
 		for (let i = 0; i < rects.length; i++) {
@@ -186,7 +171,7 @@ async function sliceAnimated({ file, videoW, videoH, rects, opts, onProgress, on
 			if (onStatus) onStatus(`Slicing ${r.file} (${i + 1}/${rects.length})...`);
 			if (onProgress) onProgress(i / rects.length);
 
-			const outName = `p${i}.${fmt === 'apng' ? 'png' : fmt}`;
+			const outName = `p${i}.${fmt}`;
 			// Steam pins an animated background to 1920px wide; the input is
 			// already at that size when pre-scaled, otherwise scale here.
 			let vf =

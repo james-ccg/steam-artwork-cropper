@@ -1,19 +1,17 @@
 /* eslint-disable no-undef */
-// Background Slicer - "Slice for showcases" sub-mode of the Background Cropper.
+// Background Slicer - the whole job of the Background Cropper.
 //
-// Steam has no real upload flow for putting a background *behind* a showcase,
-// so the trick every background-slicing tool uses (steam.design, Steam
-// Artwork Hub, ...) is: cut the exact rectangle of the background that a
-// showcase will end up covering, upload that rectangle *as* the showcase's
-// image, and the showcase then reads as an uncut continuation of the
-// background - the profile looks like one seamless picture.
+// Steam has no upload flow for putting a background *behind* a showcase, so
+// the trick every background-slicing tool uses (steam.design, Steam Artwork
+// Hub, ...) is: cut the exact rectangle of the background that the showcase
+// will end up covering, upload that rectangle *as* the showcase's image, and
+// the showcase reads as an uncut continuation of the background - the profile
+// looks like one seamless picture.
 //
-// x offsets are relative to the background's horizontal centre
-// (n = floor(bgWidth / 2)) and are fixed per showcase type (every showcase is
-// left-aligned in the 632px customization column). y depends on where the
-// showcase sits in the vertical stack, which the user arranges as an ordered
-// list; stackTops() turns that order + each showcase's height into a y for
-// every piece, using Steam's own widget spacing (profilev2.css).
+// Like steam.design, this keeps it simple: one showcase, cut at the fixed
+// position it sits on the profile (x relative to the background's horizontal
+// centre, y from the top), filling from there down to the bottom of the
+// background. The avatar is one 164px square. No stacking, no size to pick.
 const CustomCanvas = require('./CustomCanvas');
 const {
 	MAX_EXPORT_BYTES,
@@ -24,30 +22,19 @@ const {
 } = require('./exportLimit');
 const { hexifyBlobByType } = require('./hexify');
 
-// --- Steam widget spacing (profilev2.css) --------------------------------
-const STACK_TOP = 241; // top of the first .profile_customization, in bg px
-// (calibrated so a .myart showcase first in the stack puts its content at
-// y = 256, which is steam.design's published artwork-showcase offset)
-const WIDGET_MARGIN = 12; // .profile_customization { margin-bottom: 12px }
-const HEADER_H = 40; // .profile_customization_header (30 line-height + 5+5 pad)
-const PAD_TOP_MYART = 15; // .myart .profile_customization_block padding-top
-const PAD_TOP = 20; // .profile_customization_block padding-top
-const PAD_BOTTOM = 11; // ...both have padding-bottom: 11px
+const AVATAR = { dx: -461, top: 36, size: 164 };
 
-const AVATAR_DX = -461;
-const AVATAR_TOP = 36;
-const AVATAR_SIZE = 164;
-
-// --- Showcase catalog ---------------------------------------------------
-// cols: the croppable image columns of a showcase, each {suffix, dx, w}.
-// grid: a rows x cols grid of square cells (Workshop 5x3).
+// Where each showcase's image area sits on the profile. `top` is calibrated
+// from steam.design's published y:256 for an Artwork/Featured showcase (the
+// first thing in the left column); a Workshop showcase carries a 40px header
+// bar, so its item starts lower. `cols` are the image columns the showcase
+// renders as - Artwork = a 506px primary + a 100px secondary column past a
+// ~9px gutter (c-467 -> c+48).
 const SHOWCASE_TYPES = {
 	artwork: {
 		label: 'Artwork Showcase',
 		file: 'Artwork',
-		myart: true,
-		header: false,
-		defaultH: 300,
+		top: 256,
 		cols: [
 			{ suffix: '_Middle', dx: -467, w: 506 },
 			{ suffix: '_Side', dx: 48, w: 100 },
@@ -56,9 +43,7 @@ const SHOWCASE_TYPES = {
 	screenshot: {
 		label: 'Screenshot Showcase',
 		file: 'Screenshot',
-		myart: true,
-		header: false,
-		defaultH: 300,
+		top: 256,
 		cols: [
 			{ suffix: '_Middle', dx: -467, w: 506 },
 			{ suffix: '_Side', dx: 48, w: 100 },
@@ -67,111 +52,22 @@ const SHOWCASE_TYPES = {
 	featured: {
 		label: 'Featured Artwork Showcase',
 		file: 'Featured',
-		myart: true,
-		header: false,
-		defaultH: 300,
+		top: 256,
 		cols: [{ suffix: '', dx: -467, w: 630 }],
 	},
 	workshop: {
-		label: 'Workshop Showcase (single item)',
+		label: 'Workshop Showcase',
 		file: 'Workshop',
-		myart: false,
-		header: true,
-		fixedH: 160,
+		top: 301,
 		cols: [{ suffix: '', dx: -461, w: 160 }],
-	},
-	favoriteguide: {
-		label: 'Favorite Guide',
-		file: 'FavoriteGuide',
-		myart: false,
-		header: true,
-		fixedH: 160,
-		cols: [{ suffix: '', dx: -461, w: 160 }],
-	},
-	// Grids: `grid` describes a rows x cols layout of equal cells. Each row's
-	// height is `slot.height` (one value for the whole grid); rowGap is Steam's
-	// margin between cells.
-	workshopgrid: {
-		label: 'Workshop Showcase (5×3 grid)',
-		file: 'Workshop',
-		myart: false,
-		header: true,
-		defaultH: 122,
-		grid: { rows: 3, cols: 5, cellW: 122.4, colPitch: 126.4, gap: 4, dx0: -465 },
-	},
-	guides: {
-		label: 'My Guides (4×2 grid)',
-		file: 'Guide',
-		myart: false,
-		header: true,
-		fixedH: 66,
-		grid: { rows: 4, cols: 2, cellW: 66, colPitch: 314, gap: 7, dx0: -456 },
-	},
-	achievements: {
-		label: 'Achievement Showcase (7×3 grid)',
-		file: 'Achievement',
-		myart: false,
-		header: true,
-		fixedH: 64,
-		grid: { rows: 3, cols: 7, cellW: 64, colPitch: 90, gap: 5, dx0: -459 },
-	},
-	spacer: {
-		label: 'Empty space / another showcase',
-		file: null,
-		myart: true,
-		header: false,
-		defaultH: 120,
-		cols: [],
 	},
 };
 
 const TYPE_KEYS = Object.keys(SHOWCASE_TYPES);
 
-function rowHeight(slot) {
-	const t = SHOWCASE_TYPES[slot.type];
-	if (t.fixedH) return t.fixedH;
-	return Math.max(1, Math.round(slot.height || t.defaultH));
-}
-
-// The on-profile height of a slot's content area. A lone non-grid showcase
-// with no explicit height fills from its top down to the bottom of the
-// background (fillH) - that's the "no size to pick" case. Grids and stacked
-// showcases use their set/default height so the pieces below land right.
-function contentHeight(slot, fillH) {
-	const t = SHOWCASE_TYPES[slot.type];
-	if (t.grid) {
-		return t.grid.rows * rowHeight(slot) + (t.grid.rows - 1) * t.grid.gap;
-	}
-	if (!t.fixedH && !slot.height && fillH > 0) return fillH;
-	return rowHeight(slot);
-}
-
-// content-area top (bg px) of every slot, in stack order.
-function stackTops(slots, bgHeight) {
-	const tops = [];
-	const singleFill = slots.length === 1;
-	let y = STACK_TOP;
-	slots.forEach((slot) => {
-		const t = SHOWCASE_TYPES[slot.type];
-		const header = t.header ? HEADER_H : 0;
-		const padTop = t.myart ? PAD_TOP_MYART : PAD_TOP;
-		const top = y + header + padTop;
-		tops.push(top);
-		const fillH = singleFill && bgHeight ? bgHeight - top : 0;
-		y +=
-			header +
-			padTop +
-			contentHeight(slot, fillH) +
-			PAD_BOTTOM +
-			WIDGET_MARGIN;
-	});
-	return tops;
-}
-
 // Cut one rectangle from the background canvas. The rectangle can fall partly
-// (or wholly) outside the background - a narrow background, or a long-image
-// piece taller than the source - so the piece starts black and only the
-// covered region is copied in.
+// (or wholly) outside a small background, so the piece starts black and only
+// the covered region is copied in.
 function cutRect(bgCanvas, sx, sy, w, h) {
 	const out = new CustomCanvas(w, h);
 	out.fillSolid(w, h);
@@ -186,9 +82,9 @@ function cutRect(bgCanvas, sx, sy, w, h) {
 	return out.canvas;
 }
 
-// Steam renders a square background as a repeating tile. A slice of it must
-// therefore tile too, so instead of black-filling anything outside the source
-// this repeats the tile across the whole piece (from the right phase).
+// Steam renders a square background as a repeating tile, so a slice of it must
+// tile too - repeat the tile across the whole piece from the right phase
+// instead of black-filling anything outside the source.
 function cutRectTiled(bgCanvas, sx, sy, w, h) {
 	const out = new CustomCanvas(w, h);
 	const ctx = out.canvas.getContext('2d');
@@ -209,13 +105,12 @@ function isTiling(width, height) {
 }
 
 /**
- * The rectangle (in background pixels) each showcase piece is cut from.
- * Shared by the still slicer (cutRect per rect) and the animated slicer
- * (ffmpeg crop per rect).
- * @param {number} bgWidth   background native width
- * @param {number} bgHeight  background native height (for fill-to-bottom)
- * @param {{slots:Array<{type:string,height?:number}>, avatar:boolean}} opts
- * @returns {Array<{file:string, sx:number, sy:number, w:number, h:number}>}
+ * The rectangle (in background pixels) each piece is cut from - shared by the
+ * still slicer (cutRect) and the animated slicer (ffmpeg crop).
+ * @param {number} bgWidth
+ * @param {number} bgHeight
+ * @param {{showcase:?string, avatar:boolean}} opts
+ * @returns {Array<{file:string, group:string, groupLabel:string, sx,sy,w,h:number}>}
  */
 function sliceRects(bgWidth, bgHeight, opts) {
 	const centre = Math.floor(bgWidth / 2);
@@ -226,64 +121,34 @@ function sliceRects(bgWidth, bgHeight, opts) {
 			file: 'Avatar',
 			group: 'avatar',
 			groupLabel: 'Avatar',
-			sx: centre + AVATAR_DX,
-			sy: AVATAR_TOP,
-			w: AVATAR_SIZE,
-			h: AVATAR_SIZE,
+			sx: centre + AVATAR.dx,
+			sy: AVATAR.top,
+			w: AVATAR.size,
+			h: AVATAR.size,
 		});
 	}
 
-	const slots = opts.slots || [];
-	const tops = stackTops(slots, bgHeight);
-	const singleFill = slots.length === 1;
-	slots.forEach((slot, i) => {
-		const t = SHOWCASE_TYPES[slot.type];
-		if (!t || !t.file || (!t.grid && !(t.cols && t.cols.length))) return;
-		const top = tops[i];
-		const prefix = slots.length > 1 ? `${i + 1}_` : '';
-		const group = `slot${i}`;
-
-		if (t.grid) {
-			const g = t.grid;
-			const rh = rowHeight(slot);
-			for (let k = 0; k < g.rows; k++) {
-				const rowTop = Math.round(top + k * (rh + g.gap));
-				for (let c = 0; c < g.cols; c++) {
-					out.push({
-						file: `${prefix}${t.file}_r${k + 1}c${c + 1}`,
-						group,
-						groupLabel: t.label,
-						sx: Math.round(centre + g.dx0 + c * g.colPitch),
-						sy: rowTop,
-						w: Math.round(g.cellW),
-						h: rh,
-					});
-				}
-			}
-			return;
-		}
-
-		const fillH = singleFill && bgHeight ? bgHeight - top : 0;
-		const h = contentHeight(slot, fillH);
+	const t = opts.showcase && SHOWCASE_TYPES[opts.showcase];
+	if (t) {
+		const h = Math.max(1, (bgHeight || 1200) - t.top);
 		t.cols.forEach((col) => {
 			out.push({
-				file: `${prefix}${t.file}${col.suffix}`,
-				group,
+				file: `${t.file}${col.suffix}`,
+				group: 'showcase',
 				groupLabel: t.label,
 				sx: centre + col.dx,
-				sy: top,
+				sy: t.top,
 				w: col.w,
 				h,
 			});
 		});
-	});
+	}
 
 	return out;
 }
 
 /**
  * @param {HTMLCanvasElement} bgCanvas  background at its native resolution
- * @param {object} opts  see sliceRects
  * @returns {Array<{file:string, canvas:HTMLCanvasElement, w:number, h:number}>}
  */
 function computeSlices(bgCanvas, opts) {
@@ -297,23 +162,20 @@ function computeSlices(bgCanvas, opts) {
 }
 
 // --- live preview ------------------------------------------------------
-// A scaled mock of the stack: each showcase box shows the background pixels
-// it will be cut from, so the seam is visible (or not) before exporting.
+// Each box shows the background pixels its piece will be cut from, so the
+// seam is visible (or not) before exporting.
 const PREVIEW_SCALE = 0.6;
-const PREVIEW_MAX_BOX_H = 220;
+const PREVIEW_MAX_BOX_H = 240;
 
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	container.innerHTML = '';
 	const s = PREVIEW_SCALE;
-
-	// Drive the preview straight off sliceRects() so grids and single showcases
-	// use the exact same geometry that the export does.
 	const byGroup = {};
 	sliceRects(bgWidth, bgHeight, opts).forEach((r) => {
 		(byGroup[r.group] = byGroup[r.group] || []).push(r);
 	});
 
-	function addRow(label, rectsOrGhost) {
+	function addRow(label, rects) {
 		const rowEl = document.createElement('div');
 		rowEl.className = 'bgSliceRow';
 		const l = document.createElement('span');
@@ -323,63 +185,35 @@ function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 
 		const boxes = document.createElement('div');
 		boxes.className = 'bgSliceBoxes';
-
-		if (rectsOrGhost === 'ghost') {
-			const ghost = document.createElement('div');
-			ghost.className = 'bgSliceBox bgSliceBoxGhost';
-			ghost.style.width = 300 * s + 'px';
-			ghost.style.height = 40 + 'px';
-			boxes.appendChild(ghost);
-		} else {
-			// A grid (many cells) is drawn at a reduced scale so all its
-			// columns fit the panel; a single showcase uses the full scale.
-			const cols = new Set(rectsOrGhost.map((r) => r.sx)).size;
-			const isGrid = rectsOrGhost.length > cols;
-			const cs = isGrid
-				? Math.min(s, 600 / (cols * rectsOrGhost[0].w))
-				: s;
-			if (isGrid) {
-				boxes.classList.add('bgSliceBoxesGrid');
-				boxes.style.gridTemplateColumns = `repeat(${cols}, ${
-					rectsOrGhost[0].w * cs
-				}px)`;
-			}
-			rectsOrGhost.forEach((r) => {
-				const el = document.createElement('div');
-				el.className =
-					'bgSliceBox' + (r.group === 'avatar' ? ' bgSliceBoxAvatar' : '');
-				el.style.width = r.w * cs + 'px';
-				el.style.height = Math.min(PREVIEW_MAX_BOX_H, r.h * cs) + 'px';
-				el.style.backgroundImage = `url("${bgSrc}")`;
-				el.style.backgroundRepeat = 'no-repeat';
-				el.style.backgroundSize = `${bgWidth * cs}px ${bgHeight * cs}px`;
-				el.style.backgroundPosition = `${-r.sx * cs}px ${-r.sy * cs}px`;
-				boxes.appendChild(el);
-			});
-		}
+		rects.forEach((r) => {
+			const el = document.createElement('div');
+			el.className =
+				'bgSliceBox' + (r.group === 'avatar' ? ' bgSliceBoxAvatar' : '');
+			el.style.width = r.w * s + 'px';
+			el.style.height = Math.min(PREVIEW_MAX_BOX_H, r.h * s) + 'px';
+			el.style.backgroundImage = `url("${bgSrc}")`;
+			el.style.backgroundRepeat = 'no-repeat';
+			el.style.backgroundSize = `${bgWidth * s}px ${bgHeight * s}px`;
+			el.style.backgroundPosition = `${-r.sx * s}px ${-r.sy * s}px`;
+			boxes.appendChild(el);
+		});
 		rowEl.appendChild(boxes);
 		container.appendChild(rowEl);
 	}
 
 	if (byGroup.avatar) addRow('Avatar', byGroup.avatar);
-
-	(opts.slots || []).forEach((slot, i) => {
-		const t = SHOWCASE_TYPES[slot.type];
-		if (!t) return;
-		if (byGroup['slot' + i]) addRow(t.label, byGroup['slot' + i]);
-		else addRow(t.label, 'ghost'); // spacer / unmodelled
-	});
+	if (byGroup.showcase) addRow(byGroup.showcase[0].groupLabel, byGroup.showcase);
 
 	if (!container.children.length) {
 		const p = document.createElement('p');
 		p.className = 'reminder';
-		p.textContent = 'Add a showcase (or the avatar) to slice for.';
+		p.textContent = 'Pick a showcase (or the avatar) to slice for.';
 		container.appendChild(p);
 	}
 }
 
 async function addPieceToZip(zip, piece, sourceType, format) {
-	// format: 'png' | 'jpg' | null (follow the source). Avatars and the
+	// format: 'png' | 'jpg' | null (follow the source). The Avatar and the
 	// bundled Background always follow the source type.
 	let requestedType = sourceType === 'image/apng' ? 'image/png' : sourceType;
 	if (format === 'png') requestedType = 'image/png';
@@ -401,7 +235,7 @@ async function addPieceToZip(zip, piece, sourceType, format) {
 	}
 
 	// A very detailed source can push a piece past Steam's 5MB cap; PNG has no
-	// quality knob so flatten onto black and re-encode as JPEG.
+	// quality knob, so flatten onto black and re-encode as JPEG.
 	const source =
 		blob.type === 'image/png'
 			? flattenToOpaque(piece.canvas, '#000000')
@@ -413,14 +247,17 @@ async function addPieceToZip(zip, piece, sourceType, format) {
 }
 
 // A short, shareable link that re-opens the tool on this background with the
-// same stack + options. Mirrors steam.design's `#<background>` hash idea.
+// same choices. Mirrors steam.design's `#<background>` hash idea.
 function layoutLink(bgUrl, opts) {
 	const state = {
 		bg: bgUrl || null,
-		s: (opts.slots || []).map((sl) => [sl.type, sl.height || 0]),
+		sc: opts.showcase || null,
 		a: !!opts.avatar,
 		f: opts.format && opts.format !== 'png' ? opts.format : undefined,
-		af: opts.animFormat && opts.animFormat !== 'webm' ? opts.animFormat : undefined,
+		af:
+			opts.animFormat && opts.animFormat !== 'webm'
+				? opts.animFormat
+				: undefined,
 		afps: opts.animFps || undefined,
 		aq: opts.animQuality || undefined,
 	};
@@ -442,9 +279,7 @@ function parseLayoutLink(hash) {
 		const st = JSON.parse(window.atob(m[1]));
 		return {
 			bg: st.bg || null,
-			slots: (st.s || [])
-				.filter((row) => SHOWCASE_TYPES[row[0]])
-				.map((row) => ({ type: row[0], height: row[1] || 0 })),
+			showcase: SHOWCASE_TYPES[st.sc] ? st.sc : null,
 			avatar: st.a === undefined ? true : !!st.a,
 			format: st.f || 'png',
 			animFormat: st.af || null,

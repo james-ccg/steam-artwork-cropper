@@ -1,7 +1,6 @@
 require('webpack-jquery-ui/css');
 require('webpack-jquery-ui/draggable');
 require('webpack-jquery-ui/resizable');
-require('webpack-jquery-ui/sortable');
 require('./artworkCropper');
 require('./workshopCropper');
 

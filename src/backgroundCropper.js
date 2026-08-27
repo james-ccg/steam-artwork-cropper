@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-const $ = require('jquery');
 const JSZip = require('jszip');
 const download = require('downloadjs');
 
@@ -36,21 +35,19 @@ const SLICE_README = `These images are slices of one profile background. Uploade
 matching showcase, each one fills the space that showcase covers, so the
 profile reads as a single seamless picture.
 
-  Background            -> set as your profile background (unchanged)
-  Avatar               -> set as your profile avatar
-  <N>_Artwork_Middle   -> the wide image of your Nth showcase (an Artwork
-  <N>_Artwork_Side          Showcase = Middle + Side; Screenshot is the same)
-  <N>_Featured         -> a Featured Artwork Showcase
-  <N>_Workshop         -> a single-item Workshop Showcase
+  Background       -> set as your profile background (unchanged)
+  Avatar           -> set as your profile avatar
+  Artwork_Middle   -> the wide image of an Artwork Showcase (Screenshot is
+  Artwork_Side          the same); Side is the narrow right column
+  Featured         -> a Featured Artwork Showcase
+  Workshop         -> a Workshop Showcase item
 
-The number prefix is the showcase's position in your profile, top to bottom.
-Set the Background and Avatar first, then upload each showcase piece with the
-console commands in the upload guide:
+Set the Background and Avatar first, then upload the showcase piece(s) with
+the console commands in the upload guide:
 https://james-ccg.github.io/cropper/faq/#upload-guide
 
 Still pieces are already hexified so they render at full size. Animated
-pieces (.webm / .mp4 / .gif) are uploaded to a Video / Workshop showcase as
-video - no hexify needed.
+pieces (.webm / .mp4 / .gif) are uploaded as video - no hexify needed.
 
 by xdjames - https://steamcommunity.com/id/james_ccg/
 `;
@@ -94,153 +91,18 @@ function computeOutputSize(srcWidth, srcHeight, isAnimated) {
 // is the opt-in "just hexify/downscale the whole background" path.
 let bgMode = 'slice';
 
-// The ordered showcase stack the user is slicing for. One Artwork Showcase by
-// default - the common case. A single showcase's piece fills from its position
-// to the bottom of the background (no height to pick); heights only appear
-// once there are two or more stacked showcases, where they're needed to place
-// each one.
-let bgStack = [{ type: 'artwork', height: 0 }];
-
 function sliceOpts() {
+	const sc = document.querySelector('input[name="bgShowcase"]:checked');
 	const fmt = document.querySelector('input[name="bgSliceFormat"]:checked');
 	const a = animatedOpts();
 	return {
-		slots: bgStack,
+		showcase: sc && sc.value !== 'none' ? sc.value : null,
 		avatar: document.getElementById('bgSliceAvatar').checked,
 		format: fmt ? fmt.value : 'png',
 		animFormat: a.format,
 		animFps: a.fps,
 		animQuality: a.quality,
 	};
-}
-
-// Rebuild the stack editor. Each row: a drag handle, a type <select>, a height
-// field (hidden for fixed-height / spacer types), and a remove button. Order
-// is read back from the DOM so jQuery UI sortable "just works".
-function renderStack() {
-	const list = document.getElementById('bgSliceStack');
-	if (!list) return;
-	list.innerHTML = '';
-
-	bgStack.forEach((slot, i) => {
-		const def = backgroundSlicer.SHOWCASE_TYPES[slot.type];
-		const li = document.createElement('li');
-		li.className = 'bgStackRow';
-		li.dataset.index = String(i);
-
-		const handle = document.createElement('span');
-		handle.className = 'bgStackHandle';
-		handle.textContent = '≡';
-		handle.title = 'Drag to reorder';
-
-		const move = (delta) => {
-			const j = i + delta;
-			if (j < 0 || j >= bgStack.length) return;
-			const [row] = bgStack.splice(i, 1);
-			bgStack.splice(j, 0, row);
-			renderStack();
-			refreshSlicePreview();
-		};
-		const up = document.createElement('button');
-		up.type = 'button';
-		up.className = 'bgStackMove';
-		up.textContent = '▲';
-		up.title = 'Move up';
-		up.disabled = i === 0;
-		up.addEventListener('click', () => move(-1));
-		const down = document.createElement('button');
-		down.type = 'button';
-		down.className = 'bgStackMove';
-		down.textContent = '▼';
-		down.title = 'Move down';
-		down.disabled = i === bgStack.length - 1;
-		down.addEventListener('click', () => move(1));
-
-		const sel = document.createElement('select');
-		sel.className = 'bgStackType';
-		backgroundSlicer.TYPE_KEYS.forEach((key) => {
-			const opt = document.createElement('option');
-			opt.value = key;
-			opt.textContent = backgroundSlicer.SHOWCASE_TYPES[key].label;
-			if (key === slot.type) opt.selected = true;
-			sel.appendChild(opt);
-		});
-		sel.addEventListener('change', () => {
-			slot.type = sel.value;
-			slot.height = 0;
-			renderStack();
-			refreshSlicePreview();
-		});
-
-		const hWrap = document.createElement('span');
-		hWrap.className = 'bgStackHeight';
-		// A single showcase's piece just fills to the bottom of the background,
-		// so there's nothing to set. A fixed-size showcase (single Workshop,
-		// Favorite Guide) shows its size. Grids and any stacked (2+) showcase
-		// need a height so the pieces below them land in the right place.
-		const needsHeight =
-			def && !def.fixedH && (def.grid || bgStack.length > 1);
-		if (needsHeight) {
-			const hIn = document.createElement('input');
-			hIn.type = 'number';
-			hIn.min = '20';
-			hIn.max = '4000';
-			hIn.value = String(slot.height || def.defaultH);
-			hIn.title = def.grid
-				? 'Height of each grid row on the profile (px)'
-				: 'Showcase height on the profile (px)';
-			hIn.addEventListener('input', () => {
-				slot.height = parseInt(hIn.value, 10) || def.defaultH;
-				refreshSlicePreview();
-			});
-			hWrap.appendChild(hIn);
-			hWrap.appendChild(document.createTextNode(' px'));
-		} else if (def && def.fixedH) {
-			hWrap.textContent = def.fixedH + ' px';
-		} else {
-			hWrap.className += ' dimHint';
-			hWrap.textContent = 'to bottom';
-		}
-
-		const del = document.createElement('button');
-		del.type = 'button';
-		del.className = 'bgStackDel';
-		del.textContent = '×';
-		del.title = 'Remove';
-		del.addEventListener('click', () => {
-			bgStack.splice(i, 1);
-			renderStack();
-			refreshSlicePreview();
-		});
-
-		const moveWrap = document.createElement('span');
-		moveWrap.className = 'bgStackMoveWrap';
-		moveWrap.append(up, down);
-
-		li.append(handle, sel, hWrap, moveWrap, del);
-		list.appendChild(li);
-	});
-
-	if ($ && $.fn && $.fn.sortable) {
-		const $list = $(list);
-		if ($list.data('ui-sortable')) $list.sortable('destroy');
-		$list.sortable({
-			handle: '.bgStackHandle',
-			axis: 'y',
-			tolerance: 'pointer',
-			update: function () {
-				const order = $list
-					.children()
-					.map(function () {
-						return parseInt(this.dataset.index, 10);
-					})
-					.get();
-				bgStack = order.map((idx) => bgStack[idx]);
-				renderStack();
-				refreshSlicePreview();
-			},
-		});
-	}
 }
 
 function refreshSlicePreview() {
@@ -468,11 +330,8 @@ const backgroundShowcase = {
 
 async function exportSlices() {
 	const opts = sliceOpts();
-	const hasShowcase = opts.slots.some(
-		(sl) => (backgroundSlicer.SHOWCASE_TYPES[sl.type] || {}).file
-	);
-	if (!hasShowcase && !opts.avatar) {
-		alert('Add a showcase (or the avatar) to slice for.');
+	if (!opts.showcase && !opts.avatar) {
+		alert('Pick a showcase (or the avatar) to slice for.');
 		return;
 	}
 
@@ -675,21 +534,11 @@ if (bgModeResize) {
 	);
 }
 
-const avatarToggle = document.getElementById('bgSliceAvatar');
-if (avatarToggle) avatarToggle.addEventListener('change', refreshSlicePreview);
-
-document.querySelectorAll('input[name="bgSliceFormat"]').forEach((el) => {
-	el.addEventListener('change', refreshSlicePreview);
-});
-
-const bgSliceAdd = document.getElementById('bgSliceAdd');
-if (bgSliceAdd) {
-	bgSliceAdd.addEventListener('click', () => {
-		bgStack.push({ type: 'featured', height: 0 });
-		renderStack();
-		refreshSlicePreview();
-	});
-}
+document
+	.querySelectorAll(
+		'#bgSliceAvatar, input[name="bgShowcase"], input[name="bgSliceFormat"]'
+	)
+	.forEach((el) => el.addEventListener('change', refreshSlicePreview));
 
 // One-time "enable animated slicing" - registers the coi service worker and
 // reloads so the tab becomes cross-origin isolated. After the reload the
@@ -716,11 +565,11 @@ if (bgAnimEnable) {
 	});
 }
 
-// Arriving with `#slice=<base64>` (a shared layout link) or `?slice=1` (from
-// the Backgrounds gallery's "Slice for showcases" button) opens the tool
-// straight into Background Cropper + slice mode. The layout link also seeds
-// the whole stack and every option. The background itself is fetched by
-// urlLoader.js (from the link's `bg` or the `?bg=` query); once it lands,
+// Arriving with `#slice=<base64>` (a shared link) or `?slice=1` (from the
+// Backgrounds gallery's "Slice for showcases" button) opens the tool straight
+// into Background Cropper + slice mode. A #slice= link also restores the
+// showcase choice and format options. The background is fetched by
+// urlLoader.js (from the link's `bg` or `?bg=`); once it lands,
 // applyPendingSliceMode() flips into slice mode.
 let pendingSliceMode = false;
 
@@ -735,31 +584,26 @@ let pendingSliceMode = false;
 	}
 	pendingSliceMode = true;
 
-	if (st.slots && st.slots.length) bgStack = st.slots;
-	const set = (id, prop, val) => {
-		const el = document.getElementById(id);
-		if (el) el[prop] = val;
+	const setChecked = (sel) => {
+		const el = document.querySelector(sel);
+		if (el) el.checked = true;
 	};
-	set('bgSliceAvatar', 'checked', st.avatar);
-	const stillFmt = document.querySelector(
-		`input[name="bgSliceFormat"][value="${st.format}"]`
-	);
-	if (stillFmt) stillFmt.checked = true;
+	const setVal = (id, val) => {
+		const el = document.getElementById(id);
+		if (el) el.value = String(val);
+	};
+	setChecked(`input[name="bgShowcase"][value="${st.showcase || 'none'}"]`);
+	const av = document.getElementById('bgSliceAvatar');
+	if (av) av.checked = st.avatar;
+	setChecked(`input[name="bgSliceFormat"][value="${st.format}"]`);
 	if (st.animFormat) {
-		const af = document.querySelector(
-			`input[name="bgAnimFormat"][value="${st.animFormat}"]`
-		);
-		if (af) af.checked = true;
+		setChecked(`input[name="bgAnimFormat"][value="${st.animFormat}"]`);
 	}
-	if (st.animFps) set('bgAnimFps', 'value', String(st.animFps));
-	if (st.animQuality) set('bgAnimQuality', 'value', String(st.animQuality));
+	if (st.animFps) setVal('bgAnimFps', st.animFps);
+	if (st.animQuality) setVal('bgAnimQuality', st.animQuality);
 
-	// If the link carries a background URL and urlLoader didn't already pick
-	// one up from ?bg=, feed it in.
 	const bgUrlInput = document.getElementById('bgUrlInput');
-	if (st.bg && bgUrlInput && !params.get('bg')) {
-		bgUrlInput.value = st.bg;
-	}
+	if (st.bg && bgUrlInput && !params.get('bg')) bgUrlInput.value = st.bg;
 
 	maybeEnterSliceMode(!!(st.bg || params.get('bg')));
 })();
@@ -780,7 +624,5 @@ function applyPendingSliceMode() {
 	pendingSliceMode = false;
 	setBgMode('slice');
 }
-
-renderStack();
 
 module.exports = backgroundShowcase.loadImage;

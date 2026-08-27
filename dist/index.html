@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=8">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=9">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -201,18 +201,21 @@
                             <div id="bgSliceControls">
                                 <h2>Slice for showcases</h2>
                                 <p class="reminder">
-                                    Cuts the piece of the background each showcase covers, so the
-                                    profile reads as one seamless picture. Upload each piece as that
-                                    showcase's image (see the upload guide). Each piece is cut from
-                                    where the showcase sits down to the bottom of the background - no
-                                    size to pick.
+                                    Cuts the piece of the background your showcase covers, so it reads
+                                    as one seamless picture. Each piece is cut from where the showcase
+                                    sits down to the bottom of the background - no size to pick. Upload
+                                    the piece(s) as that showcase's image (see the upload guide).
                                 </p>
 
-                                <p class="bgSliceSubLabel">Showcases <span class="dimHint">(top &rarr; bottom, matching your profile)</span></p>
-                                <ol id="bgSliceStack" class="bgSliceStack"></ol>
-                                <button type="button" id="bgSliceAdd" class="bgSliceAddBtn">+ Add showcase</button>
-
-                                <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164&times;164)</span></label></p>
+                                <p class="bgSliceSubLabel">Slice for</p>
+                                <p class="bgSliceRadioCol">
+                                    <label><input type="radio" name="bgShowcase" value="artwork" checked /> Artwork Showcase <span class="dimHint">(506 + 100)</span></label>
+                                    <label><input type="radio" name="bgShowcase" value="featured" /> Featured Showcase <span class="dimHint">(630)</span></label>
+                                    <label><input type="radio" name="bgShowcase" value="screenshot" /> Screenshot Showcase <span class="dimHint">(506 + 100)</span></label>
+                                    <label><input type="radio" name="bgShowcase" value="workshop" /> Workshop Showcase <span class="dimHint">(160)</span></label>
+                                    <label><input type="radio" name="bgShowcase" value="none" /> None &ndash; avatar only</label>
+                                </p>
+                                <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164)</span></label></p>
 
                                 <p class="bgSliceSubLabel">Output format</p>
                                 <p class="bgSliceFormatRow">
@@ -232,14 +235,12 @@
                                         <label><input type="radio" name="bgAnimFormat" value="webm" checked /> WEBM</label>
                                         <label><input type="radio" name="bgAnimFormat" value="mp4" /> MP4</label>
                                         <label><input type="radio" name="bgAnimFormat" value="gif" /> GIF</label>
-                                        <label><input type="radio" name="bgAnimFormat" value="webp" /> WEBP</label>
-                                        <label><input type="radio" name="bgAnimFormat" value="apng" /> APNG</label>
                                     </p>
                                     <p class="bgAnimNumRow">
                                         <label>FPS <input type="number" id="bgAnimFps" min="0" max="60" value="0" /> <span class="dimHint">0 = source</span></label>
                                         <label>Quality <input type="number" id="bgAnimQuality" min="0" max="100" value="0" /> <span class="dimHint">0 = auto</span></label>
                                     </p>
-                                    <p class="reminder">Runs an in-browser video encoder - a full profile's worth of pieces can take a few minutes. The status line shows progress.</p>
+                                    <p class="reminder">Runs an in-browser video encoder - can take a minute or two. The status line shows progress.</p>
                                 </div>
                             </div>
 
