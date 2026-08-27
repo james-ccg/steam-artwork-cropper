@@ -1258,3 +1258,100 @@ button.download:hover {
 #avatarHoverTarget {
 	margin-top: 2px;
 }
+
+/* ---- Mode toggle, in the tool header where the tool is ----------------
+   The two modes used to sit in the site nav, which put seven items into
+   Steam's 740px .supernav_container - 739px of them at Steam's own padding,
+   so it wrapped to a second line. They are tool controls, not navigation, so
+   they now sit above "Choose format:" and read as one segmented control in
+   Steam's own button idiom. The nav is left carrying exactly what the FAQ and
+   Backgrounds pages carry. */
+.modeToggleRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin: 6px 0;
+}
+.modeToggleRow .formatToggleLabel {
+	margin: 0;
+	white-space: nowrap;
+}
+.modeToggle {
+	display: flex;
+	gap: 6px;
+}
+.modeBtn {
+	display: inline-flex;
+	align-items: center;
+	height: 28px;
+	padding: 0 12px;
+	border-radius: 2px;
+	background: var(--steam-panel-soft);
+	border: 1px solid transparent;
+	color: #d3d3d3;
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	text-decoration: none;
+	cursor: pointer;
+	text-shadow: none;
+	white-space: nowrap;
+}
+.modeBtn:hover {
+	background: rgba(0, 0, 0, 0.45);
+	color: #fff;
+}
+.modeBtn.active {
+	background: rgba(103, 193, 245, 0.25);
+	border-color: rgba(103, 193, 245, 0.6);
+	color: #fff;
+}
+.siteDisclaimer a {
+	color: #67c1f5;
+}
+
+/* ---- Avatar sits on Steam's row 36 ------------------------------------
+   Measured on the real profile: the avatar image starts 36px below the
+   background's top edge (a 200px avatar block 18px down, with the 164px
+   image inset another 18px). This mock's header chain lands it at 34, so
+   the composite showed the avatar piece two rows high. Nudge the block,
+   not its size - it stays 164 square inside a 168px box. */
+#avatarHoverTarget {
+	margin-top: 2px;
+}
+
+/* ---- Nav: tool modes, then the site links the other pages carry --------
+   Steam's .supernav_container is 740px inside the 940px .content column, and
+   the seven items measure 739px at Steam's default 7px item padding - so the
+   rule is a hair from wrapping to a second line. Trim the padding for real
+   headroom, and mark the boundary with a border on the first site link rather
+   than a spacer element, which would cost its own width. */
+.menuitem.supernav {
+	padding-left: 4px;
+	padding-right: 4px;
+}
+.menuitem.modeNav {
+	font-weight: 700;
+}
+.menuitem.siteNavStart {
+	margin-left: 6px;
+	padding-left: 12px;
+	border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.siteDisclaimer a {
+	color: #67c1f5;
+}
+
+/* Mode and Format share one line. The summary column flows beside the floated
+   avatar, so a fourth stacked row dropped below the float and started at the
+   header's left edge instead of the column's. */
+.headerToggles {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	flex-wrap: wrap;
+}
+.headerToggles .modeToggleRow,
+.headerToggles .formatToggleRow {
+	margin: 6px 0 0;
+}

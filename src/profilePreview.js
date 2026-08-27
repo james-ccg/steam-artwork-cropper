@@ -89,6 +89,12 @@ function updateFormatVisibility(switchingModes) {
 function setMode(newMode) {
 	const changed = newMode !== mode;
 	mode = newMode;
+	// The mode toggle is a segmented control now, so it has to show which half
+	// is live the way the format buttons do.
+	const creatorBtn = document.getElementById('artworkCreatorNav');
+	const cropperBtn = document.getElementById('backgroundCropperNav');
+	if (creatorBtn) creatorBtn.classList.toggle('active', mode === 'creator');
+	if (cropperBtn) cropperBtn.classList.toggle('active', mode === 'cropper');
 	updateFormatVisibility(changed);
 	refresh();
 }

@@ -46,7 +46,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/james_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=18">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=22">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -55,16 +55,20 @@
             <div class="content">
                 <div class="logo">
                     <span id="logo_holder">
-                        <a href="https://james-ccg.github.io/" title="Back to james-ccg.github.io" class="brandLogo">james<span>-ccg</span></a>
+                        <a href="https://james-ccg.github.io/#top" title="Back to james-ccg.github.io" class="brandLogo">james<span>-ccg</span></a>
                     </span>
                 </div>
 
                 <div class="supernav_container">
-                    <a class="menuitem supernav" href="#textOverlayPanel" id="artworkCreatorNav">ARTWORK CREATOR</a>
-                    <a class="menuitem supernav" href="#formatToggleLabel" id="backgroundCropperNav">BACKGROUND CROPPER</a>
+                    <!-- Exactly the destinations the FAQ and Backgrounds pages carry, in
+                         the same order, so all three headers agree. The tool's two modes
+                         are not site navigation and live with the tool itself, below -
+                         seven items do not fit Steam's 740px nav slot anyway. -->
+                    <a class="menuitem supernav" target="_blank" rel="noopener" href="https://james-ccg.github.io/#about">About</a>
+                    <a class="menuitem supernav" target="_blank" rel="noopener" href="https://james-ccg.github.io/#projects">My Projects</a>
                     <a class="menuitem supernav" href="./backgrounds/">Backgrounds</a>
                     <a class="menuitem supernav" href="./faq/">FAQ</a>
-                    <a class="menuitem supernav" target="_blank" rel="noopener" href="https://steamcommunity.com/id/james_ccg">James</a>
+                    <a class="menuitem supernav" target="_blank" rel="noopener" href="https://james-ccg.github.io/#contact">Contact</a>
                 </div>
             </div>
         </div>
@@ -183,8 +187,19 @@
                                          profile Background is a separate mode (the "Background Cropper"
                                          nav link), not a format - in that mode this whole chooser is
                                          hidden (profilePreview.js). -->
-                                    <div class="formatToggleRow">
-                                        <p id="formatToggleLabel" class="formatToggleLabel">Choose format:</p>
+                                    <!-- Mode first, then the format within Artwork Creator mode.
+                                         Still <a> elements with the same ids, so every existing
+                                         handler and programmatic .click() keeps working. -->
+                                    <div class="headerToggles">
+                                      <div class="modeToggleRow">
+                                        <p class="formatToggleLabel">Mode:</p>
+                                        <div class="modeToggle">
+                                            <a class="modeBtn active" href="#textOverlayPanel" id="artworkCreatorNav">Artwork Creator</a>
+                                            <a class="modeBtn" href="#formatToggleLabel" id="backgroundCropperNav">Background Cropper</a>
+                                        </div>
+                                      </div>
+                                      <div class="formatToggleRow">
+                                        <p id="formatToggleLabel" class="formatToggleLabel">Format:</p>
                                         <div class="formatToggle">
                                             <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
                                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
@@ -199,6 +214,7 @@
                                                 <span class="formatBtnLabel">Workshop</span>
                                             </button>
                                         </div>
+                                      </div>
                                     </div>
                                     <!-- Not shown - Background is a mode, not a format. Kept as the
                                          element the tab machinery (changeTab / profilePreview) clicks
@@ -391,6 +407,7 @@
 
                         <br>
                         <p class="siteDisclaimer">
+                            Built by <a target="_blank" rel="noopener" href="https://steamcommunity.com/id/james_ccg">xdjames</a>.
                             Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of
                             Valve Corporation. All other trademarks are property of their respective owners.
                         </p>
