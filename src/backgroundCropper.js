@@ -90,12 +90,15 @@ function computeOutputSize(srcWidth, srcHeight, isAnimated) {
 	return { width: w, height: h };
 }
 
-// 'resize' - export the whole background (with the size rules above).
-// 'slice'  - cut the background into per-showcase pieces (backgroundSlicer.js).
-let bgMode = 'resize';
+// Slicing is what the Background Cropper is for, so it's the default. 'resize'
+// is the opt-in "just hexify/downscale the whole background" path.
+let bgMode = 'slice';
 
-// The ordered showcase stack the user is slicing for. Starts with one Artwork
-// Showcase, matching the pre-stack default.
+// The ordered showcase stack the user is slicing for. One Artwork Showcase by
+// default - the common case. A single showcase's piece fills from its position
+// to the bottom of the background (no height to pick); heights only appear
+// once there are two or more stacked showcases, where they're needed to place
+// each one.
 let bgStack = [{ type: 'artwork', height: 0 }];
 
 function sliceOpts() {
@@ -104,8 +107,7 @@ function sliceOpts() {
 	return {
 		slots: bgStack,
 		avatar: document.getElementById('bgSliceAvatar').checked,
-		longImages: document.getElementById('bgSliceLong').checked,
-		format: fmt ? fmt.value : 'source',
+		format: fmt ? fmt.value : 'png',
 		animFormat: a.format,
 		animFps: a.fps,
 		animQuality: a.quality,
@@ -172,13 +174,21 @@ function renderStack() {
 
 		const hWrap = document.createElement('span');
 		hWrap.className = 'bgStackHeight';
-		if (def && !def.fixedH) {
+		// A single showcase's piece just fills to the bottom of the background,
+		// so there's nothing to set. A fixed-size showcase (single Workshop,
+		// Favorite Guide) shows its size. Grids and any stacked (2+) showcase
+		// need a height so the pieces below them land in the right place.
+		const needsHeight =
+			def && !def.fixedH && (def.grid || bgStack.length > 1);
+		if (needsHeight) {
 			const hIn = document.createElement('input');
 			hIn.type = 'number';
 			hIn.min = '20';
 			hIn.max = '4000';
 			hIn.value = String(slot.height || def.defaultH);
-			hIn.title = 'Showcase height on the profile (px)';
+			hIn.title = def.grid
+				? 'Height of each grid row on the profile (px)'
+				: 'Showcase height on the profile (px)';
 			hIn.addEventListener('input', () => {
 				slot.height = parseInt(hIn.value, 10) || def.defaultH;
 				refreshSlicePreview();
@@ -187,6 +197,9 @@ function renderStack() {
 			hWrap.appendChild(document.createTextNode(' px'));
 		} else if (def && def.fixedH) {
 			hWrap.textContent = def.fixedH + ' px';
+		} else {
+			hWrap.className += ' dimHint';
+			hWrap.textContent = 'to bottom';
 		}
 
 		const del = document.createElement('button');
@@ -305,8 +318,8 @@ function setBgMode(mode) {
 	if (resizePreview) resizePreview.style.display = slicing ? 'none' : '';
 	if (slicePreview) slicePreview.style.display = slicing ? '' : 'none';
 
-	document.getElementById('bgModeResize').checked = !slicing;
-	document.getElementById('bgModeSlice').checked = slicing;
+	const resizeToggle = document.getElementById('bgModeResize');
+	if (resizeToggle) resizeToggle.checked = !slicing;
 
 	refreshAnimatedControls();
 	refreshSlicePreview();
@@ -519,7 +532,11 @@ async function exportStillSlices(zip, opts) {
 
 async function exportAnimatedSlices(zip, opts) {
 	const aOpts = animatedOpts();
-	const rects = backgroundSlicer.sliceRects(inputImage.width, opts);
+	const rects = backgroundSlicer.sliceRects(
+		inputImage.width,
+		inputImage.height,
+		opts
+	);
 
 	// The whole animated background, byte-for-byte, so the uploaded set matches.
 	// A GIF gets the trailing-byte nudge; a video container is left alone.
@@ -652,14 +669,14 @@ document
 	);
 
 const bgModeResize = document.getElementById('bgModeResize');
-const bgModeSlice = document.getElementById('bgModeSlice');
-if (bgModeResize) bgModeResize.addEventListener('change', () => setBgMode('resize'));
-if (bgModeSlice) bgModeSlice.addEventListener('change', () => setBgMode('slice'));
+if (bgModeResize) {
+	bgModeResize.addEventListener('change', () =>
+		setBgMode(bgModeResize.checked ? 'resize' : 'slice')
+	);
+}
 
-['bgSliceAvatar', 'bgSliceLong'].forEach((id) => {
-	const el = document.getElementById(id);
-	if (el) el.addEventListener('change', refreshSlicePreview);
-});
+const avatarToggle = document.getElementById('bgSliceAvatar');
+if (avatarToggle) avatarToggle.addEventListener('change', refreshSlicePreview);
 
 document.querySelectorAll('input[name="bgSliceFormat"]').forEach((el) => {
 	el.addEventListener('change', refreshSlicePreview);
@@ -724,7 +741,6 @@ let pendingSliceMode = false;
 		if (el) el[prop] = val;
 	};
 	set('bgSliceAvatar', 'checked', st.avatar);
-	set('bgSliceLong', 'checked', st.longImages);
 	const stillFmt = document.querySelector(
 		`input[name="bgSliceFormat"][value="${st.format}"]`
 	);

@@ -558,25 +558,26 @@ button.download {
 	background: #67c1f5;
 }
 
-/* ---- Background Cropper: resize vs slice modes ---- */
-.bgModeToggle {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	margin-bottom: 12px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid #2a3f4d;
+/* ---- Background Cropper: slice is the default, resize is an opt-in ---- */
+.bgResizeLink {
+	margin: 14px 0 4px;
+	padding-top: 10px;
+	border-top: 1px solid #2a3f4d;
 }
-.bgModeToggle label {
+.bgResizeLink label {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 13px;
-	color: #c6d4df;
+	font-size: 12px;
+	color: #8fa3b0;
 	cursor: pointer;
 }
-.bgModeToggle input {
+.bgResizeLink input {
 	cursor: pointer;
+}
+.bgStackHeight.dimHint {
+	font-style: italic;
+	white-space: nowrap;
 }
 
 #bgSliceControls .dimHint,

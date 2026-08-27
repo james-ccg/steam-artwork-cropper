@@ -38,10 +38,6 @@ const AVATAR_DX = -461;
 const AVATAR_TOP = 36;
 const AVATAR_SIZE = 164;
 
-// A "long image" piece is cut this tall so the showcase can be dragged to any
-// height after upload; only the top of it lines up with the background.
-const LONG_IMAGE_HEIGHT = 2000;
-
 // --- Showcase catalog ---------------------------------------------------
 // cols: the croppable image columns of a showcase, each {suffix, dx, w}.
 // grid: a rows x cols grid of square cells (Workshop 5x3).
@@ -137,31 +133,37 @@ function rowHeight(slot) {
 	return Math.max(1, Math.round(slot.height || t.defaultH));
 }
 
-function contentHeight(slot) {
+// The on-profile height of a slot's content area. A lone non-grid showcase
+// with no explicit height fills from its top down to the bottom of the
+// background (fillH) - that's the "no size to pick" case. Grids and stacked
+// showcases use their set/default height so the pieces below land right.
+function contentHeight(slot, fillH) {
 	const t = SHOWCASE_TYPES[slot.type];
 	if (t.grid) {
 		return t.grid.rows * rowHeight(slot) + (t.grid.rows - 1) * t.grid.gap;
 	}
+	if (!t.fixedH && !slot.height && fillH > 0) return fillH;
 	return rowHeight(slot);
 }
 
-function widgetOuterHeight(slot) {
-	const t = SHOWCASE_TYPES[slot.type];
-	const header = t.header ? HEADER_H : 0;
-	const padTop = t.myart ? PAD_TOP_MYART : PAD_TOP;
-	return header + padTop + contentHeight(slot) + PAD_BOTTOM + WIDGET_MARGIN;
-}
-
 // content-area top (bg px) of every slot, in stack order.
-function stackTops(slots) {
+function stackTops(slots, bgHeight) {
 	const tops = [];
+	const singleFill = slots.length === 1;
 	let y = STACK_TOP;
 	slots.forEach((slot) => {
 		const t = SHOWCASE_TYPES[slot.type];
 		const header = t.header ? HEADER_H : 0;
 		const padTop = t.myart ? PAD_TOP_MYART : PAD_TOP;
-		tops.push(y + header + padTop);
-		y += widgetOuterHeight(slot);
+		const top = y + header + padTop;
+		tops.push(top);
+		const fillH = singleFill && bgHeight ? bgHeight - top : 0;
+		y +=
+			header +
+			padTop +
+			contentHeight(slot, fillH) +
+			PAD_BOTTOM +
+			WIDGET_MARGIN;
 	});
 	return tops;
 }
@@ -210,11 +212,12 @@ function isTiling(width, height) {
  * The rectangle (in background pixels) each showcase piece is cut from.
  * Shared by the still slicer (cutRect per rect) and the animated slicer
  * (ffmpeg crop per rect).
- * @param {number} bgWidth  background native width
- * @param {{slots:Array<{type:string,height?:number}>, avatar:boolean, longImages:boolean}} opts
+ * @param {number} bgWidth   background native width
+ * @param {number} bgHeight  background native height (for fill-to-bottom)
+ * @param {{slots:Array<{type:string,height?:number}>, avatar:boolean}} opts
  * @returns {Array<{file:string, sx:number, sy:number, w:number, h:number}>}
  */
-function sliceRects(bgWidth, opts) {
+function sliceRects(bgWidth, bgHeight, opts) {
 	const centre = Math.floor(bgWidth / 2);
 	const out = [];
 
@@ -231,7 +234,8 @@ function sliceRects(bgWidth, opts) {
 	}
 
 	const slots = opts.slots || [];
-	const tops = stackTops(slots);
+	const tops = stackTops(slots, bgHeight);
+	const singleFill = slots.length === 1;
 	slots.forEach((slot, i) => {
 		const t = SHOWCASE_TYPES[slot.type];
 		if (!t || !t.file || (!t.grid && !(t.cols && t.cols.length))) return;
@@ -259,8 +263,8 @@ function sliceRects(bgWidth, opts) {
 			return;
 		}
 
-		const h =
-			opts.longImages && !t.fixedH ? LONG_IMAGE_HEIGHT : contentHeight(slot);
+		const fillH = singleFill && bgHeight ? bgHeight - top : 0;
+		const h = contentHeight(slot, fillH);
 		t.cols.forEach((col) => {
 			out.push({
 				file: `${prefix}${t.file}${col.suffix}`,
@@ -284,7 +288,7 @@ function sliceRects(bgWidth, opts) {
  */
 function computeSlices(bgCanvas, opts) {
 	const cut = isTiling(bgCanvas.width, bgCanvas.height) ? cutRectTiled : cutRect;
-	return sliceRects(bgCanvas.width, opts).map((r) => ({
+	return sliceRects(bgCanvas.width, bgCanvas.height, opts).map((r) => ({
 		file: r.file,
 		w: r.w,
 		h: r.h,
@@ -305,7 +309,7 @@ function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {
 	// Drive the preview straight off sliceRects() so grids and single showcases
 	// use the exact same geometry that the export does.
 	const byGroup = {};
-	sliceRects(bgWidth, opts).forEach((r) => {
+	sliceRects(bgWidth, bgHeight, opts).forEach((r) => {
 		(byGroup[r.group] = byGroup[r.group] || []).push(r);
 	});
 
@@ -415,9 +419,8 @@ function layoutLink(bgUrl, opts) {
 		bg: bgUrl || null,
 		s: (opts.slots || []).map((sl) => [sl.type, sl.height || 0]),
 		a: !!opts.avatar,
-		long: !!opts.longImages,
-		f: opts.format && opts.format !== 'source' ? opts.format : undefined,
-		af: opts.animFormat,
+		f: opts.format && opts.format !== 'png' ? opts.format : undefined,
+		af: opts.animFormat && opts.animFormat !== 'webm' ? opts.animFormat : undefined,
 		afps: opts.animFps || undefined,
 		aq: opts.animQuality || undefined,
 	};
@@ -442,9 +445,8 @@ function parseLayoutLink(hash) {
 			slots: (st.s || [])
 				.filter((row) => SHOWCASE_TYPES[row[0]])
 				.map((row) => ({ type: row[0], height: row[1] || 0 })),
-			avatar: !!st.a,
-			longImages: !!st.long,
-			format: st.f || 'source',
+			avatar: st.a === undefined ? true : !!st.a,
+			format: st.f || 'png',
 			animFormat: st.af || null,
 			animFps: st.afps || 0,
 			animQuality: st.aq || 0,
@@ -459,7 +461,6 @@ module.exports = {
 	TYPE_KEYS,
 	computeSlices,
 	sliceRects,
-	stackTops,
 	renderPreview,
 	addPieceToZip,
 	layoutLink,
