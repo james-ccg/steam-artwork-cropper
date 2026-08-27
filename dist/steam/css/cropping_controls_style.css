@@ -1,27 +1,33 @@
 /* ==========================================================================
-   Tool chrome tokens
+   Steam's own values
    --------------------------------------------------------------------------
-   The controls used to sit straight on the mock profile's artwork, so their
-   contrast was whatever image the user happened to load - measured 1.05:1 to
-   1.41:1 against the demo background, against a WCAG AA floor of 4.5:1. The
-   controls now paint their own opaque surface, using the same tokens the FAQ
-   and Backgrounds pages already use, which puts body text back at ~7:1 and
-   headings at ~15:1 no matter what the background is.
+   This page is a recreation of a Steam profile, so the tool's own controls
+   are styled in Steam's design language rather than anything invented here.
+   Every value below was read off a real profile page
+   (steamcommunity.com/id/james_ccg) - including how Steam keeps its own
+   controls readable over a bright background, which is a translucent black
+   panel, not an opaque one.
 
-   This is paint only. Every Steam-derived container keeps its native size -
-   surfaces are added as new wrappers inside them, borders are drawn with
-   inset box-shadow so they take up no layout space, and no width, height or
-   padding on a Steam container is touched.
+     .profile_rightcol          rgba(0,0,0,.3), radius 3px, padding 10px
+     .btn_profile_action        rgba(0,0,0,.2), #d3d3d3, radius 2px
+     green CTA                  linear-gradient(#a4d007 5%, #536904 95%)
+     .profile_count_link        label  #969696 14px
+     .profile_count_link_total  value  #9b9b9b 24px/200
+     .profile_in_game_header    heading #898989 20px/200
+     .profile_summary           body   #c4c4c4 13px
+     persona name / headers     #ffffff
+     links                      #67c1f5
    ========================================================================== */
 :root {
-	--tool-bg: #0f1115;
-	--tool-surface: #1b1f2a;
-	--tool-surface-alt: #232838;
-	--tool-border: #2a2f3d;
-	--tool-text: #e7e9ee;
-	--tool-dim: #9aa1b0;
-	--tool-accent: #6dcff6;
-	--tool-accent-strong: #4fb8e6;
+	--steam-panel: rgba(0, 0, 0, 0.3);
+	--steam-panel-soft: rgba(0, 0, 0, 0.2);
+	--steam-bright: #ffffff;
+	--steam-text: #c4c4c4;
+	--steam-dim: #969696;
+	--steam-value: #9b9b9b;
+	--steam-heading: #898989;
+	--steam-link: #67c1f5;
+	--steam-btn-text: #d3d3d3;
 }
 
 /* Steam's own .profile_summary.noexpand is a fixed-height, clipped
@@ -106,29 +112,28 @@ button.download {
     /* opacity: 50%; */
 }
 
-/* Explanatory prose, not an alarm. This used to render as bold orange text in
-   an orange box - the loudest treatment in the app, applied to every neutral
-   help paragraph, including the one that explains what the Background Cropper
-   does. .warning keeps the loud treatment, because .warning is actually a
-   warning. */
+/* Explanatory prose, in Steam's body-text idiom (.profile_summary is #c4c4c4
+   at 13px/18px). This used to be bold orange in an orange box - the loudest
+   treatment on the page, applied to every neutral help paragraph. .warning
+   keeps a loud treatment, because .warning is actually a warning. */
 .reminder {
     margin: 8px 0;
-    color: var(--tool-dim);
-    font-size: 12.5px;
+    color: var(--steam-dim);
+    font-size: 13px;
     font-weight: 400;
-    line-height: 1.55;
+    line-height: 18px;
     border: 0;
     padding: 0;
 }
 
 .warning {
-    color: #ffbcbc;
-    background: rgba(214, 78, 78, 0.14);
-    border: 1px solid rgba(214, 78, 78, 0.55);
-    border-radius: 4px;
+    color: #ff9b9b;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #7d3535;
+    border-radius: 2px;
     padding: 8px 10px;
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 18px;
 }
 
 #drag-elem {
@@ -754,72 +759,66 @@ button.download {
 }
 
 /* ==========================================================================
-   Tool surfaces - see the token block at the top of this file
+   Tool controls, in Steam's idiom - see the value list at the top of the file
+   --------------------------------------------------------------------------
+   Steam keeps its own controls legible over a bright profile background with
+   translucent black panels (.profile_rightcol is rgba(0,0,0,.3)), so the
+   tool's controls use exactly that rather than a ground of their own. Paint
+   only: no Steam container's width, height or padding is touched.
    ========================================================================== */
 
-/* The right-hand control column. Steam ships this with a
-   background: rgba(0,0,0,0.3) scrim, which works on Steam because Steam
-   profile art is usually dark and Steam only puts de-emphasised metadata
-   here. An opaque ground instead, so the panel is legible on any artwork.
-   Size is untouched: the ring is an inset shadow, not a border. */
+/* Steam's profile pages set body to Motiva Sans; this page's Steam CSS bundle
+   leaves body on Arial, so only the handful of elements with an explicit rule
+   (the persona name, the customization headers) were getting Steam's face and
+   every other line on the page was Arial. Matches Steam's own body stack. */
+body,
 .profile_rightcol {
-	background: var(--tool-bg);
-	border-radius: 6px;
-	box-shadow: inset 0 0 0 1px var(--tool-border);
-	color: var(--tool-text);
-	font-size: 13px;
-	line-height: 1.5;
+	font-family: 'Motiva Sans', Arial, Helvetica, sans-serif;
 }
 
-/* Section heading: "Resolutions". Was 26px/700 in Steam's muted grey - the
-   loudest thing in the panel, attached to its least useful content. */
+/* .profile_rightcol keeps Steam's own rgba(0,0,0,.3) background - nothing to
+   override there. */
+
+/* Steam's section heading, as used by .profile_in_game_header. */
 .profile_rightcol h1 {
-	margin: 0 0 12px;
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--tool-accent);
+	margin: 0 0 6px;
+	font-size: 20px;
+	font-weight: 200;
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--steam-heading);
 }
 
-/* Readout labels. Every readout in this column is an <h2>, label and value
-   alike, all previously 20px/weight 200 in one colour - so "Original picture"
-   and "1920 x 1080" were typographically identical. The values are the ones
-   carrying an id, which is what separates the two here. */
+/* Steam's own label/value pair, as used by .profile_count_link (14px label)
+   and .profile_count_link_total (24px/200 value). Every readout here is an
+   <h2>; the values are the ones carrying an id. */
 .profile_rightcol h2 {
 	margin: 10px 0 0;
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--tool-dim);
+	font-size: 14px;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--steam-dim);
 }
 
 .profile_rightcol h2[id] {
-	margin: 1px 0 0;
-	font-size: 19px;
-	font-weight: 400;
-	letter-spacing: 0;
-	text-transform: none;
-	color: var(--tool-text);
+	margin: 0;
+	font-size: 24px;
+	font-weight: 200;
+	color: var(--steam-value);
 	font-variant-numeric: tabular-nums;
 }
 
 .profile_rightcol h4 {
 	margin: 10px 0 0;
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: 400;
-	color: var(--tool-dim);
+	color: var(--steam-dim);
 }
 
 .profile_rightcol label {
-	color: var(--tool-text);
-	cursor: pointer;
-}
-
-.profile_rightcol input[type='checkbox'],
-.profile_rightcol input[type='radio'] {
-	accent-color: var(--tool-accent-strong);
+	color: var(--steam-text);
+	font-size: 13px;
 	cursor: pointer;
 }
 
@@ -827,29 +826,26 @@ button.download {
 	margin-bottom: 4px;
 }
 
-.overlayEmpty {
-	color: var(--tool-dim);
-}
-
+.overlayEmpty,
 .overlayPanelTitle,
 .overlaySectionLabel {
-	color: var(--tool-dim);
+	color: var(--steam-dim);
 }
 
 .overlayPanelTitle {
 	font-weight: 400;
-	line-height: 1.5;
+	line-height: 18px;
 }
 
-/* The Background Cropper panel's own title - a real heading, not a readout
-   label, so it opts out of the uppercase treatment above. */
+/* The Background Cropper panel title - Steam's white 16px/200 header voice,
+   the same one .profile_customization_header uses. */
 #bgSliceControls h2 {
-	margin: 16px 0 2px;
-	font-size: 15px;
-	font-weight: 700;
-	letter-spacing: 0;
+	margin: 14px 0 2px;
+	font-size: 16px;
+	font-weight: 200;
+	letter-spacing: normal;
 	text-transform: none;
-	color: var(--tool-text);
+	color: var(--steam-bright);
 }
 
 #bgSliceControls .reminder {
@@ -857,182 +853,181 @@ button.download {
 }
 
 .bgResizeLink {
-	border-top-color: var(--tool-border);
+	border-top-color: rgba(255, 255, 255, 0.12);
 }
 
 .bgResizeLink label {
-	color: var(--tool-dim);
+	color: var(--steam-dim);
 }
 
-/* Export */
+/* Steam's green call-to-action gradient. */
 #exportBtn {
-	background: var(--tool-accent-strong);
-	color: #08131a;
+	background: linear-gradient(#a4d007 5%, #536904 95%);
+	color: #d2e885;
 	border: 0;
-	border-radius: 4px;
-	font-size: 14px;
-	font-weight: 700;
-	letter-spacing: 0.01em;
+	border-radius: 2px;
+	font-size: 15px;
+	font-weight: 400;
 	cursor: pointer;
-	transition: background 120ms ease;
 }
 
 #exportBtn:hover {
-	background: var(--tool-accent);
+	background: linear-gradient(#b6e60a 5%, #67840b 95%);
+	color: #fff;
 }
 
 .hexifyNote {
-	color: var(--tool-dim);
-	font-size: 11.5px;
-	font-style: normal;
-	line-height: 1.5;
+	color: var(--steam-dim);
+	font-size: 12px;
+	font-style: italic;
+	line-height: 16px;
 }
 
 .hexifyNote a {
-	color: var(--tool-accent);
+	color: var(--steam-link);
 }
 
 .siteDisclaimer {
-	color: #848c9c;
+	color: #7a7a7a;
 }
 
 /* --- header controls ---------------------------------------------------- */
 
-/* New wrapper inside Steam's .profile_summary, so the upload controls get the
-   same opaque ground as the right column instead of sitting on the artwork. */
+/* A new wrapper inside Steam's .profile_summary carrying Steam's own
+   .profile_rightcol panel treatment, so the upload controls read the way
+   Steam's own header buttons do over a bright background. */
 .toolHeaderPanel {
-	background: var(--tool-bg);
-	border-radius: 6px;
-	box-shadow: inset 0 0 0 1px var(--tool-border);
-	padding: 12px 14px;
+	background: var(--steam-panel);
+	border-radius: 3px;
+	padding: 10px;
 	margin-top: 2px;
-	color: var(--tool-text);
+	color: var(--steam-text);
 }
 
 .toolHeaderPanel .imageSourceLabel {
-	color: var(--tool-dim);
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
+	color: var(--steam-bright);
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
 }
 
 .statusLine {
-	margin: 10px 0 0;
-	font-size: 12px;
-	color: var(--tool-dim);
+	margin: 8px 0 0;
+	font-size: 13px;
+	color: var(--steam-dim);
 }
 
 .statusLine #statusMsg {
-	color: var(--tool-text);
-	font-weight: 600;
+	color: var(--steam-text);
 }
 
-/* The native file input rendered as raw OS chrome, in the visitor's OS
-   language ("Выбор файла" on a Russian install) - the one unstyled control
-   on the page. */
+/* The file input rendered as raw OS chrome, in the visitor's OS language
+   ("Выбор файла" on a Russian install). Given Steam's action-button look. */
 #selectedImage {
 	width: 100%;
-	font-size: 12px;
-	color: var(--tool-dim);
+	font-size: 13px;
+	color: var(--steam-dim);
 }
 
 #selectedImage::file-selector-button {
 	margin-right: 10px;
-	padding: 6px 12px;
-	background: var(--tool-surface-alt);
-	color: var(--tool-text);
-	border: 1px solid var(--tool-border);
-	border-radius: 4px;
-	font-size: 12px;
-	font-weight: 600;
+	padding: 4px 12px;
+	background: var(--steam-panel-soft);
+	color: var(--steam-btn-text);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 2px;
+	font-family: inherit;
+	font-size: 13px;
 	cursor: pointer;
-	transition: border-color 120ms ease, color 120ms ease;
 }
 
 #selectedImage::file-selector-button:hover {
-	border-color: var(--tool-accent-strong);
+	background: rgba(255, 255, 255, 0.12);
 	color: #fff;
 }
 
 .formatToggleLabel {
-	color: var(--tool-dim);
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	margin: 14px 0 6px;
+	color: var(--steam-bright);
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+	margin: 12px 0 6px;
 }
 
-/* Three 32px squares of abstract line art with no text was a guessing game. */
+/* Three 32px squares of abstract line art with no text was a guessing game.
+   Steam's .btn_profile_action treatment: rgba(0,0,0,.2) / #d3d3d3 / 2px. */
 .formatBtn {
 	width: auto;
+	height: 28px;
 	gap: 7px;
 	padding: 0 11px 0 9px;
-	background: var(--tool-surface);
-	border-color: var(--tool-border);
-	color: var(--tool-dim);
+	background: var(--steam-panel-soft);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 2px;
+	color: var(--steam-btn-text);
+	font-family: inherit;
 }
 
 .formatBtnLabel {
-	font-size: 12px;
-	font-weight: 600;
+	font-size: 13px;
 	line-height: 1;
 }
 
 .formatBtn:hover {
-	border-color: var(--tool-accent-strong);
-	color: var(--tool-text);
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.2);
+	color: #fff;
 }
 
 .formatBtn.active {
-	background: var(--tool-surface-alt);
-	border-color: var(--tool-accent-strong);
+	background: rgba(103, 193, 245, 0.25);
+	border-color: var(--steam-link);
 	color: #fff;
 }
 
 /* --- slice preview ------------------------------------------------------ */
 
-/* Sits inside Steam's customization block, so it carries its own ground for
-   the same reason - the "AVATAR" / "ARTWORK SHOWCASE" labels were grey on
-   whatever the background happened to be. */
+/* Steam's softer translucent panel, so the piece labels stay readable over
+   whatever background is loaded. */
 #bgSlicePreview:not(:empty) {
-	background: var(--tool-bg);
-	border-radius: 6px;
-	box-shadow: inset 0 0 0 1px var(--tool-border);
-	padding: 14px;
+	background: var(--steam-panel-soft);
+	border-radius: 2px;
+	padding: 12px;
 }
 
 .bgSliceLabel {
-	color: var(--tool-dim);
-	font-weight: 600;
+	color: var(--steam-dim);
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+	font-size: 13px;
 }
 
 .bgSliceBox {
-	border-color: var(--tool-border);
+	border-color: rgba(0, 0, 0, 0.5);
 }
 
 #bgSliceControls .dimHint,
 .dimHint {
-	color: #78808f;
+	color: #7f7f7f;
 }
 
 .bgSliceSubLabel {
-	color: var(--tool-dim);
-	font-weight: 600;
+	color: var(--steam-bright);
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
 }
 
 .bgSliceRadioCol label,
 .bgSliceFormatRow label,
 .bgAnimNumRow label {
-	color: var(--tool-text);
-}
-
-.bgAnimNumRow input,
-.bgSliceRadioCol input {
-	accent-color: var(--tool-accent-strong);
+	color: var(--steam-text);
 }
 
 #bgAnimControls {
-	border-top-color: var(--tool-border);
+	border-top-color: rgba(255, 255, 255, 0.12);
 }
