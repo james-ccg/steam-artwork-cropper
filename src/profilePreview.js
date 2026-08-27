@@ -57,18 +57,25 @@ function refresh() {
 // background crop area, and (mirroring that) "Artwork Creator" resets to the
 // Artwork showcase whenever it's actually switching modes - so leaving
 // Background Cropper never strands you on a format you'd picked inside it.
+// Everything that belongs to Artwork Creator only. The text/border overlay
+// panel and the Artwork resolution readouts used to stay on screen in
+// Background Cropper mode, so that mode showed the other mode's toolbox (still
+// captioned "Artwork Creator") above its own controls. Background Cropper
+// carries its own size line inside #backgroundInfo, so these hide outright.
+const CREATOR_ONLY = ['formatToggleLabel', 'textOverlayPanel', 'resolutionsBlock'];
+
 function updateFormatVisibility(switchingModes) {
 	const backgroundTab = document.getElementById('backgroundTab');
 	if (!backgroundTab) return;
-	const formatLabel = document.getElementById('formatToggleLabel');
 	const formatRow = document.querySelector('.formatToggleRow');
+	const creatorOnly = CREATOR_ONLY.map((id) => document.getElementById(id));
+	if (formatRow) creatorOnly.push(formatRow);
+
 	if (mode === 'cropper') {
-		if (formatLabel) formatLabel.style.setProperty('display', 'none');
-		if (formatRow) formatRow.style.setProperty('display', 'none');
+		creatorOnly.forEach((el) => el && el.style.setProperty('display', 'none'));
 		backgroundTab.click();
 	} else {
-		if (formatLabel) formatLabel.style.removeProperty('display');
-		if (formatRow) formatRow.style.removeProperty('display');
+		creatorOnly.forEach((el) => el && el.style.removeProperty('display'));
 		if (switchingModes || tabInfo.currentTab === '#background') {
 			const artworkTab = document.getElementById('artworkTab');
 			if (artworkTab) artworkTab.click();

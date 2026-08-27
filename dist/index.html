@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="./steam/css/profilev2.css" />
     <link rel="stylesheet" href="./steam/css/shared_global.css" />
     <link rel="stylesheet" href="./steam/css/shared_responsive.css" />
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=9">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=10">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -118,6 +118,12 @@
                                 <div class="profile_summary noexpand">
                                     <!-- *********************** Input Area *********************** -->
 
+                                    <!-- The tool's own controls get their own opaque surface rather
+                                         than sitting straight on the mock profile's artwork, where
+                                         their contrast would be whatever image happened to be loaded.
+                                         A new wrapper inside Steam's container - the container itself
+                                         keeps its native size. -->
+                                    <div class="toolHeaderPanel">
                                     <div class="imageSourceGrid">
                                         <div class="imageSourceCol">
                                             <h3 class="imageSourceLabel">Select image:</h3>
@@ -132,7 +138,7 @@
                                         </div>
                                     </div>
 
-                                    <p style="color: yellow; font-weight: bold; margin: 2px 0">
+                                    <p class="statusLine">
                                         Status: <span id="statusMsg">Idle</span>
                                     </p>
 
@@ -145,12 +151,15 @@
                                         <div class="formatToggle">
                                             <button type="button" class="formatBtn" id="featuredTab" title="Featured Showcase" aria-label="Featured" aria-pressed="false">
                                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                                                <span class="formatBtnLabel">Featured</span>
                                             </button>
                                             <button type="button" class="formatBtn active" id="artworkTab" title="Artwork Showcase" aria-label="Artwork" aria-pressed="true">
                                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M12 3v18"></path></svg>
+                                                <span class="formatBtnLabel">Artwork</span>
                                             </button>
                                             <button type="button" class="formatBtn" id="workshopTab" title="Workshop Showcase" aria-label="Workshop" aria-pressed="false">
                                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7.5 3v18"></path><path d="M12 3v18"></path><path d="M16.5 3v18"></path></svg>
+                                                <span class="formatBtnLabel">Workshop</span>
                                             </button>
                                         </div>
                                     </div>
@@ -158,6 +167,7 @@
                                          element the tab machinery (changeTab / profilePreview) clicks
                                          to route into the background crop area. -->
                                     <button type="button" id="backgroundTab" aria-hidden="true" tabindex="-1" style="display: none"></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -180,11 +190,15 @@
                             <div id="overlayProps" class="overlayProps"></div>
                         </div>
 
-                        <h1>Resolutions:</h1>
-                        <br />
-                        <h2>Original picture</h2>
-                        <h2 id="originalSize">-</h2>
-                        <br />
+                        <!-- Artwork Creator readouts. Background Cropper mode has its own
+                             size line inside #backgroundInfo, so profilePreview.js hides this
+                             whole block there rather than leaving the other mode's numbers
+                             stranded under the slice controls. -->
+                        <div id="resolutionsBlock">
+                            <h1>Resolutions</h1>
+                            <h2>Original picture</h2>
+                            <h2 id="originalSize">-</h2>
+                        </div>
 
                         <div id="featuredInfo" style="display: none">
                             <h2>Featured picture</h2>
@@ -198,6 +212,9 @@
                         </div>
 
                         <div id="backgroundInfo" style="display: none">
+                            <h2>Background</h2>
+                            <h2 id="backgroundSize">-</h2>
+
                             <div id="bgSliceControls">
                                 <h2>Slice for showcases</h2>
                                 <p class="reminder">
@@ -248,7 +265,6 @@
                                 <label><input type="checkbox" id="bgModeResize" /> Just resize the whole background &ndash; no slicing</label>
                             </p>
                             <div id="bgResizeControls" style="display: none">
-                                <h2 id="backgroundSize">-</h2>
                                 <p class="reminder">
                                     Steam shows a <b>static</b> background at its native size, centered
                                     (aim for ~1920&times;1080); an <b>animated</b> one at 1920px wide.
