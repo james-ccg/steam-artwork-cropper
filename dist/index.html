@@ -46,7 +46,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=23">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=24">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -100,9 +100,9 @@
                                         <!-- 1.3 MB 120-frame APNG: decorative, and it otherwise holds the
                                              connection long enough to delay the demo image the tool needs
                                              for its first crop. -->
-                                        <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" fetchpriority="low" decoding="async" /></picture>
+                                        <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" alt="" fetchpriority="low" decoding="async" /></picture>
                                     </div>
-                                    <img src="./steam/imgs/james_avatar.jpg" />
+                                    <img src="./steam/imgs/james_avatar.jpg" alt="" />
                                 </div>
                                 <div class="miniprofile_hover" id="miniProfilePopup">
                                     <div class="miniprofile_hover_inner shadow_content">
@@ -115,10 +115,10 @@
                                             </div>
                                             <div class="miniprofile_playersection text_shadow">
                                                 <div class="playersection_avatar_frame">
-                                                    <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" fetchpriority="low" decoding="async" loading="lazy" /></picture>
+                                                    <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" alt="" fetchpriority="low" decoding="async" loading="lazy" /></picture>
                                                 </div>
                                                 <div class="playersection_avatar border_color_online">
-                                                    <img src="./steam/imgs/james_avatar.jpg" />
+                                                    <img src="./steam/imgs/james_avatar.jpg" alt="" />
                                                 </div>
                                                 <div class="player_content">
                                                     <span class="persona online">James</span>
@@ -127,7 +127,7 @@
                                             </div>
                                             <div class="miniprofile_detailssection miniprofile_backdropblur not_in_game miniprofile_backdrop">
                                                 <div class="miniprofile_featuredcontainer">
-                                                    <img src="./steam/imgs/james_years_badge.png" class="badge_icon">
+                                                    <img src="./steam/imgs/james_years_badge.png" class="badge_icon" alt="">
                                                     <div class="description">
                                                         <div class="name">Years of Service</div>
                                                         <div class="xp">150 XP</div>
@@ -424,7 +424,7 @@
                                 <div class="screenshot_showcase">
                                     <div class="screenshot_showcase_primary showcase_slot">
                                         <div class="screenshot_showcase_screenshot" style="width: 630px; max-width: 630px">
-                                            <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="featuredImg" />
+                                            <img width="100%" style="max-width: 630px" src="./steam/imgs/1.jpg" id="featuredImg" alt="Featured Showcase crop preview" />
                                         </div>
                                         <div class="screenshot_showcase_itemname"></div>
                                     </div>
@@ -446,7 +446,7 @@
                                     <div class="screenshot_showcase">
                                         <div class="screenshot_showcase_primary single showcase_slot">
                                             <div class="screenshot_showcase_screenshot" id="backgroundPreviewFrame">
-                                                <img style="max-width: 100%; height: auto; display: block" src="./steam/imgs/1.jpg" id="backgroundImg" />
+                                                <img style="max-width: 100%; height: auto; display: block" src="./steam/imgs/1.jpg" id="backgroundImg" alt="Profile background preview" />
                                             </div>
                                             <div class="screenshot_showcase_itemname"></div>
                                         </div>
@@ -472,9 +472,9 @@
                                         <!-- *********************************************************** -->
                                         <div id="bigImgA" class="screenshot_showcase_screenshot modalContentLink" style="width: 508px; max-width: 508px">
                                             <div class="bigBox" style="display: none">
-                                                <img id="bigBoxGif" src="" alt="" />
+                                                <img id="bigBoxGif" alt="" />
                                             </div>
-                                            <img width="100%" style="max-width: 506px" src="./steam/imgs/1.jpg" id="bigImg" />
+                                            <img width="100%" style="max-width: 506px" src="./steam/imgs/1.jpg" id="bigImg" alt="Artwork Showcase crop preview, large piece" />
                                         </div>
                                         <!-- *********************************************************** -->
                                         <div class="screenshot_showcase_itemname"></div>
@@ -484,9 +484,9 @@
                                         <div class="screenshot_showcase_smallscreenshot showcase_slot ">
                                             <div id="smallImgA" class="screenshot_showcase_screenshot modalContentLink ">
                                                 <div class="smallBox" style="display: none">
-                                                    <img id="smallBoxGif" src="" />
+                                                    <img id="smallBoxGif" alt="" />
                                                 </div>
-                                                <img width="100%" style="max-width: 100px" src="./steam/imgs/2.jpg" id="smallImg" />
+                                                <img width="100%" style="max-width: 100px" src="./steam/imgs/2.jpg" id="smallImg" alt="Artwork Showcase crop preview, narrow piece" />
                                             </div>
                                         </div>
                                         <div class="screenshot_showcase_smallscreenshot screenshot_count ">
@@ -516,7 +516,7 @@
                                             <!-- ############################################## -->
                                             <div id="drag-container" class="screenshot_showcase_screenshot modalContentLink ugc " href="#" style="position: relative; left: 2px; max-width: 626px;">
                                                 <!-- src="https://steamuserimages-a.akamaihd.net/ugc/1660105490032142154/2E4E18B51E78C56C665388902C691AD083FFFF97/?imw=630&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false"> -->
-                                                <img id="img-preview" style="width: 100%" src="./steam/imgs/nero.jpg" />
+                                                <img id="img-preview" style="width: 100%" src="./steam/imgs/nero.jpg" alt="Workshop Showcase crop preview" />
                                                 <!-- 122 248 248 122 -->
                                                 <div style="left: 19.5%" class="cropLine"></div>
                                                 <div style="left: 39.7%" class="cropLine"></div>
@@ -549,6 +549,6 @@
          geometry, the avatar painting - so a returning visitor holding a
          cached copy of it sees bugs that were fixed weeks ago while the page
          around it is current. Same query, same number, bumped together. -->
-    <script src="./steam/js/bundle.js?v=23"></script>
+    <script src="./steam/js/bundle.js?v=24"></script>
 </body>
 </html>

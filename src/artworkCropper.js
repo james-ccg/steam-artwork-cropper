@@ -60,8 +60,12 @@ const artworkShowcase = {
 		rightPanel.toggleSmall.checked = false;
 		artworkShowcase.bigBox.style.setProperty('display', 'none');
 		artworkShowcase.smallBox.style.setProperty('display', 'none');
-		artworkShowcase.bigBoxGif.src = '';
-		artworkShowcase.smallBoxGif.src = '';
+		// removeAttribute, not src = ''. An <img> whose src is the empty string
+		// resolves against the document, so the browser fetches the page itself
+		// as an image, fails to decode it and fires an error - a wasted request
+		// on every reset, for two elements that simply have nothing to show yet.
+		artworkShowcase.bigBoxGif.removeAttribute('src');
+		artworkShowcase.smallBoxGif.removeAttribute('src');
 		artworkShowcase.smallTest = inputImage.height;
 
 		// Starting split of the source width: the primary showcase slot is
