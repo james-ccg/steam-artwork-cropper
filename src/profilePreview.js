@@ -64,21 +64,44 @@ function refresh() {
 // carries its own size line inside #backgroundInfo, so these hide outright.
 const CREATOR_ONLY = ['formatToggleLabel', 'textOverlayPanel', 'resolutionsBlock'];
 
+// Zoom belongs to the Background Cropper. It sizes the whole mock, which is
+// what makes a background readable - a profile with a background, an avatar
+// and a showcase is well over a screen tall - but it is the background job
+// that needs to see all of that at once, so the control only appears in that
+// mode.
+const CROPPER_ONLY_SELECTORS = ['.zoomToggleRow'];
+
+// Leaving the mode puts the page back to 100%. Hiding the control while the
+// page stayed at half size would leave no way back to full size from Artwork
+// Creator, which is a trap rather than a setting. Done by clicking the 100%
+// button rather than reaching into the other module, so the zoom has exactly
+// one code path and one source of truth for which step is live.
+function resetZoom() {
+	const btn = document.querySelector('.bgZoomBtn[data-zoom="100"]');
+	if (btn && !btn.classList.contains('active')) btn.click();
+}
+
 function updateFormatVisibility(switchingModes) {
 	const backgroundTab = document.getElementById('backgroundTab');
 	if (!backgroundTab) return;
 	const formatRow = document.querySelector('.formatToggleRow');
 	const creatorOnly = CREATOR_ONLY.map((id) => document.getElementById(id));
 	if (formatRow) creatorOnly.push(formatRow);
+	const cropperOnly = CROPPER_ONLY_SELECTORS.map((s) =>
+		document.querySelector(s)
+	);
 
 	if (mode === 'cropper') {
 		creatorOnly.forEach((el) => el && el.style.setProperty('display', 'none'));
+		cropperOnly.forEach((el) => el && el.style.removeProperty('display'));
 		backgroundTab.click();
 	} else {
 		// The slice preview borrows the profile's own avatar to show the
 		// avatar piece in place; leaving Background Cropper hands it back.
 		require('./backgroundSlicer').resetAvatar();
+		resetZoom();
 		creatorOnly.forEach((el) => el && el.style.removeProperty('display'));
+		cropperOnly.forEach((el) => el && el.style.setProperty('display', 'none'));
 		if (switchingModes || tabInfo.currentTab === '#background') {
 			const artworkTab = document.getElementById('artworkTab');
 			if (artworkTab) artworkTab.click();

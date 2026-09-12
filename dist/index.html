@@ -46,7 +46,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=28">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=29">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -218,16 +218,21 @@
                                       <!-- Preview zoom, the way steam.design offers it - and, like
                                            steam.design's, it sizes the whole mock profile rather
                                            than one panel inside it, which is the only way to get a
-                                           tall profile on screen at once. It lives here beside Mode
-                                           and Format because it now applies to both modes; it used
-                                           to sit inside the Background Cropper's own panel, where
-                                           it was unreachable from Artwork Creator.
+                                           tall profile on screen at once.
+
+                                           Background Cropper only, so it ships hidden and
+                                           profilePreview.js shows it with that mode (and puts the
+                                           page back to 100% on the way out, so leaving the mode
+                                           can never strand the page at half size with no control
+                                           on screen to undo it). It sits on the header row rather
+                                           than down in the slice panel because it acts on the
+                                           whole page, not on one panel in it.
 
                                            Purely visual: every Steam container keeps its native
                                            pixel size, every canvas is cut at native resolution, and
                                            the slice preview re-measures itself against the zoom, so
                                            nothing about what gets exported changes. -->
-                                      <div class="zoomToggleRow">
+                                      <div class="zoomToggleRow" style="display: none">
                                         <p class="formatToggleLabel">Zoom:</p>
                                         <div class="bgZoomRow">
                                             <button type="button" class="bgZoomBtn" data-zoom="50">50%</button>
@@ -559,6 +564,6 @@
          geometry, the avatar painting - so a returning visitor holding a
          cached copy of it sees bugs that were fixed weeks ago while the page
          around it is current. Same query, same number, bumped together. -->
-    <script src="./steam/js/bundle.js?v=28"></script>
+    <script src="./steam/js/bundle.js?v=29"></script>
 </body>
 </html>
