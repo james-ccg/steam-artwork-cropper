@@ -1412,3 +1412,111 @@ body.GameProfileTheme {
 .siteDisclaimer {
 	color: #8f98a0;
 }
+
+/* ---- The avatar frame, back at Steam's size ----------------------------
+   Steam sizes and places an equipped avatar frame with three rules, and
+   every one of them is written with the child combinator:
+
+     .playerAvatar .profile_avatar_frame > img          (shared_global.css)
+     .playerAvatar.profile_header_size ... > img        (profilev2.css)
+     .miniprofile_playersection .playersection_avatar_frame > img
+
+   Wrapping the frame image in a <picture> - added here so a reader with
+   prefers-reduced-motion gets the still instead of a 121-frame APNG - put a
+   node between the frame div and its img, so none of those three still
+   matched. The header frame lost `transform: scale(1.22)` and drew at
+   exactly the avatar's 164px instead of overhanging it by 18px a side,
+   which is why the ornament sat inside the picture rather than around it;
+   the mini-profile frame lost its width and height outright and fell back
+   to the file's own 224px.
+
+   These restore Steam's values for the wrapped case, with the same numbers
+   Steam uses. display:contents keeps <picture> from generating a box of its
+   own, so the img's containing block stays the frame div. */
+.playerAvatar .profile_avatar_frame > picture,
+.miniprofile_playersection .playersection_avatar_frame > picture {
+	display: contents;
+}
+
+.playerAvatar.profile_header_size .playerAvatarAutoSizeInner .profile_avatar_frame > picture > img {
+	transform: scale(1.22);
+}
+
+.miniprofile_playersection .playersection_avatar_frame > picture > img {
+	width: 100%;
+	height: 100%;
+	background: none;
+}
+
+/* ---- The URL field and its button, in Steam's own clothes --------------
+   "Choose image" is Steam's .btn_profile_action - rgba(0,0,0,.2), #d3d3d3,
+   no border, radius 2. The Load button beside it had been given a #2a475e
+   fill inside a bright #67c1f5 outline, and the field a #16202d fill inside
+   #2a3f5a, neither of which is a colour Steam uses for a control. Sitting
+   on the same line as a real Steam button, they read as a different site's
+   widgets pasted in.
+
+   The field is now Steam's own text input (.gray_bevel input in
+   shared_global.css) and the button is the same treatment as .steamBtn, so
+   the whole row is one set of controls. */
+.urlLoadRow input[type="text"] {
+	background-color: var(--steam-panel-soft);
+	border: 1px solid #000;
+	box-shadow: 1px 1px 0 0 rgba(91, 132, 181, 0.2);
+	color: #bfbfbf;
+	border-radius: 0;
+	padding: 5px 8px;
+}
+
+.urlLoadRow input[type="text"]::placeholder {
+	color: var(--steam-dim);
+}
+
+.urlLoadRow input[type="text"]:focus {
+	border-color: var(--steam-link);
+	box-shadow: 1px 1px 0 0 rgba(103, 193, 245, 0.35);
+}
+
+.urlLoadRow button,
+#loadBgUrlBtn {
+	background: var(--steam-panel-soft);
+	color: var(--steam-btn-text);
+	border: none;
+	border-radius: 2px;
+	padding: 5px 12px;
+	line-height: 1.3;
+}
+
+.urlLoadRow button:hover:not(:disabled),
+#loadBgUrlBtn:hover:not(:disabled) {
+	background: rgba(0, 0, 0, 0.45);
+	color: #fff;
+}
+
+/* A Game Profile theme ships its own button recipe, and this page now wears
+   one: --btn-background rgba(0,0,0,.2), --btn-outline rgba(255,255,255,.1),
+   --btn-background-hover rgba(255,255,255,.1). The outline is the half that
+   matters here. Steam's unthemed .btn_profile_action is a bare 20% black
+   with no border because on Steam it sits on the site's dark chrome; these
+   sit on the profile background, and over the pale middle of the Dying
+   Light 2 art a bare 20% black leaves a button reading as loose text. The
+   themed outline is Steam's own answer to that, so both buttons on this row
+   take it and stay one set of controls. */
+.steamBtn,
+#resetSlider,
+.urlLoadRow button,
+#loadBgUrlBtn {
+	background: var(--btn-background, rgba(0, 0, 0, 0.2));
+	outline: 1px solid var(--btn-outline, rgba(255, 255, 255, 0.1));
+	outline-offset: -1px;
+}
+
+.steamBtn:hover,
+#resetSlider:hover,
+#selectedImage:focus-visible + .steamBtn,
+.urlLoadRow button:hover:not(:disabled),
+#loadBgUrlBtn:hover:not(:disabled) {
+	background: rgba(0, 0, 0, 0.45);
+	outline-color: rgba(255, 255, 255, 0.25);
+	color: #fff;
+}
