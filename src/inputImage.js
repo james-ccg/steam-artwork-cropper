@@ -8,7 +8,8 @@ const inputImage = {
     img: null, // Image object that stores the image src
     width: 0,
     height: 0,
-    objectUrl: null, // Active blob: URL for `file`, tracked so it can be revoked before the next one is created
+    objectUrl: null, // Active blob: URL for `file`
+    objectUrlFile: null, // The File `objectUrl` was minted for - see loadFile
     // Bundled demo images run through this exact same pipeline on first load
     // (see demoDefaults.js) so the "before you upload anything" preview is a
     // real crop rather than a hand-approximated placeholder - but that means
@@ -26,9 +27,38 @@ const inputImage = {
         if (!inputImage.userProvidedImage) return;
         document.getElementById('statusMsg').innerText = message;
     },
-    loadFile: function() { // Point img.src at the current `file`, revoking the previous blob: URL first
-        if (inputImage.objectUrl) _URL.revokeObjectURL(inputImage.objectUrl);
-        inputImage.objectUrl = _URL.createObjectURL(inputImage.file);
+    // Point img.src at the current `file`. One blob: URL per File, kept for as
+    // long as that File is the one loaded.
+    //
+    // This used to mint a fresh URL and revoke the previous one on every call,
+    // which is wrong because three long-lived surfaces borrow the URL rather
+    // than copying the pixels: the mock's page background (profilePreview), the
+    // Background Cropper's preview image - and through it every slice fill and
+    // the painted avatar - and the Artwork Creator's two gif previews. Each
+    // format loads its own demo image the first time it is opened, so simply
+    // switching format revoked a URL those surfaces were still pointing at.
+    //
+    // Nothing appeared to break, because an image that has already decoded
+    // keeps painting from its raster. It breaks the moment something forces a
+    // re-decode - which is exactly what changing the Zoom does, since every
+    // element is suddenly painted at a new scale. That is why the avatar went
+    // blank and fell back to Steam's blue placeholder only when zoomed.
+    loadFile: function() {
+        if (inputImage.file !== inputImage.objectUrlFile) {
+            if (inputImage.objectUrl) _URL.revokeObjectURL(inputImage.objectUrl);
+            inputImage.objectUrl = _URL.createObjectURL(inputImage.file);
+            inputImage.objectUrlFile = inputImage.file;
+        }
+        // An <img> fires no load event when src is assigned the value it
+        // already holds, and every format's pipeline hangs off that event, so
+        // re-opening a format with the file it already has would leave it
+        // waiting forever. Hand it the event instead.
+        if (inputImage.img.src === inputImage.objectUrl && inputImage.img.complete) {
+            setTimeout(function() {
+                inputImage.img.dispatchEvent(new Event('load'));
+            }, 0);
+            return;
+        }
         inputImage.img.src = inputImage.objectUrl;
     }
 }

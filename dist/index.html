@@ -46,7 +46,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=29">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=31">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -420,13 +420,6 @@
                         <button class="download" id="exportBtn" title="Export the currently selected format">Export</button>
                         <p class="hexifyNote">Every exported image is auto-hexified before zipping - a small per-format byte tweak - so it renders at full size on Steam. Animated .webm / .mp4 pieces need no tweak and are left untouched. Not sure how to upload it? <a href="./faq/#upload-guide" target="_blank">See the upload guide</a>.</p>
 
-                        <br>
-                        <p class="siteDisclaimer">
-                            Built by <a target="_blank" rel="noopener" href="https://steamcommunity.com/id/james_ccg">xdjames</a>.
-                            Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of
-                            Valve Corporation. All other trademarks are property of their respective owners.
-                        </p>
-                        <br />
                     </div>
                 </div>
 
@@ -559,11 +552,33 @@
         </div>
     </div>
     <div id="test"></div>
+
+    <!-- Steam's own footer: #footer_spacer and #footer, with the classes and
+         ids globalv2.css already styles - the 78px spacer, the black band, the
+         958px centred content, 12px #8F98A0 copy and #C6D4DF links.
+
+         What is NOT here is what Steam puts inside it: the Valve logo and the
+         chain of Valve links (About, Privacy, Legal, Subscriber Agreement,
+         Refunds, Cookies). None of that belongs on a page that is not Valve's,
+         so the band carries this site's own line instead - which is where a
+         disclaimer belongs anyway, rather than wedged under the Export button
+         in the tool column. #footerLogo is absent for the same reason, so
+         #footerText drops the 123px of room Steam leaves for it. -->
+    <div id="footer_spacer"></div>
+    <div id="footer">
+        <div class="footer_content">
+            <span id="footerText" class="siteDisclaimer">
+                Built by <a target="_blank" rel="noopener" href="https://steamcommunity.com/id/james_ccg">xdjames</a>.
+                Not affiliated with Valve or Steam. Steam and the Steam logo are trademarks of
+                Valve Corporation. All other trademarks are property of their respective owners.
+            </span>
+        </div>
+    </div>
     <!-- Versioned for the same reason the stylesheet is, and bumped with it.
          The bundle carries every behaviour fix - the mode switch, the slice
          geometry, the avatar painting - so a returning visitor holding a
          cached copy of it sees bugs that were fixed weeks ago while the page
          around it is current. Same query, same number, bumped together. -->
-    <script src="./steam/js/bundle.js?v=29"></script>
+    <script src="./steam/js/bundle.js?v=31"></script>
 </body>
 </html>

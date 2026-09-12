@@ -251,6 +251,7 @@ function loadVideoBackground(file) {
 const backgroundShowcase = {
 	img: document.getElementById('backgroundImg'),
 	canvas: null,
+	previewUrl: null, // This mode's own blob: URL - see loadImage
 	loadImage: function () {
 		if (inputImage.file && inputImage.file.type.indexOf('video/') === 0) {
 			loadVideoBackground(inputImage.file);
@@ -277,11 +278,26 @@ const backgroundShowcase = {
 				size.height
 			);
 
-			// Preview straight off the source object URL (which also animates
-			// for a GIF) instead of a toDataURL() of the canvas - a PNG or
+			// Preview straight off an object URL (which also animates for a
+			// GIF) instead of a toDataURL() of the canvas - a PNG or
 			// poster-sized background would otherwise become a multi-megabyte
 			// data: string shoved into the <img>.
-			backgroundShowcase.img.src = img.src;
+			//
+			// Its own URL, not inputImage's. This one src feeds the preview
+			// image, every slice fill's background-image and the slice painted
+			// onto the profile avatar, all of which stay on screen while the
+			// user is in this mode; borrowing a URL another format is free to
+			// revoke is what left them holding a dead reference. Revoked here
+			// and only here, when this mode loads a different background.
+			if (inputImage.file) {
+				if (backgroundShowcase.previewUrl) {
+					URL.revokeObjectURL(backgroundShowcase.previewUrl);
+				}
+				backgroundShowcase.previewUrl = URL.createObjectURL(inputImage.file);
+				backgroundShowcase.img.src = backgroundShowcase.previewUrl;
+			} else {
+				backgroundShowcase.img.src = img.src;
+			}
 
 			const resized =
 				size.width !== img.width || size.height !== img.height;
@@ -567,7 +583,17 @@ document
 // resolution, and the one piece of code that reads geometry off the rendered
 // page - the slice preview's alignment - divides by the live scale it reads
 // back from the element (see alignToBackground in backgroundSlicer.js).
-const ZOOM_ROOT_SELECTOR = '.responsive_page_template_content';
+// The root is <body>, which is to say the whole page including Steam's header.
+// It used to be .responsive_page_template_content, everything *below* the
+// header - and at 75% that left a full-size header sitting on top of a
+// three-quarter-size profile, which reads as the header being wrong rather
+// than as a zoom.
+//
+// The two full-screen overlays are the exception and take the inverse, because
+// a position:fixed element inside a zoomed subtree lays out in the zoomed
+// pixels: inset:0 at 125% would leave a fifth of the viewport uncovered.
+const ZOOM_ROOT_SELECTOR = 'body';
+const ZOOM_EXEMPT_IDS = ['dragDropOverlay', 'deviceGate'];
 let previewZoom = 1;
 
 function applyPreviewZoom() {
@@ -578,6 +604,12 @@ function applyPreviewZoom() {
 	} else {
 		root.style.zoom = previewZoom;
 	}
+	ZOOM_EXEMPT_IDS.forEach((id) => {
+		const el = document.getElementById(id);
+		if (!el) return;
+		if (previewZoom === 1) el.style.removeProperty('zoom');
+		else el.style.zoom = 1 / previewZoom;
+	});
 	// The preview anchors itself to the background by measuring the rendered
 	// page, so it has to be re-anchored once the new scale has been applied.
 	refreshSlicePreview();

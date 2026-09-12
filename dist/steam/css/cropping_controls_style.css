@@ -1537,3 +1537,35 @@ body.GameProfileTheme {
 	gap: 10px;
 	margin: 6px 0 0;
 }
+
+/* ---- Steam's footer, on a page that is not Steam's ---------------------
+   globalv2.css already paints #footer for a flat_page: a black band, 12px
+   #8F98A0 copy, #C6D4DF links, a 958px centred .footer_content, and a 78px
+   #footer_spacer to make room for it. Two things have to be said here.
+
+   Steam pins that band with position:absolute; bottom:0, which works because
+   its whole page lives inside a min-height:100% .responsive_page_frame. On
+   this mock the frame wraps the header only, so absolute would pin the band
+   to the bottom of the first viewport rather than the bottom of the page.
+   It flows after the content instead - identical on any page taller than the
+   window, which this one always is.
+
+   And there is no Valve logo in it, so there is no #footerLogo to leave the
+   123px of room Steam's #footerText reserves. */
+body.flat_page #footer {
+	position: static;
+}
+
+#footerText {
+	padding-left: 0;
+	max-width: 640px;
+}
+
+/* The disclaimer moved out of the tool column into the footer, where the
+   panel it was given no longer applies - it has the footer's own band now. */
+#footer .siteDisclaimer {
+	background: none;
+	padding: 0;
+	text-align: left;
+	color: #8f98a0;
+}
