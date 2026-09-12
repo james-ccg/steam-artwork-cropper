@@ -1355,3 +1355,60 @@ button.download:hover {
 .headerToggles .formatToggleRow {
 	margin: 6px 0 0;
 }
+
+/* ---- Game Profile theme: Dying Light 2 --------------------------------
+   Read off the live profile at steamcommunity.com/id/james_ccg, which carries
+   `body.GameProfileTheme` with these exact values. A Game Profile item zeroes
+   every gradient and the showcase header colour, so the background shows
+   through the whole column instead of sitting behind tinted panels - that is
+   what makes the themed profile look different from a plain one.
+
+   profilev2.css ships the defaults for an unthemed profile and is Steam's own
+   file, so it is left alone; this overrides the variables it defines, which is
+   exactly what Steam itself does when a Game Profile is equipped.
+
+   Measured on this page, toggling the class changes three computed values and
+   none of them visibly: the gradients it zeroes resolve to fully transparent
+   either way, because this mock never equips one of profilev2.css's named
+   profile themes and so never had the tinted defaults to begin with. The
+   visible half of a Game Profile is the pair of items it ships - the
+   background art and the avatar frame - which is why those were swapped for
+   the Dying Light 2 ones alongside this. The block stays because it is what
+   the real profile carries, and it keeps the mock correct if a themed default
+   ever does apply. */
+body.GameProfileTheme {
+	--gradient-right: rgba(255, 255, 255, 0);
+	--gradient-left: rgba(255, 255, 255, 0);
+	--gradient-background: rgba(255, 255, 255, 0);
+	--gradient-background-right: rgba(255, 255, 255, 0);
+	--gradient-background-left: rgba(255, 255, 255, 0);
+	--color-showcase-header: rgba(255, 255, 255, 0);
+	--gradient-showcase-header-left: rgba(255, 255, 255, 0);
+	--btn-background: rgba(0, 0, 0, 0.2);
+	--btn-background-hover: rgba(255, 255, 255, 0.1);
+	--btn-outline: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- The two notes under Export get Steam's ground too -----------------
+   Everything else in the right column sits on one of the stacked
+   rgba(0,0,0,.3) panels (see #backgroundInfo and friends above); these two
+   paragraphs were the only copy in the column resting on nothing but
+   .profile_rightcol's own single 30% black. Over a dark background art that
+   read fine, but the Dying Light 2 background is a pale dust-and-sky wash
+   straight down the middle of the column, and 30% black over that leaves
+   mid-grey text on a light ground. Same panel Steam uses everywhere else,
+   and Steam's own secondary grey instead of a darker one invented here. */
+.hexifyNote,
+.siteDisclaimer {
+	background: rgba(0, 0, 0, 0.3);
+	padding: 10px;
+	border-radius: 3px;
+}
+
+.hexifyNote {
+	color: rgb(199, 213, 224);
+}
+
+.siteDisclaimer {
+	color: #8f98a0;
+}

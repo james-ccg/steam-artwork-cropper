@@ -45,8 +45,8 @@
     <!-- The first crop the page shows is a real crop of these two, fetched by
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
-    <link rel="preload" as="image" href="./steam/imgs/james_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=22">
+    <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=23">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -83,7 +83,7 @@
              to the column width. Every slice is cut in the background's NATIVE pixel
              space, so the page has to draw it at native size, centred and top-pinned,
              which is what a normal Steam profile background does. -->
-        <div class="no_header profile_page has_profile_background" style="background-image: url(./steam/imgs/james_background.jpg)">
+        <div class="no_header profile_page has_profile_background" style="background-image: url(./steam/imgs/dl2_background.jpg)">
             <div class="profile_header_bg">
                 <div class="profile_header_bg_texture">
                     <div class="profile_header">
@@ -100,7 +100,7 @@
                                         <!-- 1.3 MB 120-frame APNG: decorative, and it otherwise holds the
                                              connection long enough to delay the demo image the tool needs
                                              for its first crop. -->
-                                        <img src="./steam/imgs/james_frame.png" fetchpriority="low" decoding="async" />
+                                        <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" fetchpriority="low" decoding="async" /></picture>
                                     </div>
                                     <img src="./steam/imgs/james_avatar.jpg" />
                                 </div>
@@ -115,7 +115,7 @@
                                             </div>
                                             <div class="miniprofile_playersection text_shadow">
                                                 <div class="playersection_avatar_frame">
-                                                    <img src="./steam/imgs/james_frame.png" fetchpriority="low" decoding="async" loading="lazy" />
+                                                    <picture><source media="(prefers-reduced-motion: reduce)" srcset="./steam/imgs/dl2_frame_still.png"><img src="./steam/imgs/dl2_frame.png" fetchpriority="low" decoding="async" loading="lazy" /></picture>
                                                 </div>
                                                 <div class="playersection_avatar border_color_online">
                                                     <img src="./steam/imgs/james_avatar.jpg" />
@@ -544,6 +544,11 @@
         </div>
     </div>
     <div id="test"></div>
-    <script src="./steam/js/bundle.js"></script>
+    <!-- Versioned for the same reason the stylesheet is, and bumped with it.
+         The bundle carries every behaviour fix - the mode switch, the slice
+         geometry, the avatar painting - so a returning visitor holding a
+         cached copy of it sees bugs that were fixed weeks ago while the page
+         around it is current. Same query, same number, bumped together. -->
+    <script src="./steam/js/bundle.js?v=23"></script>
 </body>
 </html>

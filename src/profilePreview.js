@@ -9,7 +9,7 @@ const inputImage = require('./inputImage');
 const tabInfo = require('./tabInfo');
 const demoDefaults = require('./demoDefaults');
 
-const ORIGINAL_BACKGROUND = './steam/imgs/james_background.jpg';
+const ORIGINAL_BACKGROUND = './steam/imgs/dl2_background.jpg';
 
 let mode = 'creator';
 
