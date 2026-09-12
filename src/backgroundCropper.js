@@ -122,7 +122,10 @@ function refreshSlicePreview() {
 		inputImage.height,
 		sliceOpts()
 	);
-	applyPreviewZoom();
+	// No applyPreviewZoom() here. The zoom used to live on this container, so
+	// it had to be re-applied every time the container was rebuilt; it now
+	// lives on the page wrapper, which nothing here rebuilds. Calling it would
+	// also recurse, since applying a zoom refreshes this preview.
 }
 
 function nativeSourceCanvas() {
@@ -547,24 +550,37 @@ document
 	)
 	.forEach((el) => el.addEventListener('change', refreshSlicePreview));
 
-// Preview zoom (steam.design offers 50/75/100/125%). This scales only how the
-// preview is drawn - the slice canvases and every Steam container keep their
-// native pixel sizes, so nothing about the measurement changes. The wrapper's
-// height is set explicitly because a CSS transform doesn't affect layout, and
-// without it a zoomed-out preview would leave the original gap behind.
+// Preview zoom (steam.design offers 50/75/100/125%). Like steam.design's, it
+// sizes the WHOLE mock profile, not one panel inside it - a profile with a
+// background, an avatar and a showcase is well over a screen tall, and seeing
+// how the pieces sit together is the entire point of the preview. Zooming only
+// the showcase panel showed the piece larger while everything it has to line up
+// with stayed where it was, which is the opposite of useful.
+//
+// CSS `zoom` rather than a transform: zoom participates in layout, so the page
+// simply gets shorter or taller and the scrollbar follows. A transform would
+// need the wrapper's height set by hand on every content change, and would
+// leave the original gap behind whenever that went stale.
+//
+// Nothing measured changes. Every Steam container keeps its native pixel size
+// in CSS pixels, every slice is cut from the source canvas at native
+// resolution, and the one piece of code that reads geometry off the rendered
+// page - the slice preview's alignment - divides by the live scale it reads
+// back from the element (see alignToBackground in backgroundSlicer.js).
+const ZOOM_ROOT_SELECTOR = '.responsive_page_template_content';
 let previewZoom = 1;
 
 function applyPreviewZoom() {
-	const preview = document.getElementById('bgSlicePreview');
-	if (!preview) return;
-	const inner = preview.firstElementChild;
-	preview.style.transformOrigin = 'top left';
-	preview.style.transform = previewZoom === 1 ? '' : `scale(${previewZoom})`;
-	if (inner && previewZoom !== 1) {
-		preview.style.height = inner.getBoundingClientRect().height + 'px';
+	const root = document.querySelector(ZOOM_ROOT_SELECTOR);
+	if (!root) return;
+	if (previewZoom === 1) {
+		root.style.removeProperty('zoom');
 	} else {
-		preview.style.removeProperty('height');
+		root.style.zoom = previewZoom;
 	}
+	// The preview anchors itself to the background by measuring the rendered
+	// page, so it has to be re-anchored once the new scale has been applied.
+	refreshSlicePreview();
 }
 
 document.querySelectorAll('.bgZoomBtn').forEach((btn) => {

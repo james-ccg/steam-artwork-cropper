@@ -970,10 +970,18 @@ body,
 
 /* Steam's softer translucent panel, so the piece labels stay readable over
    whatever background is loaded. */
+/* Vertical padding only. Steam's .profile_customization_block is 652 wide
+   with 10px of horizontal padding, so a showcase gets exactly 632px to sit
+   in - which is what a Featured piece (630 + 2px border) and a Workshop
+   strip (628) need, to the pixel. 12px of padding here took that down to
+   608 and the two widest showcases spilled out of the panel, while the
+   Artwork and Screenshot pair (617) fitted and left a gap; that is why the
+   four types looked like four different sizes. Steam's own number, and
+   nothing horizontal of ours on top of it. */
 #bgSlicePreview:not(:empty) {
 	background: var(--steam-panel-soft);
 	border-radius: 2px;
-	padding: 12px;
+	padding: 12px 0;
 }
 
 .bgSliceLabel {
@@ -1519,4 +1527,13 @@ body.GameProfileTheme {
 	background: rgba(0, 0, 0, 0.45);
 	outline-color: rgba(255, 255, 255, 0.25);
 	color: #fff;
+}
+
+
+/* ---- Zoom, on the header row with Mode and Format ---------------------- */
+.headerToggles .zoomToggleRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 6px 0 0;
 }

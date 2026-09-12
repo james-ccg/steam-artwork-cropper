@@ -308,9 +308,20 @@ function resetAvatar() {
 // minimum height). Nudge the preview by the measured difference so each piece
 // is drawn on the background pixels it was actually cut from - otherwise the
 // composite reads as misaligned even though the exported pieces are correct.
+// How many screen pixels one CSS pixel of the mock is currently drawn at. The
+// Zoom control scales the whole mock, so every getBoundingClientRect below
+// comes back in screen pixels while the offset this function writes is applied
+// in the mock's own CSS pixels. Read back off the element rather than passed
+// in, so this stays correct whatever sets the scale.
+function mockScale() {
+	const root = document.querySelector('.responsive_page_template_content');
+	if (!root || !root.offsetWidth) return 1;
+	const s = root.getBoundingClientRect().width / root.offsetWidth;
+	return s > 0 ? s : 1;
+}
+
 function alignToBackground(container, rects, bgWidth) {
-	container.style.removeProperty('margin-top');
-	container.style.removeProperty('margin-left');
+	container.style.removeProperty('transform');
 	if (!rects.length) return;
 
 	const bgEl = document.querySelector(
@@ -321,14 +332,21 @@ function alignToBackground(container, rects, bgWidth) {
 
 	// Steam draws a static background at native size, centred and top-pinned,
 	// so background pixel (sx, sy) lands at (centre - bgWidth/2 + sx, top + sy).
+	// Those are the mock's CSS pixels, so they scale on their way to the screen;
+	// the rects do not, which is why each is multiplied by the scale here and
+	// the finished delta divided by it on the way back out.
+	const s = mockScale();
 	const bg = bgEl.getBoundingClientRect();
-	const originX = bg.left + bg.width / 2 - Math.floor(bgWidth / 2);
 	const got = fill.getBoundingClientRect();
+	const originX = bg.left + bg.width / 2 - Math.floor(bgWidth / 2) * s;
 
-	const dx = Math.round(originX + rects[0].sx - got.left);
-	const dy = Math.round(bg.top + rects[0].sy - got.top);
-	if (dx) container.style.marginLeft = dx + 'px';
-	if (dy) container.style.marginTop = dy + 'px';
+	const dx = Math.round((originX + rects[0].sx * s - got.left) / s);
+	const dy = Math.round((bg.top + rects[0].sy * s - got.top) / s);
+	// A transform, not margins. Margins are layout: a negative one widened the
+	// container past its parent, and the preview's width is Steam's showcase
+	// width - 632px, the inside of .profile_customization_block - which is what
+	// a 630px Featured piece and a 628px Workshop strip need to sit in.
+	if (dx || dy) container.style.transform = `translate(${dx}px, ${dy}px)`;
 }
 
 function renderPreview(container, bgSrc, bgWidth, bgHeight, opts) {

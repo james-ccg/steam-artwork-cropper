@@ -46,7 +46,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=26">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=28">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -215,6 +215,27 @@
                                             </button>
                                         </div>
                                       </div>
+                                      <!-- Preview zoom, the way steam.design offers it - and, like
+                                           steam.design's, it sizes the whole mock profile rather
+                                           than one panel inside it, which is the only way to get a
+                                           tall profile on screen at once. It lives here beside Mode
+                                           and Format because it now applies to both modes; it used
+                                           to sit inside the Background Cropper's own panel, where
+                                           it was unreachable from Artwork Creator.
+
+                                           Purely visual: every Steam container keeps its native
+                                           pixel size, every canvas is cut at native resolution, and
+                                           the slice preview re-measures itself against the zoom, so
+                                           nothing about what gets exported changes. -->
+                                      <div class="zoomToggleRow">
+                                        <p class="formatToggleLabel">Zoom:</p>
+                                        <div class="bgZoomRow">
+                                            <button type="button" class="bgZoomBtn" data-zoom="50">50%</button>
+                                            <button type="button" class="bgZoomBtn" data-zoom="75">75%</button>
+                                            <button type="button" class="bgZoomBtn active" data-zoom="100">100%</button>
+                                            <button type="button" class="bgZoomBtn" data-zoom="125">125%</button>
+                                        </div>
+                                      </div>
                                     </div>
                                     <!-- Not shown - Background is a mode, not a format. Kept as the
                                          element the tab machinery (changeTab / profilePreview) clicks
@@ -286,17 +307,6 @@
                                     <label><input type="radio" name="bgShowcase" value="none" /> None &ndash; avatar only</label>
                                 </p>
                                 <p><label><input type="checkbox" id="bgSliceAvatar" checked /> Also cut the <b>Avatar</b> <span class="dimHint">(164)</span></label></p>
-
-                                <!-- Preview zoom, the way steam.design offers it. Purely a visual
-                                     transform on the preview - every Steam container keeps its
-                                     native pixel size, so the pieces stay measured correctly. -->
-                                <p class="bgSliceSubLabel">Preview zoom</p>
-                                <p class="bgZoomRow">
-                                    <button type="button" class="bgZoomBtn" data-zoom="50">50%</button>
-                                    <button type="button" class="bgZoomBtn" data-zoom="75">75%</button>
-                                    <button type="button" class="bgZoomBtn active" data-zoom="100">100%</button>
-                                    <button type="button" class="bgZoomBtn" data-zoom="125">125%</button>
-                                </p>
 
                                 <p class="bgSliceSubLabel">Output format</p>
                                 <p class="bgSliceFormatRow">
@@ -549,6 +559,6 @@
          geometry, the avatar painting - so a returning visitor holding a
          cached copy of it sees bugs that were fixed weeks ago while the page
          around it is current. Same query, same number, bumped together. -->
-    <script src="./steam/js/bundle.js?v=26"></script>
+    <script src="./steam/js/bundle.js?v=28"></script>
 </body>
 </html>
