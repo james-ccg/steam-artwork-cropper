@@ -36,6 +36,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171a21" />
     <title>Image Cropper for Steam Featured, Artwork &amp; Workshop Showcase</title>
+    <meta name="description" content="Crop Featured, Artwork and Workshop showcase images and slice profile backgrounds to Steam's exact sizes, previewed on a pixel-accurate Steam profile. Runs entirely in your browser." />
     <link rel="shortcut icon" href="./steam/imgs/crop-logo.png" type="image/png" />
     <link rel="stylesheet" href="./steam/css/globalv2.css" />
     <link rel="stylesheet" href="./steam/css/motiva_sans.css" />
@@ -46,7 +47,7 @@
          demoDefaults.js, so they gate the first thing a visitor sees. -->
     <link rel="preload" as="fetch" crossorigin href="./steam/imgs/1.jpg">
     <link rel="preload" as="image" href="./steam/imgs/dl2_background.jpg">
-    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=31">
+    <link rel="stylesheet" href="./steam/css/cropping_controls_style.css?v=32">
 </head>
 
 <body class="flat_page profile_page has_profile_background GameProfileTheme responsive_page">
@@ -75,6 +76,11 @@
     </div>
 
     <!-- ####################################AAAAAAA######################## -->
+    <!-- The page's title for screen readers and search. The visible page is a
+         Steam profile and has no title of its own to promote, so it is hidden
+         the standard way (clipped, not display:none, so it stays in the
+         accessibility tree). -->
+    <h1 class="visuallyHidden">Steam Artwork Cropper - showcase and background cropper</h1>
     <div class="responsive_page_template_content">
         <!-- No `full_width_background`. That class is Steam's opt-in for stretching a
              background to the window (background-size: 100%), and its specificity beats
@@ -274,7 +280,7 @@
                              whole block there rather than leaving the other mode's numbers
                              stranded under the slice controls. -->
                         <div id="resolutionsBlock">
-                            <h1>Resolutions</h1>
+                            <h2 class="rightcolTitle">Resolutions</h2>
                             <h2>Original picture</h2>
                             <h2 id="originalSize">-</h2>
                         </div>
@@ -579,6 +585,6 @@
          geometry, the avatar painting - so a returning visitor holding a
          cached copy of it sees bugs that were fixed weeks ago while the page
          around it is current. Same query, same number, bumped together. -->
-    <script src="./steam/js/bundle.js?v=31"></script>
+    <script src="./steam/js/bundle.js?v=32"></script>
 </body>
 </html>

@@ -24,9 +24,20 @@ async function fetchAsFile(url) {
 // If the user hasn't picked their own image yet, loads the given demo image
 // into inputImage.file before calling loadImageFn - once they have, this is
 // a no-op and loadImageFn just runs against whatever they provided instead.
+//
+// The flag is checked again after the fetch. Opening the Cropper from a link
+// (?bg= or the Backgrounds gallery) switches mode first, which starts this
+// demo fetch, and only then starts fetching the visitor's own background. If
+// the demo finished in between it went on to load itself - with the
+// user-provided flag now set, so the status line announced "Done" with the
+// demo's size while the real background was still downloading. By then the
+// visitor's own load is under way and will render when it lands, so the demo
+// simply stands down.
 async function loadDefault(url, loadImageFn) {
 	if (!hasUserProvidedImage()) {
-		inputImage.file = await fetchAsFile(url);
+		const demo = await fetchAsFile(url);
+		if (hasUserProvidedImage()) return;
+		inputImage.file = demo;
 	}
 	loadImageFn();
 }

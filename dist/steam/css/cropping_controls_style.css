@@ -278,7 +278,8 @@ button.download {
 	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
 }
 
-.deviceGateBox h1 {
+.deviceGateBox h1,
+.deviceGateBox h2 {
 	color: #67c1f5;
 	font-size: 26px;
 	margin-bottom: 16px;
@@ -1568,4 +1569,34 @@ body.flat_page #footer {
 	padding: 0;
 	text-align: left;
 	color: #8f98a0;
+}
+
+/* ---- Headings, without a visible change ---------------------------------
+   The panel label "Resolutions" was the page's only <h1>, and the device
+   gate added a second - so the page's title, to anything that reads
+   headings, was a panel label. It is an h2 now, pinned to exactly the values
+   the old h1 computed to (measured on the live page) so Steam's panel looks
+   the same; the page's real h1 is visually hidden. */
+.profile_rightcol h2.rightcolTitle {
+	font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	font-weight: 200;
+	line-height: normal;
+	color: #fff;
+	margin: 0 0 6px;
+	padding: 0;
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.visuallyHidden {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
 }

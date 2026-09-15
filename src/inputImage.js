@@ -64,8 +64,13 @@ const inputImage = {
 }
 
 inputImage.img = new Image();
+// The browser could not decode the file. Named by the file rather than its
+// MIME type: the type is only what the extension claims, so a broken or
+// mislabelled file used to be reported as "Invalid file type: image/png" -
+// a PNG being rejected for being a PNG.
 inputImage.img.onerror = function() {
-    alert("Please select an image.\n\nInvalid file type: " + inputImage.file.type);
+    const name = inputImage.file && inputImage.file.name ? '"' + inputImage.file.name + '"' : 'That file';
+    alert(name + " couldn't be read as an image.\n\nPick a PNG, JPG, GIF or WebP - or a .webm / .mp4 for an animated background.");
 };
 
 module.exports = inputImage;

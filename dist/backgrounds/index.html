@@ -77,7 +77,9 @@
 			.nav-toggle { display: block; }
 			footer.wrap { flex-direction: column; text-align: center; }
 		}
-		.hero { padding: 52px 0 30px; text-align: center; }
+		/* Top and bottom only - the same collision as the FAQ page: a shorthand
+		   here zeroes the side gutter of any .wrap it shares an element with. */
+		.hero { padding-top: 52px; padding-bottom: 30px; text-align: center; }
 		.eyebrow {
 			color: var(--accent);
 			font-weight: 600;

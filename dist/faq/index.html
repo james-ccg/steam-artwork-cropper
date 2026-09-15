@@ -82,7 +82,9 @@
 			footer .foot-row { flex-direction: column; text-align: center; }
 		}
 
-		.hero { padding: 52px 0 26px; text-align: center; }
+		/* Top and bottom only: .hero shares its element with .wrap, and a padding
+		   shorthand here zeroed .wrap's side gutter on every narrow screen. */
+		.hero { padding-top: 52px; padding-bottom: 26px; text-align: center; }
 		.eyebrow {
 			color: var(--accent);
 			font-weight: 600;

@@ -107,6 +107,17 @@ function sliceOpts() {
 function refreshSlicePreview() {
 	const container = document.getElementById('bgSlicePreview');
 	if (!container) return;
+	// The preview paints the avatar piece onto the profile's own avatar, so it
+	// must never run while the page is in Artwork Creator. It used to check
+	// only the slice/resize sub-mode, and leaving Background Cropper while
+	// zoomed proved why that is not enough: handing the zoom back to 100%
+	// refreshes this preview, which repainted a background slice onto the
+	// avatar a moment after the mode switch had restored it.
+	if (require('./profilePreview').getMode() !== 'cropper') {
+		container.innerHTML = '';
+		backgroundSlicer.resetAvatar();
+		return;
+	}
 	if (bgMode !== 'slice' || !backgroundShowcase.canvas) {
 		container.innerHTML = '';
 		backgroundSlicer.resetAvatar();
@@ -359,8 +370,13 @@ async function exportSlices() {
 
 	const zip = new JSZip();
 	zip.file('readme.txt', SLICE_README);
-	const link = backgroundSlicer.layoutLink(inputImage.sourceUrl || '', opts);
-	if (link) zip.file('layout.txt', link + '\n');
+	// Only a background that came from a link can be re-opened from one. A
+	// picked or dropped file has no address, so its layout link restored the
+	// showcase choice onto an empty tool - a file in every zip that did nothing.
+	if (inputImage.sourceUrl) {
+		const link = backgroundSlicer.layoutLink(inputImage.sourceUrl, opts);
+		if (link) zip.file('layout.txt', link + '\n');
+	}
 
 	try {
 		if (isAnimatedSource()) {
@@ -664,19 +680,25 @@ if (bgAnimEnable) {
 // into Background Cropper + slice mode. A #slice= link also restores the
 // showcase choice and format options. The background is fetched by
 // urlLoader.js (from the link's `bg` or `?bg=`); once it lands,
-// applyPendingSliceMode() flips into slice mode.
+// applyPendingSliceMode() flips into the pending mode.
+//
+// A bare `?bg=` - the gallery's "Open in Cropper" - opens resize mode, the
+// whole background with nothing cut. Slice is this mode's default, so without
+// that the two gallery buttons led to exactly the same screen and the second
+// one did nothing the first did not.
 let pendingSliceMode = false;
 
 (function restoreFromLink() {
 	const params = new URLSearchParams(window.location.search);
 	const st = backgroundSlicer.parseLayoutLink(window.location.hash);
 
-	if (params.get('slice') === '1') pendingSliceMode = true;
+	if (params.get('slice') === '1') pendingSliceMode = 'slice';
+	else if (params.get('bg') && !st) pendingSliceMode = 'resize';
 	if (!st) {
 		maybeEnterSliceMode(!!params.get('bg'));
 		return;
 	}
-	pendingSliceMode = true;
+	pendingSliceMode = 'slice';
 
 	const setChecked = (sel) => {
 		const el = document.querySelector(sel);
@@ -715,8 +737,9 @@ function maybeEnterSliceMode(hasBackground) {
 
 function applyPendingSliceMode() {
 	if (!pendingSliceMode) return;
+	const mode = pendingSliceMode;
 	pendingSliceMode = false;
-	setBgMode('slice');
+	setBgMode(mode);
 }
 
 module.exports = backgroundShowcase.loadImage;

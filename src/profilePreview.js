@@ -96,10 +96,12 @@ function updateFormatVisibility(switchingModes) {
 		cropperOnly.forEach((el) => el && el.style.removeProperty('display'));
 		backgroundTab.click();
 	} else {
+		// Zoom first: resetting it refreshes the slice preview, and the avatar
+		// has to be handed back after that, not before.
+		resetZoom();
 		// The slice preview borrows the profile's own avatar to show the
 		// avatar piece in place; leaving Background Cropper hands it back.
 		require('./backgroundSlicer').resetAvatar();
-		resetZoom();
 		creatorOnly.forEach((el) => el && el.style.removeProperty('display'));
 		cropperOnly.forEach((el) => el && el.style.setProperty('display', 'none'));
 		if (switchingModes || tabInfo.currentTab === '#background') {

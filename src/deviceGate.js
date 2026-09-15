@@ -16,7 +16,7 @@ function setupDeviceGate() {
 	gate.id = 'deviceGate';
 	gate.innerHTML =
 		'<div class="deviceGateBox">' +
-		'<h1>Desktop required</h1>' +
+		'<h2>Desktop required</h2>' +
 		'<p>This tool crops images against a pixel-accurate recreation of the Steam profile page, which needs a desktop or laptop with a mouse.</p>' +
 		'<p>Please open this page on a computer with a browser window at least ' +
 		MIN_WIDTH +
