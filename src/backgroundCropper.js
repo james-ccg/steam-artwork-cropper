@@ -728,7 +728,17 @@ let pendingSliceMode = false;
 // bare ?slice=1), there's nothing to wait for - flip into Background Cropper
 // slice mode once every module has finished loading.
 function maybeEnterSliceMode(hasBackground) {
-	if (!pendingSliceMode || hasBackground) return;
+	if (!pendingSliceMode) return;
+	if (hasBackground) {
+		// Show the mode the link asked for straight away, not when the download
+		// finishes. A gallery background is a multi-megabyte video, and on a
+		// slow connection "Open in Cropper" otherwise sat on the slicing
+		// controls for as long as that took. The pending mode stays set, so the
+		// load re-applies it once the background has landed.
+		const mode = pendingSliceMode;
+		setTimeout(() => setBgMode(mode), 0);
+		return;
+	}
 	setTimeout(() => {
 		require('./profilePreview').setMode('cropper');
 		applyPendingSliceMode();
